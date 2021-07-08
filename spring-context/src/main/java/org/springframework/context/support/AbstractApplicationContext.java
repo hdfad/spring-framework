@@ -541,48 +541,78 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		return this.applicationListeners;
 	}
 
+	/**
+	 * 整个spring的生命周期、aop、ioc阶段均由此流程开始解决
+	 * ioc阶段：创建bean工厂->填充bean工厂属性->完成bean工厂的赋值和开始加载非懒加载的bean
+	 *		1.在创建bean工厂之前会spring的状态、属性、监听器等进行初始化和校验，然后会通过obtainFreshBeanFactory构建一个新的DefaultListableBeanFactory工厂，如果之前存在则销毁，通过BeanDefinitionReader读取xml或者注解等配置信息，并装载在BeanDefinition容器中
+	 *		2.对bean工厂属性进行填充，设置类加载器,aop支持等
+	 *		3.通过finishBeanFactoryInitialization方法完成bean的赋值并使用当前beanFactory开始对非懒加载的bean进行初始化
+	 *			3.1.通过preInstantiateSingletons
+	 *
+	 * @throws BeansException
+	 * @throws IllegalStateException
+	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
 			StartupStep contextRefresh = this.applicationStartup.start("spring.context.refresh");
 
 			// Prepare this context for refreshing.
+			//容器状态设置，初始化属性设置，属性校验
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			//obtainFreshBeanFactory：销毁关闭旧工厂，通过new的方式创建DefaultListableBeanFactory工厂，通过BeanDefinitionReader读取xml或者注解等配置信息，并装载在BeanDefinition容器中
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			//应用bean工厂属性，包括类加载器，增加对 AspectJ 的支持等
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
+				//模板方法，【后置处理器Bean工厂】
+				//调用顺序一：先bean定义注册后置处理器
+				//调用顺序二：后bean工厂后置处理器
+				// TODO: 2021/7/8
 				postProcessBeanFactory(beanFactory);
 
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
 				// Invoke factory processors registered as beans in the context.
+
+				//调用beanfactory后置处理器
+				// TODO: 2021/7/8
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				//注册bean后置处理器
 				registerBeanPostProcessors(beanFactory);
 				beanPostProcess.end();
 
 				// Initialize message source for this context.
+				//国际化相关属性
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				//【初始化应用程序事件多路广播】初始化自定义的事件监听多路广播器,（观察者）
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				//容器刷新时执行的自定义逻辑
 				onRefresh();
 
 				// Check for listener beans and register them.
+				//注册所有监听器 监听器需要实现 ApplicationListener 接口。
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				//加载非懒加载的bean,ioc
+				//通过obtainFreshBeanFactory创建beanFactory，finishBeanFactoryInitialization通过beanFactory加载非懒加载的bean对象
+				//循环依赖，aop，ioc都通过此处产生并解决
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				//发布事件与清除上下文环境
 				finishRefresh();
 			}
 
@@ -617,8 +647,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void prepareRefresh() {
 		// Switch to active.
+		//启动时间
 		this.startupDate = System.currentTimeMillis();
+		//标记状态为未关闭
 		this.closed.set(false);
+
+		//处于激活状态
 		this.active.set(true);
 
 		if (logger.isDebugEnabled()) {
@@ -631,12 +665,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
+		// 初始化一些属性设置，抽象类，子类在做具体处理
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
 		// see ConfigurablePropertyResolver#setRequiredProperties
+		//校验属性的合法性
 		getEnvironment().validateRequiredProperties();
 
+		//初始化earlyApplicationListeners监听器-LinkedHashSet结构
 		// Store pre-refresh ApplicationListeners...
 		if (this.earlyApplicationListeners == null) {
 			this.earlyApplicationListeners = new LinkedHashSet<>(this.applicationListeners);
@@ -649,6 +686,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Allow for the collection of early ApplicationEvents,
 		// to be published once the multicaster is available...
+		// 创建事件容器earlyApplicationEvents Set 集合
 		this.earlyApplicationEvents = new LinkedHashSet<>();
 	}
 
@@ -668,6 +706,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		//refreshBeanFactory:销毁bean工厂，通过new 的形式创建一个新的DefaultListableBeanFactory,
+		// 并通过BeanDefinitionReader读取beanFactory中的配置信息，解析来源有xml，注解等
 		refreshBeanFactory();
 		return getBeanFactory();
 	}
@@ -707,6 +747,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found.
 		if (!NativeDetector.inNativeImage() && beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
+			//添加对aop的支持，LoadTimeWeaverAwareProcessor 实现 BeanPostProcessor
+			// TODO: 2021/7/8
 			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
 			// Set a temporary ClassLoader for type matching.
 			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
