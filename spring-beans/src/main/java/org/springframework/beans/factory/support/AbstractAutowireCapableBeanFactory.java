@@ -512,7 +512,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
 			//此步还未实例化bean，判断是否需要创建bean代理对象，且返回代理bean
 			//对于jdk还是cglib代理会根据DefaultAopProxyFactory下的createAopProxy创建指定的AopProxy实现类（jdk或cglib）
-			//后置处理器
+			//第一个后置处理器
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
 				return bean;
@@ -576,6 +576,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					//第三个后置处理器
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -1306,8 +1307,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		if (beanClass != null && hasInstantiationAwareBeanPostProcessors()) {
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
-				//第二个后置处理器
-				//根据构造方法选择合适的自动注入方法AutowiredAnnotationBeanPostProcessor#determineCandidateConstructors
+				//根据构造方法选择合适的自动注入方法AutowiredAnnotationBeanPostProcessor#determineCandidateConstructors，如果构造方法上有@Autowired,spring会优先选择这个
 				Constructor<?>[] ctors = bp.determineCandidateConstructors(beanClass, beanName);
 				if (ctors != null) {
 					return ctors;
