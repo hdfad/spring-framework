@@ -542,7 +542,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
-	 * 整个spring的生命周期、aop、ioc阶段均由此流程开始解决
+	 * 整个spring的生命周期、aop、ioc阶段均由此流程开始解决,13个主要方法,5个扩展点
 	 * ioc阶段：创建bean工厂->填充bean工厂属性->完成bean工厂的赋值和开始加载非懒加载的bean
 	 *		1.在创建bean工厂之前会spring的状态、属性、监听器等进行初始化和校验，然后会通过obtainFreshBeanFactory构建一个新的DefaultListableBeanFactory工厂，如果之前存在则销毁，通过BeanDefinitionReader读取xml或者注解等配置信息，并装载在BeanDefinition容器中
 	 *		2.对bean工厂属性进行填充，设置类加载器,aop支持等

@@ -510,7 +510,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
-
+			//此步还未实例化bean，判断是否需要创建bean代理对象，且返回代理bean
+			//对于jdk还是cglib代理会根据DefaultAopProxyFactory下的createAopProxy创建指定的AopProxy实现类（jdk或cglib）
+			//后置处理器
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
 				return bean;
@@ -1108,7 +1110,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @return the shortcut-determined bean instance, or {@code null} if none
 	 */
 	/**
-	 * 在实例化之前判断对象是否需要进行代理
+	 * 实例化前后调用后置处理器
 	 * @param beanName
 	 * @param mbd
 	 * @return
@@ -1142,10 +1144,25 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @param beanName the name of the bean
 	 * @return the bean object to use instead of a default instance of the target bean, or {@code null}
 	 * @see InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation
+	 *
+	 */
+	/**
+	 * 对象实例化之前调用后置处理器InstantiationAwareBeanPostProcessor.postProcessBeforeInstantiation
+	 * 此方法会根据子类AbstractAutoProxyCreator创建对象的代理目标
+	 * SmartInstantiationAwareBeanPostProcessor 继承 InstantiationAwareBeanPostProcessor
+	 * AbstractAutoProxyCreator 继承 SmartInstantiationAwareBeanPostProcessor
+	 * InstantiationAwareBeanPostProcessor是AbstractAutoProxyCreator的父接口所以此处能够调用AbstractAutoProxyCreator对目标对象创建代理
+	 * @param beanClass
+	 * @param beanName
+	 * @return
 	 */
 	@Nullable
 	protected Object applyBeanPostProcessorsBeforeInstantiation(Class<?> beanClass, String beanName) {
+		//SmartInstantiationAwareBeanPostProcessor 继承 InstantiationAwareBeanPostProcessor
+		//AbstractAutoProxyCreator 继承 SmartInstantiationAwareBeanPostProcessor
+		//InstantiationAwareBeanPostProcessor是AbstractAutoProxyCreator的父接口所以此处能够调用AbstractAutoProxyCreator对目标对象创建代理
 		for (InstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().instantiationAware) {
+			//实例化之前调用后置处理器，根据目标对象生成代理对象
 			Object result = bp.postProcessBeforeInstantiation(beanClass, beanName);
 			if (result != null) {
 				return result;
@@ -1205,6 +1222,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Candidate constructors for autowiring?
+		//第二个后置处理器
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
@@ -1288,6 +1306,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		if (beanClass != null && hasInstantiationAwareBeanPostProcessors()) {
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
+				//第二个后置处理器
+				//根据构造方法选择合适的自动注入方法AutowiredAnnotationBeanPostProcessor#determineCandidateConstructors
 				Constructor<?>[] ctors = bp.determineCandidateConstructors(beanClass, beanName);
 				if (ctors != null) {
 					return ctors;
