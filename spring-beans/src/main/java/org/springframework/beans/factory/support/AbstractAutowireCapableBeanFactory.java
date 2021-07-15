@@ -419,6 +419,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
+			//第七个后置处理器:调用此接口前bean已经被实例化完成，并且完成了属性的填充，因此这个过程属于后续的bean的初始化过程
+			//如果在bean中有方法被标注了@PostContrust注解，那么在CommonAnnotationBeanPostProcessor中，会调用该@PostContrust方法。
 			Object current = processor.postProcessBeforeInitialization(result, beanName);
 			if (current == null) {
 				return result;
@@ -434,6 +436,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
+			//第八个后置处理器
+			//遍历执行所有BeanPostProcessor的postProcessAfterInitialization方法。
+			// 综上所述，bean的各种方法执行属性为，先执行构造方法，再执行后置管理器中的before方法及@PostContrust方法，最后执行后置处理器的after方法。
 			Object current = processor.postProcessAfterInitialization(result, beanName);
 			if (current == null) {
 				return result;
@@ -608,6 +613,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 			//第五，六个后置处理器入口
 			populateBean(beanName, mbd, instanceWrapper);
+			//第七，八个后置处理器入口
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1413,7 +1419,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// to support styles of field injection.
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (InstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().instantiationAware) {
-				//postProcessAfterInstantiation:第五个后置处理器
+				//postProcessAfterInstantiation:第五个后置处理器:用于判断当前实例化完成的bean需不需要进行属性填充
 				if (!bp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
 					return;
 				}
@@ -1450,7 +1456,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					if (filteredPds == null) {
 						filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 					}
-					//第六个后置处理器
+					//第六个后置处理器对@Autowired和@Value等注解的属性进行依赖的填充,在其中遍历所有需要注入的属性的列表，使用反射将注入的bean实例赋值给属性。
 					pvsToUse = bp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
 						return;
@@ -1811,10 +1817,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
+
+			//第七个后置处理器调用口
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
+			//调用
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
 		catch (Throwable ex) {
@@ -1823,6 +1832,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
+			//第八个后置处理器调用口
+			//遍历执行所有BeanPostProcessor的postProcessAfterInitialization方法。
+			//bean的各种方法执行属性为，先执行构造方法，再执行后置管理器中的before方法及@PostContrust方法，最后执行后置处理器的after方法。
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 

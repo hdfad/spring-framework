@@ -177,6 +177,10 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 		destroy();
 	}
 
+
+	/**
+	 * 如果当前bean中有方法被@PreDestroy注解标注，那么当Spring的ApplicationContext执行close方法时调用该后置处理器。在DefaultSingletonBeanRegistry中执行destroyBean方法：
+	 */
 	@Override
 	public void destroy() {
 		if (!CollectionUtils.isEmpty(this.beanPostProcessors)) {

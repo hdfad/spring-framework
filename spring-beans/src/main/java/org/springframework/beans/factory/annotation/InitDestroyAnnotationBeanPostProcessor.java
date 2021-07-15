@@ -170,6 +170,12 @@ public class InitDestroyAnnotationBeanPostProcessor
 		return bean;
 	}
 
+	/**
+	 * 第九个后置处理器
+	 * @param bean the bean instance to be destroyed
+	 * @param beanName the name of the bean
+	 * @throws BeansException
+	 */
 	@Override
 	public void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException {
 		LifecycleMetadata metadata = findLifecycleMetadata(bean.getClass());
