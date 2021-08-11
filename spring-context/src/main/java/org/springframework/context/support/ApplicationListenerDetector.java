@@ -56,7 +56,7 @@ class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, 
 		this.applicationContext = applicationContext;
 	}
 
-
+	//第三个后置处理器，扫描 @PostConstruct,@PreDestroy,@Resource
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		if (ApplicationListener.class.isAssignableFrom(beanType)) {

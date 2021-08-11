@@ -287,8 +287,14 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 			this.embeddedValueResolver = new EmbeddedValueResolver((ConfigurableBeanFactory) beanFactory);
 		}
 	}
-
-
+	/**
+	 * https://www.yht7.com/news/107075
+	 * 1.遍历扫描方法上标注了 @PostConstruct  和 @PreDestroy 注解的类
+	 * 2.遍历扫描方法上标注了 @Resource 注解的类
+	 * @param beanDefinition
+	 * @param beanType
+	 * @param beanName
+	 */
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);

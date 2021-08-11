@@ -60,6 +60,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.InjectionPoint;
 import org.springframework.beans.factory.UnsatisfiedDependencyException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.AutowiredPropertyMarker;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -529,7 +530,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
-			//第二个后置处理器入口
+			//第二到八 后置处理器入口
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -570,7 +571,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
-			//第二个后置处理器入口
+			//第二个后置处理器入口，获取bean构造器BeanWrapper，首先会获取所有被@Autowired标记的构造器，然后
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 		Object bean = instanceWrapper.getWrappedInstance();
@@ -583,7 +584,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
-					//第三个后置处理器入口
+					//第三个后置处理器入口,属性合并后置处理器，对@PostConstruct @PreDestroy @Resource进行扫描
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -1111,7 +1112,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
 		for (MergedBeanDefinitionPostProcessor processor : getBeanPostProcessorCache().mergedDefinition) {
-			//第三个后置处理器
+			//第三个后置处理器，扫描 @PostConstruct,@PreDestroy,@Resource
 			processor.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 		}
 	}
@@ -1226,7 +1227,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				}
 			}
 		}
-		if (resolved) {
+		if (resolved) {//防止重复解析相同bean构造器
 			if (autowireNecessary) {
 				return autowireConstructor(beanName, mbd, null, null);
 			}
@@ -1236,7 +1237,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Candidate constructors for autowiring?
-		//第二个后置处理器
+		//第二个后置处理器,获取所有的@Autowired标识的构造器，如果不存在则返回null数组
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
@@ -1250,6 +1251,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// No special handling: simply use no-arg constructor.
+		//无注入构造器则使用反射构造一个无参构造器后创建一个BeanWrapper
 		return instantiateBean(beanName, mbd);
 	}
 
@@ -1306,6 +1308,32 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * https://xie.infoq.cn/article/489dba335a4e99c53e25eebd3
+	 *    @Component
+	 *    public class X {
+	 *        @Autowired
+	 *        Y y;
+	 *
+	 *        @Autowired
+	 *        Z z;
+	 *
+	 *        @Autowired(required = false)
+	 * 		public X(Y y){
+	 * 			this.y=y;
+	 * 			System.out.println("X create");
+	 *        }
+	 *        @Autowired(required = false)
+	 * 		public X(){
+	 * 			System.out.println("X create2");
+	 *        }
+	 *        @Autowired(required = false)
+	 * 		public X(Y y,Z z){
+	 * 			this.y=y;
+	 * 			this.z=z;
+	 * 			System.out.println("X create2");
+	 *        }
+	 *    }
+	 *
 	 * Determine candidate constructors to use for the given bean, checking all registered
 	 * {@link SmartInstantiationAwareBeanPostProcessor SmartInstantiationAwareBeanPostProcessors}.
 	 * @param beanClass the raw class of the bean
@@ -1317,10 +1345,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	@Nullable
 	protected Constructor<?>[] determineConstructorsFromBeanPostProcessors(@Nullable Class<?> beanClass, String beanName)
 			throws BeansException {
-
 		if (beanClass != null && hasInstantiationAwareBeanPostProcessors()) {
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
-				//根据构造方法选择合适的自动注入方法AutowiredAnnotationBeanPostProcessor#determineCandidateConstructors，如果构造方法上有@Autowired,spring会优先选择这个
+				//通过后置处理器获取所有被标记@Autowired的构造方法，如果没有返回null，如果有则返回合集
 				Constructor<?>[] ctors = bp.determineCandidateConstructors(beanClass, beanName);
 				if (ctors != null) {
 					return ctors;

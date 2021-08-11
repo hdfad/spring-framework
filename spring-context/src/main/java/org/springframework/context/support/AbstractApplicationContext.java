@@ -542,9 +542,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
+	 * 覆写了ConfigurableApplicationContext接口中的方法
+	 * 用于刷新spring上下文信息
 	 * 整个spring的生命周期、aop、ioc阶段均由此流程开始解决,13个主要方法,5个扩展点
 	 * ioc阶段：创建bean工厂->填充bean工厂属性->完成bean工厂的赋值和开始加载非懒加载的bean
-	 *		1.在创建bean工厂之前会spring的状态、属性、监听器等进行初始化和校验，然后会通过obtainFreshBeanFactory构建一个新的DefaultListableBeanFactory工厂，如果之前存在则销毁，通过BeanDefinitionReader读取xml或者注解等配置信息，并装载在BeanDefinition容器中
+	 *		1.在创建bean工厂之前会spring的状态、属性、监听器等进行初始化和校验，然后会通过obtainFreshBeanFactory构建一个新的DefaultListableBeanFactory工厂，
+	 *			如果之前存在则销毁，通过BeanDefinitionReader读取xml或者注解等配置信息，并装载在BeanDefinition容器中
 	 *		2.对bean工厂属性进行填充，设置类加载器,aop支持等
 	 *		3.通过finishBeanFactoryInitialization方法完成bean的赋值并使用当前beanFactory开始对非懒加载的bean进行初始化
 	 *			3.1.通过preInstantiateSingletons
@@ -554,6 +557,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
+		//使用synchronized代码块，在并发下refresh时是安全的
 		synchronized (this.startupShutdownMonitor) {
 			StartupStep contextRefresh = this.applicationStartup.start("spring.context.refresh");
 
@@ -930,7 +934,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * initializing all remaining singleton beans.
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
-		// Initialize conversion service for this context.
+		// Initialize conversion service for this context.、
+		//对实现ConversionService的类进行调用，类型转换
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(
