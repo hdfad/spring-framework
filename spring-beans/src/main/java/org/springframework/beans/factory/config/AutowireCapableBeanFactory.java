@@ -68,6 +68,7 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * @see #autowire
 	 * @see #autowireBeanProperties
 	 */
+	//（默认）无自动装配。 Bean引用必须通过ref元素定义。对于大型部署，建议不要更改默认设置，因为明确指定协作者可以提供更好的控制和清晰度。在某种程度上，它记录了系统的结构
 	int AUTOWIRE_NO = 0;
 
 	/**
@@ -77,6 +78,7 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * @see #autowire
 	 * @see #autowireBeanProperties
 	 */
+	//根据名称自动注入
 	int AUTOWIRE_BY_NAME = 1;
 
 	/**
@@ -86,6 +88,7 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * @see #autowire
 	 * @see #autowireBeanProperties
 	 */
+	//根据类型自动注入
 	int AUTOWIRE_BY_TYPE = 2;
 
 	/**
@@ -94,6 +97,7 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * @see #createBean
 	 * @see #autowire
 	 */
+	//根据构造方法自动注入
 	int AUTOWIRE_CONSTRUCTOR = 3;
 
 	/**
@@ -104,6 +108,7 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * @deprecated as of Spring 3.0: If you are using mixed autowiring strategies,
 	 * prefer annotation-based autowiring for clearer demarcation of autowiring needs.
 	 */
+	//自动选择，已启用
 	@Deprecated
 	int AUTOWIRE_AUTODETECT = 4;
 
