@@ -570,7 +570,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
-			//应用bean工厂属性，包括类加载器，增加对 AspectJ 的支持等
+			//应用bean工厂属性，包括类加载器，增加AspectJ的支持、
 			prepareBeanFactory(beanFactory);
 
 			try {
@@ -579,6 +579,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				//调用顺序一：先bean定义注册后置处理器
 				//调用顺序二：后bean工厂后置处理器
 				// TODO: 2021/7/8
+				//https://blog.csdn.net/caihaijiang/article/details/35552859
 				postProcessBeanFactory(beanFactory);
 
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
@@ -723,13 +724,16 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		// Tell the internal bean factory to use the context's class loader etc.
+		//设置类加载器：存在则直接设置/不存在则新建一个默认类加载器：首先获取当前线程的类加载器，如果当前当前线程的加载器不存在就获取当前类的加载器，如果类加载器不存在就使用bootstrap ClassLoader类加载器
 		beanFactory.setBeanClassLoader(getClassLoader());
 		if (!shouldIgnoreSpel) {
+			//设置EL表达式解析器（Bean初始化完成后填充属性时会用到）
 			beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
 		}
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
+		//往后置处理器中添加ApplicationContextAwareProcessor完成对部分Aware类的支持，在bean生命周期的第七个后置处理器applyBeanPostProcessorsBeforeInitialization中会通过postProcessBeforeInitialization进行调用处理
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
@@ -741,24 +745,27 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// BeanFactory interface not registered as resolvable type in a plain factory.
 		// MessageSource registered (and found for autowiring) as a bean.
+		//
 		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
 		beanFactory.registerResolvableDependency(ResourceLoader.class, this);
 		beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
 		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
 
 		// Register early post-processor for detecting inner beans as ApplicationListeners.
+		//添加ApplicationListenerDetector到bean工厂中，ApplicationListenerDetector主要用于@PostConstruct,@PreDestroy,@Resource进行扫描注册、销毁，在Bean完成之后、销毁之前做部分处理
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found.
+		//如果当前BeanFactory包含loadTimeWeaver Bean，说明存在类加载期织入AspectJ，则把当前BeanFactory交给类加载期BeanPostProcessor实现类LoadTimeWeaverAwareProcessor来处理，从而实现类加载期织入AspectJ的目的
 		if (!NativeDetector.inNativeImage() && beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
-			//添加对aop的支持，LoadTimeWeaverAwareProcessor 实现 BeanPostProcessor
-			// TODO: 2021/7/8
+			//将LoadTimeWeaverAwareProcessor添加到BeanPostProcessor，LoadTimeWeaverAwareProcessor主要用于AspectJ，在initializeBean时通过后置处理器循环所有的BeanPostProcessor进行属性的填充
 			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
 			// Set a temporary ClassLoader for type matching.
 			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
 		}
 
 		// Register default environment beans.
+		// beanFactory注册默认组件
 		if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
 			beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment());
 		}
@@ -934,7 +941,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * initializing all remaining singleton beans.
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
-		// Initialize conversion service for this context.、
+		// Initialize conversion service for this context.
 		//对实现ConversionService的类进行调用，类型转换
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {

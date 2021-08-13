@@ -421,7 +421,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {//循环遍历所有的BeanPostProcessor执行postProcessBeforeInitialization
 			//第七个后置处理器:调用此接口前bean已经被实例化完成，并且完成了属性的填充，因此这个过程属于后续的bean的初始化过程
-			//如果在bean中有方法被标注了@PostContrust注解，那么在CommonAnnotationBeanPostProcessor中，会调用该@PostContrust方法。
+			//如果处理这个对象的beanFactory中被注册了ApplicationContextAwareProcessor、LoadTimeWeaverAwareProcessor就会对部分注解进行扫描注册，设置生命函数（注册销毁），添加AspectJ支持等
 			Object current = processor.postProcessBeforeInitialization(result, beanName);
 			if (current == null) {
 				return result;
@@ -586,7 +586,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
-					//第三个后置处理器入口,属性合并后置处理器，对@PostConstruct @PreDestroy @Resource进行扫描
+					//第三个后置处理器入口,属性合并后置处理器，对@PostConstruct @PreDestroy @Resource进行扫描并进行注册，设置注册和销毁的回调方法
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -1118,7 +1118,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
 		for (MergedBeanDefinitionPostProcessor processor : getBeanPostProcessorCache().mergedDefinition) {
-			//第三个后置处理器，扫描 @PostConstruct,@PreDestroy,@Resource
+			//第三个后置处理器，扫描 @PostConstruct,@PreDestroy,@Resource并进行注册，设置注册和销毁的回调方法
 			processor.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 		}
 	}
@@ -1846,7 +1846,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}, getAccessControlContext());
 		}
 		else {
-			//调用invokeAwareMethods方法，对Aware类的实现类回调实现方法设置属性
+			//调用invokeAwareMethods方法，对Aware类的实现类回调实现方法设置属性，如实现了BeanNameAware、BeanClassLoaderAware
 			invokeAwareMethods(beanName, bean);
 		}
 
