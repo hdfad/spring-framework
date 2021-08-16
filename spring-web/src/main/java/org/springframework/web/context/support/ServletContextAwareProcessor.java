@@ -38,6 +38,9 @@ import org.springframework.web.context.ServletContextAware;
  * @since 12.03.2004
  * @see org.springframework.web.context.ServletContextAware
  * @see org.springframework.web.context.support.XmlWebApplicationContext#postProcessBeanFactory
+ *
+ *
+ *
  */
 public class ServletContextAwareProcessor implements BeanPostProcessor {
 
@@ -104,6 +107,8 @@ public class ServletContextAwareProcessor implements BeanPostProcessor {
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		//如果类型是ServletContextAware类型则将当前类型设置到ServletContextAware中
+		//ServletContextAware接口的类，都可以取得ServletContext
 		if (getServletContext() != null && bean instanceof ServletContextAware) {
 			((ServletContextAware) bean).setServletContext(getServletContext());
 		}

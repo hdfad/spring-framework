@@ -54,6 +54,8 @@ import org.springframework.lang.Nullable;
  * @see DestructionAwareBeanPostProcessor
  * @see ConfigurableBeanFactory#addBeanPostProcessor
  * @see BeanFactoryPostProcessor
+ *
+ * bean后置处理器顶层接口，spring生命周期中的八大后置处理器扩展点都是BeanPostProcessor的子类，用于完成bean的初始化和初始化完成后的各种扩展
  */
 public interface BeanPostProcessor {
 

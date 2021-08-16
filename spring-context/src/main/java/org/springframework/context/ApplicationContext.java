@@ -61,6 +61,9 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 	/**
 	 * Return the unique id of this application context.
 	 * @return the unique id of the context, or {@code null} if none
+	 *
+	 * 返回该上下文的id(unique)
+	 *
 	 */
 	@Nullable
 	String getId();
@@ -68,18 +71,27 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 	/**
 	 * Return a name for the deployed application that this context belongs to.
 	 * @return a name for the deployed application, or the empty String by default
+	 *
+	 * 返回上下文所属应用的名字
+	 *
 	 */
 	String getApplicationName();
 
 	/**
 	 * Return a friendly name for this context.
 	 * @return a display name for this context (never {@code null})
+	 *
+	 * 返回友好（拓展？）名称
+	 *
 	 */
 	String getDisplayName();
 
 	/**
 	 * Return the timestamp when this context was first loaded.
 	 * @return the timestamp (ms) when this context was first loaded
+	 *
+	 * 返回上下文首次加载的时间
+	 *
 	 */
 	long getStartupDate();
 
@@ -87,6 +99,9 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 	 * Return the parent context, or {@code null} if there is no parent
 	 * and this is the root of the context hierarchy.
 	 * @return the parent context, or {@code null} if there is no parent
+	 *
+	 * 返回父类上下文
+	 *
 	 */
 	@Nullable
 	ApplicationContext getParent();
@@ -111,6 +126,9 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 	 * never been called), or if the context has been closed already
 	 * @see ConfigurableApplicationContext#refresh()
 	 * @see ConfigurableApplicationContext#getBeanFactory()
+	 *
+	 * 功能性的暴露自动装配的工厂，并不常用
+	 *
 	 */
 	AutowireCapableBeanFactory getAutowireCapableBeanFactory() throws IllegalStateException;
 
