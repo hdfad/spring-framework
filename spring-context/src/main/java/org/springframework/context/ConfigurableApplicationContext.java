@@ -67,6 +67,9 @@ public interface ConfigurableApplicationContext extends ApplicationContext, Life
 	 * to allow the LoadTimeWeaver to process all actual bean classes.
 	 * @since 2.5
 	 * @see org.springframework.instrument.classloading.LoadTimeWeaver
+	 *
+	 * loadTimeWeaver：代码织入
+	 *
 	 */
 	String LOAD_TIME_WEAVER_BEAN_NAME = "loadTimeWeaver";
 
