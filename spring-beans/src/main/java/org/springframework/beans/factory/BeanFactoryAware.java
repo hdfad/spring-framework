@@ -37,6 +37,8 @@ import org.springframework.beans.BeansException;
  * @see BeanClassLoaderAware
  * @see InitializingBean
  * @see org.springframework.context.ApplicationContextAware
+ *
+ * 声明BeanFactory
  */
 public interface BeanFactoryAware extends Aware {
 

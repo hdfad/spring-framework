@@ -38,6 +38,8 @@ import org.springframework.beans.factory.Aware;
  * @author Chris Beams
  * @since 2.0
  * @see NotificationPublisher
+ *
+ * JMX通知
  */
 public interface NotificationPublisherAware extends Aware {
 

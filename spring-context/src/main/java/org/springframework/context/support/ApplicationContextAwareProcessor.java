@@ -75,7 +75,14 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 		this.embeddedValueResolver = new EmbeddedValueResolver(applicationContext.getBeanFactory());
 	}
 
-
+	/**
+	 * 完成对部分Aware类的支持
+	 * 	invokeAwareInterfaces(bean)
+	 * @param bean the new bean instance
+	 * @param beanName the name of the bean
+	 * @return
+	 * @throws BeansException
+	 */
 	@Override
 	@Nullable
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -94,7 +101,7 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 
 		if (acc != null) {
 			AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-				invokeAwareInterfaces(bean);
+				invokeAwareInterfaces(bean);//对部分Aware接口实现类设值
 				return null;
 			}, acc);
 		}

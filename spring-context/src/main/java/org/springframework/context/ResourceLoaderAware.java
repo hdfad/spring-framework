@@ -58,6 +58,8 @@ import org.springframework.core.io.ResourceLoader;
  * @see org.springframework.core.io.Resource
  * @see org.springframework.core.io.ResourceLoader
  * @see org.springframework.core.io.support.ResourcePatternResolver
+ *
+ * 底层访问资源的加载器
  */
 public interface ResourceLoaderAware extends Aware {
 

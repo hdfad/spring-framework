@@ -30,6 +30,8 @@ import org.springframework.beans.factory.Aware;
  * @author Chris Beams
  * @since 1.1.1
  * @see ApplicationContextAware
+ *
+ * 国际化
  */
 public interface MessageSourceAware extends Aware {
 

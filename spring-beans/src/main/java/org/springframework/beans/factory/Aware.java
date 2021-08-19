@@ -31,6 +31,8 @@ package org.springframework.beans.factory;
  * @author Chris Beams
  * @author Juergen Hoeller
  * @since 3.1
+ *
+ * 通过aware将bean整合到spring框架中
  */
 public interface Aware {
 

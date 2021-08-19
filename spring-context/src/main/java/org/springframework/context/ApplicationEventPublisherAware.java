@@ -27,6 +27,8 @@ import org.springframework.beans.factory.Aware;
  * @author Chris Beams
  * @since 1.1.1
  * @see ApplicationContextAware
+ *
+ * 应用事件
  */
 public interface ApplicationEventPublisherAware extends Aware {
 

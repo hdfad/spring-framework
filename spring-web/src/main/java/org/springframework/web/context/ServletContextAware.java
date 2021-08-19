@@ -29,6 +29,8 @@ import org.springframework.beans.factory.Aware;
  * @author Chris Beams
  * @since 12.03.2004
  * @see ServletConfigAware
+ *
+ * ServletContext
  */
 public interface ServletContextAware extends Aware {
 

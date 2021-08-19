@@ -27,6 +27,10 @@ import org.springframework.instrument.classloading.LoadTimeWeaver;
  * @author Chris Beams
  * @since 2.5
  * @see org.springframework.context.ConfigurableApplicationContext#LOAD_TIME_WEAVER_BEAN_NAME
+ *
+ * 加载Spring Bean时织入第三方模块:AspectJ、
+ * 第三方jpa厂商支持 todo
+ *
  */
 public interface LoadTimeWeaverAware extends Aware {
 

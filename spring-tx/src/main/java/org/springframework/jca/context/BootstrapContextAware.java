@@ -29,6 +29,8 @@ import org.springframework.beans.factory.Aware;
  * @author Chris Beams
  * @since 2.5
  * @see javax.resource.spi.BootstrapContext
+ *
+ * 资源适配器BootstrapContext，如JCA,CCI
  */
 public interface BootstrapContextAware extends Aware {
 
