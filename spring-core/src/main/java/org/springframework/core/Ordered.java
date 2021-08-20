@@ -39,18 +39,23 @@ package org.springframework.core;
  * @see OrderComparator
  * @see org.springframework.core.annotation.Order
  * @see org.springframework.core.annotation.AnnotationAwareOrderComparator
+ *
+ *
+ * Spring是一个大量使用策略设计模式的框架，这意味着有很多相同接口的实现类，那么必定会有优先级的问题，spring为了解决排序问题，提供了Ordered接口
  */
 public interface Ordered {
 
 	/**
 	 * Useful constant for the highest precedence value.
 	 * @see java.lang.Integer#MIN_VALUE
+	 * 最高级(数值最小)
 	 */
 	int HIGHEST_PRECEDENCE = Integer.MIN_VALUE;
 
 	/**
 	 * Useful constant for the lowest precedence value.
 	 * @see java.lang.Integer#MAX_VALUE
+	 * 最低级(数值最大)
 	 */
 	int LOWEST_PRECEDENCE = Integer.MAX_VALUE;
 
@@ -65,6 +70,7 @@ public interface Ordered {
 	 * @return the order value
 	 * @see #HIGHEST_PRECEDENCE
 	 * @see #LOWEST_PRECEDENCE
+	 * 获取排序值
 	 */
 	int getOrder();
 
