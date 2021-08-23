@@ -90,7 +90,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * {@link Configuration @Configuration} classes
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
-		//调用无参构造方法，初始化容器，创建bean工厂，加载各种内部重要类的bean定义，用于初始化我们或者其他引入类
+		//调用无参构造方法，初始化容器，创建bean工厂,加载各种内部重要类的bean定义，用于初始化我们或者其他引入类
+		//填充BeanDefinitionRegistry,RootBeanDefinition,beanDefinitionMap,beanDefinitionNames 通过此步完成，后续就能直接使用
 		this();
 		//注册我们配置类的bean定义，初始化容器，从这个类开始
 		register(componentClasses);
