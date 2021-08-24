@@ -37,7 +37,7 @@ import java.util.function.Consumer;
  * @see org.springframework.context.event.ApplicationEventMulticaster
  * @see org.springframework.context.event.SmartApplicationListener
  * @see org.springframework.context.event.GenericApplicationListener
- * @see org.springframework.context.event.EventListener
+ * @see org.springframework.context.event.EventListener   除了直接实现ApplicationListener外还可以使用@EventListener
  */
 @FunctionalInterface
 public interface ApplicationListener<E extends ApplicationEvent> extends EventListener {
