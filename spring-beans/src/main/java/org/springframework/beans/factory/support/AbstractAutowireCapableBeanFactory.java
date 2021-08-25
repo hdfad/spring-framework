@@ -1132,7 +1132,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @return the shortcut-determined bean instance, or {@code null} if none
 	 */
 	/**
-	 * 实例化前后调用后置处理器
+	 * bean实例化前调用后置处理器
 	 * @param beanName
 	 * @param mbd
 	 * @return
@@ -1146,7 +1146,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
-					if (bean != null) {
+					if (bean != null) {//如果返回的bean不为null, 还需要执行实例化之后的处理器, 来保证流程的完整性
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 					}
 				}
