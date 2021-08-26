@@ -438,7 +438,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
-			//第九个后置处理器
+			//第八个后置处理器
 			//遍历执行所有BeanPostProcessor的postProcessAfterInitialization方法。
 			// 综上所述，bean的各种方法执行属性为，先执行构造方法，再执行后置管理器中的before方法及@PostContrust方法，最后执行后置处理器的after方法。
 			Object current = processor.postProcessAfterInitialization(result, beanName);
@@ -487,8 +487,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * Central method of this class: creates a bean instance,
 	 * populates the bean instance, applies post-processors, etc.
 	 * @see #doCreateBean
-	 *
-	 * 根据BeanDefinition创建bean
 	 */
 	@Override
 	protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
@@ -519,8 +517,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
-			//此步还未实例化bean，根据传入的BeanDefinition的beforeInstantiationResolved和beanName判断是否需要根据此流程解析bean并直接返回解析完成后的bean，从而不走doCreateBean的流程
-			//第一、二个后置处理器入口
+			//此步还未实例化bean，判断是否需要创建bean代理对象，且返回代理bean
+			//对于jdk还是cglib代理会根据DefaultAopProxyFactory下的createAopProxy创建指定的AopProxy实现类（jdk或cglib）
+			//第一个后置处理器入口
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
 				return bean;
@@ -532,7 +531,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
-			//第三到九 后置处理器入口
+			//第二到八 后置处理器入口
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -568,13 +567,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			throws BeanCreationException {
 
 		// Instantiate the bean.
-		// bean包装类对象，从createBeanInstance开始初始化一个bean对象然后进行属性填充、扩展，最后返回一个实例化完整的bean
 		BeanWrapper instanceWrapper = null;
 		if (mbd.isSingleton()) {
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
-			//第三个后置处理器入口，获取bean包装器BeanWrapper，首先会获取所有被@Autowired标记的构造器，然后根据合适的构造器进行对象的创建，并返回对象包装器BeanWrapper
+			//第二个后置处理器入口，获取bean包装器BeanWrapper，首先会获取所有被@Autowired标记的构造器，然后根据合适的构造器进行对象的创建，并返回对象包装器BeanWrapper
 			//此时已经实例化出对象了
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
@@ -589,7 +587,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
-					//第四个后置处理器入口,属性合并后置处理器，对@PostConstruct @PreDestroy @Resource进行扫描并进行注册，设置注册和销毁的回调方法
+					//第三个后置处理器入口,属性合并后置处理器，对@PostConstruct @PreDestroy @Resource进行扫描并进行注册，设置注册和销毁的回调方法
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -609,8 +607,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
-			//getEarlyBeanReference第五个后置处理器入口
-			//默认返回当前bean，如果BeanPostProcessor是AbstractAutoProxyCreator类型,则添加到earlyProxyReferences，并返回代理类
+			//getEarlyBeanReference第四个后置处理器入口
 			//addSingletonFactory:将当前beanName对应的bean添加到bean工厂中，提前暴露，通过synchronized保证只添加一次
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
@@ -620,9 +617,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object exposedObject = bean;
 		try {
 
-			//第六、七个后置处理器入口，对bean进行属性填充
+			//第五，六个后置处理器入口，对bean进行属性填充
 			populateBean(beanName, mbd, instanceWrapper);
-			//第八、九个后置处理器入口
+			//第七，八个后置处理器入口
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -985,13 +982,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @return the object to expose as bean reference
 	 */
 	protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
-		System.out.println(beanName+": 入第五个");
+		System.out.println(beanName+": 入第四个");
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
-				//第五个后置处理器，默认返回当前bean，如果BeanPostProcessor是AbstractAutoProxyCreator类型,则添加到earlyProxyReferences，并返回代理类
+				//第四个后置处理器
 				exposedObject = bp.getEarlyBeanReference(exposedObject, beanName);
-				System.out.println(beanName+": 第五个后置处理器");
+				System.out.println(beanName+": 第四个后置处理器");
 			}
 		}
 		return exposedObject;
@@ -1122,7 +1119,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
 		for (MergedBeanDefinitionPostProcessor processor : getBeanPostProcessorCache().mergedDefinition) {
-			//第四个后置处理器，扫描 @PostConstruct,@PreDestroy,@Resource并进行注册，设置注册和销毁的回调方法
+			//第三个后置处理器，扫描 @PostConstruct,@PreDestroy,@Resource并进行注册，设置注册和销毁的回调方法
 			processor.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 		}
 	}
@@ -1143,17 +1140,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	@Nullable
 	protected Object resolveBeforeInstantiation(String beanName, RootBeanDefinition mbd) {
 		Object bean = null;
-		//如果对象的beforeInstantiationResolved被标记为需要提前解析，BeanDefinition标记为在对象实例化前解决
-		//beforeInstantiationResolved:默认false
 		if (!Boolean.FALSE.equals(mbd.beforeInstantiationResolved)) {
 			// Make sure bean class is actually resolved at this point.
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
-					//第一个后置处理器
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
-						//第二个后置处理器
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 					}
 				}
@@ -1251,7 +1244,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Candidate constructors for autowiring?
-		//第三个后置处理器,获取所有的@Autowired标识的构造器，如果不存在则返回null数组
+		//第二个后置处理器,获取所有的@Autowired标识的构造器，如果不存在则返回null数组
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
@@ -1460,7 +1453,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// to support styles of field injection.
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (InstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().instantiationAware) {
-				//postProcessAfterInstantiation:第六个后置处理器:用于判断当前实例化完成的bean需不需要进行属性填充
+				//postProcessAfterInstantiation:第五个后置处理器:用于判断当前实例化完成的bean需不需要进行属性填充
 				if (!bp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
 					return;
 				}
@@ -1498,7 +1491,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					if (filteredPds == null) {
 						filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 					}
-					//第七个后置处理器，完成对属性的各种操作，注解中元数据的解析等，Spring的@Autowire注入,JSR330的@Inject以及JSR250的@Resource等注入操作都是通过这个方法完成 ，使用反射将注入的bean实例赋值给属性。
+					//第六个后置处理器，完成对属性的各种操作，注解中元数据的解析等，Spring的@Autowire注入,JSR330的@Inject以及JSR250的@Resource等注入操作都是通过这个方法完成 ，使用反射将注入的bean实例赋值给属性。
 					pvsToUse = bp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
 						return;
@@ -1861,7 +1854,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
 
-			//第八个后置处理器调用口，在init-method方法之前
+			//第七个后置处理器调用口，在init-method方法之前
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
@@ -1875,7 +1868,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
-			//第九个后置处理器调用口
+			//第八个后置处理器调用口
 			//遍历执行所有BeanPostProcessor的postProcessAfterInitialization方法。
 			//bean的各种方法执行属性为，先执行构造方法，再执行后置管理器中的before方法及@PostContrust方法，最后执行后置处理器的after方法。
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
