@@ -581,7 +581,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				//调用顺序二：后bean工厂后置处理器
 				// TODO: 2021/7/8
 				//https://blog.csdn.net/caihaijiang/article/details/35552859
-				//空方法，模板方法，子类进行实现扩充对一些bean的设置、注册、忽略
+				//空方法，模板方法，子类进行实现扩充对一些beanFactory的设置、注册、忽略
 				postProcessBeanFactory(beanFactory);
 
 				//start->end
@@ -597,7 +597,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				beanPostProcess.end();
 
 				// Initialize message source for this context.
-				//国际化相关属性
+				// 消息源初始化
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
