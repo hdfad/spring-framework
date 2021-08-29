@@ -110,12 +110,26 @@ public class InjectionMetadata {
 		this.checkedElements = checkedElements;
 	}
 
+	/**
+	 * applyMergedBeanDefinitionPostProcessorss方法会将创建的InjectedElement放入到InjectionMetadata中，
+	 * 然后会进行一次检验, 通过for循环, 将InjectedElement放入到checkedElements中,
+	 * 此处就是从checkedElements中取出InjectedElement
+	 *
+	 * 一个element有可能代表的是方法, 也有可能代表的是属性,
+	 *   而在InjectedElement中, Spring是通过接口编程, 放置的不是Method, 也不是Field, 而是它们的公共父类
+	 *   Member
+	 * @param target
+	 * @param beanName
+	 * @param pvs
+	 * @throws Throwable
+	 */
 	public void inject(Object target, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 		Collection<InjectedElement> checkedElements = this.checkedElements;
 		Collection<InjectedElement> elementsToIterate =
 				(checkedElements != null ? checkedElements : this.injectedElements);
 		if (!elementsToIterate.isEmpty()) {
 			for (InjectedElement element : elementsToIterate) {
+				//通过InjectedElement.inject对对象进行注入
 				element.inject(target, beanName, pvs);
 			}
 		}
@@ -222,7 +236,9 @@ public class InjectionMetadata {
 		protected void inject(Object target, @Nullable String requestingBeanName, @Nullable PropertyValues pvs)
 				throws Throwable {
 
+			//果说存在缓存, 那么就会从缓存中取到这个值, 如果缓存中不存在, 则开始走else语句
 			if (this.isField) {
+				//拿到Member对象, 将其向下转型为Field,
 				Field field = (Field) this.member;
 				ReflectionUtils.makeAccessible(field);
 				field.set(target, getResourceToInject(target, requestingBeanName));

@@ -106,6 +106,12 @@ public @interface Autowired {
 	/**
 	 * Declares whether the annotated dependency is required.
 	 * <p>Defaults to {@code true}.
+	 *
+	 * 不能有多个标记有@Autowired的构造函数
+	 * 如果'required' = true，则只有一个构造函数(最大)可以声明@Autowired
+	 * 如果'required' = false，则允许有多个构造函数。
+	 *
+	 * 否则异常：Found constructor with 'required' Autowired annotation already
 	 */
 	boolean required() default true;
 

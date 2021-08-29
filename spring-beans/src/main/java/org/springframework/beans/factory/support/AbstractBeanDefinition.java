@@ -167,6 +167,10 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	private boolean nonPublicAccessAllowed = true;
 
+	/**
+	 * 确定构造函数是是否使用宽松构造的方式,默认true
+	 * 默认使用宽松模式，即使多个构造函数的参数数量相同、类型存在父子类、接口实现类关系也能正常创建bean。非宽松模式则相反
+	 */
 	private boolean lenientConstructorResolution = true;
 
 	@Nullable

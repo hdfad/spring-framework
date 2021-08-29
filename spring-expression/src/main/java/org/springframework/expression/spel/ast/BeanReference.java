@@ -25,8 +25,8 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelMessage;
 
 /**
- * Represents a bean reference to a type, for example <tt>@foo</tt> or <tt>@'foo.bar'</tt>.
- * For a FactoryBean the syntax <tt>&foo</tt> can be used to access the factory itself.
+ * Represents a bean reference to a type, for example <com.xwj.tt>@foo</com.xwj.tt> or <com.xwj.tt>@'foo.bar'</com.xwj.tt>.
+ * For a FactoryBean the syntax <com.xwj.tt>&foo</com.xwj.tt> can be used to access the factory itself.
  *
  * @author Andy Clement
  */

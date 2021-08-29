@@ -83,14 +83,14 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 	public void setPropertyValues(PropertyValues pvs, boolean ignoreUnknown) throws BeansException {
 		setPropertyValues(pvs, ignoreUnknown, false);
 	}
-
+	//设置属性值
 	@Override
 	public void setPropertyValues(PropertyValues pvs, boolean ignoreUnknown, boolean ignoreInvalid)
 			throws BeansException {
 
 		List<PropertyAccessException> propertyAccessExceptions = null;
 		List<PropertyValue> propertyValues = (pvs instanceof MutablePropertyValues ?
-				((MutablePropertyValues) pvs).getPropertyValueList() : Arrays.asList(pvs.getPropertyValues()));
+				((MutablePropertyValues) pvs).getPropertyValueList() : Arrays.asList(pvs.getPropertyValues()));//所有属性
 
 		if (ignoreUnknown) {
 			this.suppressNotWritablePropertyException = true;
@@ -101,6 +101,7 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 				// here, if there is a critical failure such as no matching field.
 				// We can attempt to deal only with less serious exceptions.
 				try {
+					//设置属性值
 					setPropertyValue(pv);
 				}
 				catch (NotWritablePropertyException ex) {
