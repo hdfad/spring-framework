@@ -590,7 +590,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Invoke factory processors registered as beans in the context.
 
 				//调用所有的BeanFactoryPostProcessor实现类，执行postProcessBeanFactory对beanFactory或者BeanDefinition进行更改
-				//DI 流程
+				//xwj todo 重新深入一下源码
+				//猜测：既然这儿调用了后置处理器，那么beanFactory一定是已经产生并实例化完成，这里只是对beanFactory进行扩展
+				//通过后置处理器拓展beanFactory,拓展beanFactory、BeanDefinition等
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.

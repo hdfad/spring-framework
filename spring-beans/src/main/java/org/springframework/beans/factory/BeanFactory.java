@@ -194,7 +194,7 @@ public interface BeanFactory {
 	 * @throws BeanNotOfRequiredTypeException if the bean is not of the required type
 	 * @throws BeansException if the bean could not be created
 	 *
-	 * 通过bean的类型和类型来获取bean
+	 * 通过bean的名称来获取bean
 	 *
 	 */
 	<T> T getBean(String name, Class<T> requiredType) throws BeansException;

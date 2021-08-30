@@ -42,6 +42,10 @@ package org.springframework.core;
  *
  *
  * Spring是一个大量使用策略设计模式的框架，这意味着有很多相同接口的实现类，那么必定会有优先级的问题，spring为了解决排序问题，提供了Ordered接口
+ *
+ *  * spring中提供了2个可以给bean排序的接口
+ *  * @see org.springframework.core.Ordered
+ *  * @see org.springframework.core.PriorityOrdered
  */
 public interface Ordered {
 

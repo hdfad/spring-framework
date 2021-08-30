@@ -74,7 +74,7 @@ final class PostProcessorRegistrationDelegate {
 		// https://github.com/spring-projects/spring-framework/issues?q=PostProcessorRegistrationDelegate+is%3Aclosed+label%3A%22status%3A+declined%22
 
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
-		//存储已经被处理过的bean
+		//已经被处理过的bean
 		Set<String> processedBeans = new HashSet<>();
 		//如果bean工厂的类型是BeanDefinitionRegistry则通过
 		//BeanDefinitionRegistry和ConfigurableListableBeanFactory是怎么通过关系关联成一个类型的？
@@ -82,9 +82,12 @@ final class PostProcessorRegistrationDelegate {
 		//DefaultListableBeanFactory是spring默认的beanFactory，通过obtainFreshBeanFactory创建
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
+			//常规处理器
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
+			//需要注册处理器
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
+			//遍历所有的beanFactory，如果是BeanDefinitionRegistryPostProcessor类型，则属于需要注册后置处理器，否则是常规后置处理器
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =
@@ -104,18 +107,20 @@ final class PostProcessorRegistrationDelegate {
 			// TODO: 2021/8/21 分开初始化？
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
+			//如果beanFactory是根据类型匹配，且是PriorityOrdered类型，则优先注册，并添加到已经被处理过的bean
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+					//
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
-					processedBeans.add(ppName);
+					processedBeans.add(ppName);//添加到已经被处理过的bean
 				}
 			}
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			registryProcessors.addAll(currentRegistryProcessors);
-			//调用已被注册的后置处理器
+			//优先调用已被注册的后置处理器，已注册的bean
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
 			currentRegistryProcessors.clear();
 

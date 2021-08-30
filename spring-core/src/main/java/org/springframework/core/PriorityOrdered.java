@@ -44,7 +44,27 @@ package org.springframework.core;
  * @see org.springframework.beans.factory.config.PropertyOverrideConfigurer
  * @see org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
  *
- * 空类，
+ * 接口优先级排序，Ordered的子类
+ *
+ * 所有已知的实现类：
+ * 	AutowiredAnnotationBeanPostProcessor，
+	CommonAnnotationBeanPostProcessor会，
+	ConfigurationClassPostProcessor，
+	ExposeInvocationInterceptor，
+	InitDestroyAnnotationBeanPostProcessor，
+	PersistenceAnnotationBeanPostProcessor，
+	PlaceholderConfigurerSupport，
+	PreferencesPlaceholderConfigurer，
+	PropertyOverrideConfigurer，
+	PropertyPlaceholderConfigurer，
+	PropertyResourceConfigurer，
+	PropertySourcesPlaceholderConfigurer，
+	RequiredAnnotationBeanPostProcessor
+ *
+ *
+ * spring中提供了2个可以给bean排序的接口
+ * @see org.springframework.core.Ordered
+ * @see org.springframework.core.PriorityOrdered
  *
  */
 public interface PriorityOrdered extends Ordered {
