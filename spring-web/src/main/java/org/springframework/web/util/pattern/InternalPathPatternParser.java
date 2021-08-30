@@ -192,8 +192,8 @@ class InternalPathPatternParser {
 	 * Just hit a ':' and want to jump over the regex specification for this
 	 * variable. pos will be pointing at the ':', we want to skip until the }.
 	 * <p>
-	 * Nested {...} pairs don't have to be escaped: <tt>/abc/{var:x{1,2}}/def</tt>
-	 * <p>An escaped } will not be treated as the end of the regex: <tt>/abc/{var:x\\{y:}/def</tt>
+	 * Nested {...} pairs don't have to be escaped: <com.xwj.tt>/abc/{var:x{1,2}}/def</com.xwj.tt>
+	 * <p>An escaped } will not be treated as the end of the regex: <com.xwj.tt>/abc/{var:x\\{y:}/def</com.xwj.tt>
 	 * <p>A separator that should not indicate the end of the regex can be escaped:
 	 */
 	private void skipCaptureRegex() {

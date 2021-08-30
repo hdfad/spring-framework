@@ -238,7 +238,7 @@ public class TypeDescriptor implements Serializable {
 	 * <p>As of Spring Framework 4.2, this method supports arbitrary levels
 	 * of meta-annotations.
 	 * @param annotationType the annotation type
-	 * @return <tt>true</tt> if the annotation is present
+	 * @return <com.xwj.tt>true</com.xwj.tt> if the annotation is present
 	 */
 	public boolean hasAnnotation(Class<? extends Annotation> annotationType) {
 		if (this.annotatedElement.isEmpty()) {

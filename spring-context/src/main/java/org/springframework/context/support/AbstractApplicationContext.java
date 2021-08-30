@@ -568,6 +568,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			// Tell the subclass to refresh the internal bean factory.
 			//obtainFreshBeanFactory：销毁关闭旧工厂，通过new的方式创建DefaultListableBeanFactory工厂，
 			// 通过BeanDefinitionReader读取xml或者注解等配置信息，并装载在BeanDefinition容器中
+			// 此处就是就是ioc流程
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -589,6 +590,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Invoke factory processors registered as beans in the context.
 
 				//调用所有的BeanFactoryPostProcessor实现类，执行postProcessBeanFactory对beanFactory或者BeanDefinition进行更改
+				//DI 流程
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.

@@ -167,7 +167,7 @@ final class AttributeMethods {
 	 * @param index the index of the attribute to return
 	 * @return the attribute method
 	 * @throws IndexOutOfBoundsException if the index is out of range
-	 * (<tt>index &lt; 0 || index &gt;= size()</tt>)
+	 * (<com.xwj.tt>index &lt; 0 || index &gt;= size()</com.xwj.tt>)
 	 */
 	Method get(int index) {
 		return this.attributeMethods[index];

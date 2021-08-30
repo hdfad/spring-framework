@@ -123,16 +123,26 @@ class ConstructorResolver {
 	 * @param explicitArgs argument values passed in programmatically via the getBean method,
 	 * or {@code null} if none (-> use constructor argument values from bean definition)
 	 * @return a BeanWrapper for the new instance
+	 *
+	 *
+	 *
+	 * 选择构造函数，根据构造函数进行初始化对象，如果只有一个构造函数注入，则直接使用当前构造函数经过BeanUtils.instantiateClass(ctor, args)反射生成一个对象实例并封装成BeanWrapper
+	 * 如果存在多个构造函数注入的情况，首先使用AutowireUtils.sortConstructors对构造方法进行排序，public构造函数优先参数数量降序、非public构造函数参数数量降序
+	 * 然后根据AbstractBeanDefinition中的lenientConstructorResolution宽松构造函数解析标识进行判断，
+	 * 默认为true，使用getTypeDifferenceWeight宽松模式计算权重，若为false则使用getAssignabilityWeight非宽松模式计算权重
+	 * 通过权重计算选择权重小的构造函数通过反射BeanUtils.instantiateClass(ctor, args)生成一个实例对象封装成BeanWrapper
+	 * 如果权重相同且lenientConstructorResolution为非宽松的构造函数解析标识，则抛出异常
+	 * 最终将初始化完成的BeanWrapper包裹对象返回
 	 */
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			@Nullable Constructor<?>[] chosenCtors, @Nullable Object[] explicitArgs) {
-
+		//构造BeanWrapperImpl
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
-		Constructor<?> constructorToUse = null;
+		Constructor<?> constructorToUse = null;//要使用的构造函数
 		ArgumentsHolder argsHolderToUse = null;
-		Object[] argsToUse = null;
+		Object[] argsToUse = null; //constructorToUse 参数
 
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
@@ -169,7 +179,8 @@ class ConstructorResolver {
 							"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 				}
 			}
-
+			/*如果构造函数有多个的情况下需要选择合适的构造函数进行对象创建*/
+			//如果只有一个被注入的构造方法
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
 				if (uniqueCandidate.getParameterCount() == 0) {
@@ -184,6 +195,7 @@ class ConstructorResolver {
 			}
 
 			// Need to resolve the constructor.
+			/*如果有多个被注入的构造方法，需要进行选择*/
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
 			ConstructorArgumentValues resolvedValues = null;
@@ -197,12 +209,13 @@ class ConstructorResolver {
 				resolvedValues = new ConstructorArgumentValues();
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
-
+			//排序，public构造函数优先参数数量降序、非public构造函数参数数量降序
 			AutowireUtils.sortConstructors(candidates);
 			int minTypeDiffWeight = Integer.MAX_VALUE;
+			//存在相同权重的构造函数则添加到ambiguousConstructors中，最后根据lenientConstructorResolution判断，如果lenientConstructorResolution=false，则抛出异常
 			Set<Constructor<?>> ambiguousConstructors = null;
 			Deque<UnsatisfiedDependencyException> causes = null;
-
+			/*遍历注入的构造方法*/
 			for (Constructor<?> candidate : candidates) {
 				int parameterCount = candidate.getParameterCount();//获取构造器中存在几个参数
 
@@ -216,10 +229,10 @@ class ConstructorResolver {
 				}
 
 				ArgumentsHolder argsHolder;
-				Class<?>[] paramTypes = candidate.getParameterTypes();//获取参数的class
+				Class<?>[] paramTypes = candidate.getParameterTypes();//获取构造函数中的形参类的class
 				if (resolvedValues != null) {
 					try {
-						String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, parameterCount);//参数名称
+						String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, parameterCount);//形参名字集合
 						if (paramNames == null) {
 							ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
 							if (pnd != null) {
@@ -248,17 +261,21 @@ class ConstructorResolver {
 					}
 					argsHolder = new ArgumentsHolder(explicitArgs);
 				}
-
+				//根据形参判断权重，默认lenientConstructorResolution=trrue，使用getTypeDifferenceWeight宽松模式获取权重
+				//非宽松模式权重计算:getAssignabilityWeight
+				//宽松模式权重计算:getTypeDifferenceWeight
 				int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
 				// Choose this constructor if it represents the closest match.
+				//选取权重最小的设置给minTypeDiffWeight，并使用此构造函数使用
 				if (typeDiffWeight < minTypeDiffWeight) {
-					constructorToUse = candidate;
-					argsHolderToUse = argsHolder;
-					argsToUse = argsHolder.arguments;
+					constructorToUse = candidate;//使用当前权重小的构造函数
+					argsHolderToUse = argsHolder;//
+					argsToUse = argsHolder.arguments;//使用当前权重小的构造函数的参数
 					minTypeDiffWeight = typeDiffWeight;
 					ambiguousConstructors = null;
 				}
+				//如果权重相等，则添加到ambiguousConstructors
 				else if (constructorToUse != null && typeDiffWeight == minTypeDiffWeight) {
 					if (ambiguousConstructors == null) {
 						ambiguousConstructors = new LinkedHashSet<>();
@@ -293,10 +310,21 @@ class ConstructorResolver {
 		}
 
 		Assert.state(argsToUse != null, "Unresolved constructor arguments");
+		//bw.setBeanInstance：将实例封装成BeanWrapperImpl对象
+		//instantiate：根据合适的构造函数初始化对象，底层使用BeanUtils.instantiateClass(ctor, args)反射生成一个对象实例
 		bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse));
 		return bw;
 	}
 
+	/**
+	 * 初始化对象
+	 * 使用BeanUtils.instantiateClass(ctor, args)反射生成一个对象实例 -> strategy.instantiate
+	 * @param beanName
+	 * @param mbd
+	 * @param constructorToUse
+	 * @param argsToUse
+	 * @return
+	 */
 	private Object instantiate(
 			String beanName, RootBeanDefinition mbd, Constructor<?> constructorToUse, Object[] argsToUse) {
 
@@ -945,6 +973,12 @@ class ConstructorResolver {
 			this.preparedArguments = args;
 		}
 
+		/**
+		 * 宽松模式计算权重
+		 * xwj todo 待研究
+		 * @param paramTypes
+		 * @return
+		 */
 		public int getTypeDifferenceWeight(Class<?>[] paramTypes) {
 			// If valid arguments found, determine type difference weight.
 			// Try type difference weight on both the converted arguments and
@@ -955,6 +989,12 @@ class ConstructorResolver {
 			return Math.min(rawTypeDiffWeight, typeDiffWeight);
 		}
 
+		/**
+		 * 非宽松模式计算权重
+		 * xwj todo 待研究
+		 * @param paramTypes
+		 * @return
+		 */
 		public int getAssignabilityWeight(Class<?>[] paramTypes) {
 			for (int i = 0; i < paramTypes.length; i++) {
 				if (!ClassUtils.isAssignableValue(paramTypes[i], this.arguments[i])) {

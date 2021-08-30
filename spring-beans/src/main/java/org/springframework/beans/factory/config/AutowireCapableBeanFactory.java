@@ -108,7 +108,7 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * @deprecated as of Spring 3.0: If you are using mixed autowiring strategies,
 	 * prefer annotation-based autowiring for clearer demarcation of autowiring needs.
 	 */
-	//自动选择，已启用
+	//自动选择，已弃用
 	@Deprecated
 	int AUTOWIRE_AUTODETECT = 4;
 
