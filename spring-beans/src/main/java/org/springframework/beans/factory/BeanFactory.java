@@ -119,26 +119,34 @@ import org.springframework.lang.Nullable;
  *
  * bean容器根接口，使用工厂模式，根据bean定义信息创建独立bean对象（原型或单例模式），DefaultListableBeanFactory贯穿的整个容器的基本工厂类，也是spring 默认创建的bean工厂
  * 完整的初始化方法集及其标准顺序：
+ * 		后置处理器回调：
  * 		BeanNameAware的setBeanName
  * 		BeanClassLoaderAware的setBeanClassLoader
  *		BeanFactoryAware的setBeanFactory
+ *		-- 上述调用处于
+ *             @see org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#invokeAwareMethods
  *		EnvironmentAware的setEnvironment
  *		EmbeddedValueResolverAware的setEmbeddedValueResolver
  *		ResourceLoaderAware的setResourceLoader
- *		(仅在应用程序上下文中运行时适用)
- *			ApplicationEventPublisherAware的setApplicationEventPublisher
- *			MessageSourceAware的setMessageSource
- *			ApplicationContextAware的setApplicationContext
- *			ServletContextAware的setServletContext
- *		(仅适用于在web应用程序上下文中运行)
- *			postProcessBeforeInitialization的BeanPostProcessors
- *			InitializingBean的afterPropertiesSet
- *			init-method
- *			postProcessAfterInitialization的BeanPostProcessors
+ *		ApplicationEventPublisherAware的setApplicationEventPublisher
+ *		MessageSourceAware的setMessageSource
+ *		ApplicationStartupAware的setApplicationStartup
+ *		ApplicationContextAware的setApplicationContext
+ *		-- 上述调用处于
+ * 				@see org.springframework.context.support.ApplicationContextAwareProcessor#invokeAwareInterfaces
+ *		ServletContextAware的setServletContext
+ *		ServletConfigAware的setServletConfig
+ *		-- 上述调用处于 web下
+ *				@see org.springframework.web.context.support.ServletContextAwareProcessor#postProcessBeforeInitialization
+ *
+ *		postProcessBeforeInitialization的BeanPostProcessors
+ *		InitializingBean的afterPropertiesSet
+ *		init-method
+ *		postProcessAfterInitialization的BeanPostProcessors
  *		在关闭bean工厂时，应用以下生命周期方法:
- *			postProcessBeforeDestruction的DestructionAwareBeanPostProcessors
- *			DisposableBean的destroy
- *			destroy-method
+ *		postProcessBeforeDestruction的DestructionAwareBeanPostProcessors
+ *		DisposableBean的destroy
+ *		destroy-method
  */
 public interface BeanFactory {
 

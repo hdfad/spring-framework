@@ -422,7 +422,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {//循环遍历所有的BeanPostProcessor执行postProcessBeforeInitialization
 			//第七个后置处理器:调用此接口前bean已经被实例化完成，并且完成了属性的填充，因此这个过程属于后续的bean的初始化过程
 			//如果处理这个对象的beanFactory中被注册了ApplicationContextAwareProcessor、LoadTimeWeaverAwareProcessor就会对部分注解进行扫描注册，设置生命函数（注册销毁），添加AspectJ支持等
-			//通过在prepareBeanFactory方法中的beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));注入对ApplicationContextAwareProcessor支持，然后完成对部分Aware接口实现类的设值
+			//通过在prepareBeanFactory方法中的beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+			// 注入对ApplicationContextAwareProcessor支持，然后完成对部分Aware接口实现类的回调
+			// 通过ApplicationContextAwareProcessor的invokeAwareInterfaces调用Aware接口并回调set方法，包括：
+			//   EnvironmentAware->setEnvironment;
+			//   EmbeddedValueResolverAware->setEmbeddedValueResolver;
+			//   ResourceLoaderAware->setResourceLoader;
+			//   ApplicationEventPublisherAware->setApplicationEventPublisher;
+			//   MessageSourceAware->setMessageSource;
+			//   ApplicationStartupAware->setApplicationStartup;
+			//   ApplicationContextAware->setApplicationContext
+			// web的：通过ServletContextAwareProcessor的postProcessBeforeInitialization方法调用Aware接口并回调set方法，包括：
+			//   ServletContextAware->setServletContext;
+			//   ServletConfigAware->setServletConfig;
 			Object current = processor.postProcessBeforeInitialization(result, beanName);
 			if (current == null) {
 				return result;
@@ -1977,6 +1989,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		return wrappedBean;
 	}
 
+	/**
+	 * 解析BeanNameAware、BeanClassLoaderAware、BeanFactoryAware的实现接口
+	 * @param beanName
+	 * @param bean
+	 */
 	private void invokeAwareMethods(String beanName, Object bean) {
 		if (bean instanceof Aware) {
 			if (bean instanceof BeanNameAware) {
