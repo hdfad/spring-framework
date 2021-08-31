@@ -577,11 +577,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
-				//模板方法，【后置处理器Bean工厂】
-				//调用顺序一：先bean定义注册后置处理器
-				//调用顺序二：后bean工厂后置处理器
-				// TODO: 2021/7/8
-				//https://blog.csdn.net/caihaijiang/article/details/35552859
 				//空方法，模板方法，子类进行实现扩充对一些beanFactory的设置、注册、忽略
 				postProcessBeanFactory(beanFactory);
 
@@ -593,6 +588,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				//xwj todo 重新深入一下源码
 				//猜测：既然这儿调用了后置处理器，那么beanFactory一定是已经产生并实例化完成，这里只是对beanFactory进行扩展
 				//通过后置处理器拓展beanFactory,拓展beanFactory、BeanDefinition等
+				/*
+				* 主要是处理BeanDefinitionRegistryPostProcessor和BeanFactoryPostProcessor
+				* BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor
+				* 是Spring再初始化前一个重要的扩展点。
+				* */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
