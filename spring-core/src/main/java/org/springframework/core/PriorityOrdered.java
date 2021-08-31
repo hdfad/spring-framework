@@ -66,6 +66,11 @@ package org.springframework.core;
  * @see org.springframework.core.Ordered
  * @see org.springframework.core.PriorityOrdered
  *
+ * PriorityOrdered的优先级高于Ordered
+ *
+ * 若2个对象中有一个对象实现了PriorityOrdered接口，那么这个对象的优先级比Ordered更高。
+ * 若2个对象都是PriorityOrdered或Ordered接口的实现类，那么比较Ordered接口的getOrder方法得到order值，值越低，优先级越高
+ *
  */
 public interface PriorityOrdered extends Ordered {
 }
