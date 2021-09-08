@@ -283,8 +283,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
+		//获取所有的BeanDefinitionName数组
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
+		//再通过beanDefinitionName获取到对应的bean定义
 		for (String beanName : candidateNames) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
@@ -292,17 +294,25 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
+			//判断类是否为配置类，何为配置类：通过@Configuration注解标识的类，将注解标识的类添加到configCandidates中
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
 		}
 
 		// Return immediately if no @Configuration classes were found
+		// 如果不存在@Configuration配置的类则直接进行返回
 		if (configCandidates.isEmpty()) {
 			return;
 		}
 
+		//======在经历到此步时，所有的类都是被@Configuration标识的类=========
+
 		// Sort by previously determined @Order value, if applicable
+		/*
+		* 获取所有配置类的order值，对@order标识的类排序如果没有或者为null则返回顺序为最低，数值为Integer.MAX_VALUE
+		* 并按照order值进行排序
+		* */
 		configCandidates.sort((bd1, bd2) -> {
 			int i1 = ConfigurationClassUtils.getOrder(bd1.getBeanDefinition());
 			int i2 = ConfigurationClassUtils.getOrder(bd2.getBeanDefinition());

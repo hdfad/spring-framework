@@ -568,7 +568,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			// Tell the subclass to refresh the internal bean factory.
 			//obtainFreshBeanFactory：销毁关闭旧工厂，通过new的方式创建DefaultListableBeanFactory工厂，
 			// 通过BeanDefinitionReader读取xml或者注解等配置信息，并装载在BeanDefinition容器中
-			// 此处就是就是ioc流程
+			// 此处就是就是ioc流程工厂的创建流程
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -585,19 +585,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Invoke factory processors registered as beans in the context.
 
 				//http://www.itsoku.com/article/294
-				//调用所有的BeanFactoryPostProcessor实现类，执行postProcessBeanFactory对beanFactory或者BeanDefinition进行更改
-				//xwj todo 重新深入一下源码
-				//猜测：既然这儿调用了后置处理器，那么beanFactory一定是已经产生并实例化完成，这里只是对beanFactory进行扩展
-				//通过后置处理器拓展beanFactory,拓展beanFactory、BeanDefinition等
 				/*
 				* 主要是处理BeanDefinitionRegistryPostProcessor和BeanFactoryPostProcessor
 				* BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor
-				* 是Spring再初始化前一个重要的扩展点。
-				* 所有bean的注册必须在此阶段进行，其他阶段不要再进行bean的注册，所以bean的初始化
-				*
-				*
+				* 是Spring在初始化前一个重要的扩展点。
+				* 所有bean的注册必须在此阶段进行，其他阶段不要再进行bean的注册，所以bean的注册只有这一步，其他地方不在进行
 				* 对bean工厂后置处理器实现类进行调用，调用顺序上优先调用实现了PriorityOrdered的实现类进行调用，再调用order实现类，最后调用其他的
-				*
 				* 整个方法围绕2个接口BeanFactoryPostProcessor和BeanDefinitionRegistryPostProcessor
 				* 顺序上BeanDefinitionRegistryPostProcessor优先于BeanFactoryPostProcessor，与PriorityOrdered和Ordered有关
 				* 		原因是在invokeBeanFactoryPostProcessors中会先获取BeanDefinitionRegistryPostProcessor接口下实现了PriorityOrdered的类bean，再获取实现了Ordered的实现类bean，
@@ -605,7 +598,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				* 		所以流程上会优先调用PriorityOrdered的BeanDefinitionRegistryPostProcessor实现类，再调用Ordered的BeanDefinitionRegistryPostProcessor实现类
 				*	invokeBeanFactoryPostProcessors重要做2件事：
 				*		Ⅰ：bean注册：调用BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry，这一阶段对所有bean进行注册，bean的注册阶段在此完成，其他地方不会再进行bean注册
+				* 			对于@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean注解的扫描填充通过ConfigurationClassParser#doProcessConfigurationClass进行
 				*		Ⅱ：ben扩展：通过invokeBeanFactoryPostProcessors调用BeanFactoryPostProcessor的postProcessBeanFactory对BeanDefinitionRegistry进行修改或补充
+				*
+				*
+				*
+				* 与ioc关系：di阶段通过此完成
 				* */
 				invokeBeanFactoryPostProcessors(beanFactory);
 

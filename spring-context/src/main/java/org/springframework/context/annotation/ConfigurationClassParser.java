@@ -252,6 +252,7 @@ class ConfigurationClassParser {
 		while (sourceClass != null);
 
 		this.configurationClasses.put(configClass, configClass);
+		System.out.println("解析的配置文件有======================>："+configurationClasses.get(configClass));
 	}
 
 	/**
@@ -261,6 +262,9 @@ class ConfigurationClassParser {
 	 * @param configClass the configuration class being build
 	 * @param sourceClass a source class
 	 * @return the superclass, or {@code null} if none found or previously processed
+	 *
+	 * 读取注解配置：
+	 * 		装载含有@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean的方法
 	 */
 	@Nullable
 	protected final SourceClass doProcessConfigurationClass(

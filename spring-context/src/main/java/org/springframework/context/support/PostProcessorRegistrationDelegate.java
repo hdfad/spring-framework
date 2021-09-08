@@ -117,7 +117,7 @@ final class PostProcessorRegistrationDelegate {
 					BeanDefinitionRegistryPostProcessor registryProcessor =(BeanDefinitionRegistryPostProcessor) postProcessor;
 					// 直接执行BeanDefinitionRegistryPostProcessor接口的postProcessBeanDefinitionRegistry方法
 
-					//第一阶段：Bean注册阶段，所有bean的注册都会在此阶段完成，按照规范，所有bean的注册必须在此阶段进行，其他阶段不要再进行bean的注册。
+					//第一阶段：Bean注册阶段，所有bean的扫描、解析、注册都会在此阶段完成，按照规范，所有bean的注册必须在此阶段进行，其他阶段不要再进行bean的注册。
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);
 					//  添加到registryProcessors(用于最后执行postProcessBeanFactory方法)
 					registryProcessors.add(registryProcessor);
@@ -410,7 +410,6 @@ final class PostProcessorRegistrationDelegate {
 		/*
 		*
 		* 遍历所有的postProcessor集合，执行postProcessBeanDefinitionRegistry方法
-		* 所有bean的注册必须在此阶段进行，其他阶段不要再进行bean的注册
 		* */
 		for (BeanDefinitionRegistryPostProcessor postProcessor : postProcessors) {
 			StartupStep postProcessBeanDefRegistry = applicationStartup.start("spring.context.beandef-registry.post-process")
