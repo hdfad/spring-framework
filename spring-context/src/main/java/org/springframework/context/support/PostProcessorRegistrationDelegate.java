@@ -102,7 +102,8 @@ final class PostProcessorRegistrationDelegate {
 		Set<String> processedBeans = new HashSet<>();
 		/*
 		* 判断beanFactory是否是BeanDefinitionRegistry类型
-		* beanFactory默认是 DefaultListableBeanFactory  impl  BeanDefinitionRegistry
+		* beanFactory默认是 DefaultListableBeanFactory  是  BeanDefinitionRegistry的实现类
+		* 所以beanFactory默认条件下就是BeanDefinitionRegistry类型
 		* */
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
@@ -118,6 +119,7 @@ final class PostProcessorRegistrationDelegate {
 					// 直接执行BeanDefinitionRegistryPostProcessor接口的postProcessBeanDefinitionRegistry方法
 
 					//第一阶段：Bean注册阶段，所有bean的扫描、解析、注册都会在此阶段完成，按照规范，所有bean的注册必须在此阶段进行，其他阶段不要再进行bean的注册。
+					//传入beanFactory，调用BeanDefinitionRegistryPostProcessor#postProcessBeanDefinitionRegistry
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);
 					//  添加到registryProcessors(用于最后执行postProcessBeanFactory方法)
 					registryProcessors.add(registryProcessor);

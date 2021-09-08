@@ -122,10 +122,12 @@ class ConfigurationClassBeanDefinitionReader {
 	/**
 	 * Read {@code configurationModel}, registering bean definitions
 	 * with the registry based on its contents.
+	 * 通过ConfigurationClass加载BeanDefinitions
 	 */
 	public void loadBeanDefinitions(Set<ConfigurationClass> configurationModel) {
 		TrackedConditionEvaluator trackedConditionEvaluator = new TrackedConditionEvaluator();
 		for (ConfigurationClass configClass : configurationModel) {
+			//通过ConfigurationClass加载BeanDefinitions
 			loadBeanDefinitionsForConfigurationClass(configClass, trackedConditionEvaluator);
 		}
 	}
@@ -150,6 +152,7 @@ class ConfigurationClassBeanDefinitionReader {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
+			//循环BeanMethod集合装载@Bean的model
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
@@ -182,14 +185,18 @@ class ConfigurationClassBeanDefinitionReader {
 	/**
 	 * Read the given {@link BeanMethod}, registering bean definitions
 	 * with the BeanDefinitionRegistry based on its contents.
+	 *
+	 * https://www.cxyzjd.com/article/vistaed/107695694#loadBeanDefinitionsForConfigurationClass_204
 	 */
 	@SuppressWarnings("deprecation")  // for RequiredAnnotationBeanPostProcessor.SKIP_REQUIRED_CHECK_ATTRIBUTE
 	private void loadBeanDefinitionsForBeanMethod(BeanMethod beanMethod) {
 		ConfigurationClass configClass = beanMethod.getConfigurationClass();
+		//获取bean标识方法及方法名
 		MethodMetadata metadata = beanMethod.getMetadata();
 		String methodName = metadata.getMethodName();
 
 		// Do we need to mark the bean as skipped by its condition?
+		//判断是否跳过，判断流程？
 		if (this.conditionEvaluator.shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN)) {
 			configClass.skippedBeanMethods.add(methodName);
 			return;
@@ -198,15 +205,20 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		//获取@Bean标识的属性，进行解析
 		AnnotationAttributes bean = AnnotationConfigUtils.attributesFor(metadata, Bean.class);
 		Assert.state(bean != null, "No @Bean annotation attributes");
 
 		// Consider name and any aliases
+		//获取所有别名
 		List<String> names = new ArrayList<>(Arrays.asList(bean.getStringArray("name")));
+		//获取第一个别名,没有别名就用方法名，有则将第一个移除再返回
 		String beanName = (!names.isEmpty() ? names.remove(0) : methodName);
 
 		// Register aliases even when overridden
+		//当存在多个别名时，循环多个别名
 		for (String alias : names) {
+			//注册别名，通过一个ConcurrentHashMap映射别名信息，上一个别名做为key，下一个别名作为值，因为 names.remove(0)会将上一个别名移除掉
 			this.registry.registerAlias(beanName, alias);
 		}
 
@@ -223,6 +235,9 @@ class ConfigurationClassBeanDefinitionReader {
 		ConfigurationClassBeanDefinition beanDef = new ConfigurationClassBeanDefinition(configClass, metadata, beanName);
 		beanDef.setSource(this.sourceExtractor.extractSource(metadata, configClass.getResource()));
 
+		/*
+		* 判断@bean的方法是否为静态方法
+		* */
 		if (metadata.isStatic()) {
 			// static @Bean method
 			if (configClass.getMetadata() instanceof StandardAnnotationMetadata) {

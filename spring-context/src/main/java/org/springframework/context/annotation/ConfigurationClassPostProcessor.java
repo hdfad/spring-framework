@@ -137,6 +137,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 	private final Set<Integer> factoriesPostProcessed = new HashSet<>();
 
+	/**
+	 * Bean定义阅读器配置类
+	 */
 	@Nullable
 	private ConfigurationClassBeanDefinitionReader reader;
 
@@ -252,6 +255,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		this.registriesPostProcessed.add(registryId);
 
+		/*
+		* 注册配置类
+		* */
 		processConfigBeanDefinitions(registry);
 	}
 
@@ -280,10 +286,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	/**
 	 * Build and validate a configuration model based on the registry of
 	 * {@link Configuration} classes.
+	 *
+	 * 将配置类注册
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
+		//所有@Configuration注解标识的类
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
-		//获取所有的BeanDefinitionName数组
+		//获取所有的BeanDefinitionName
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
 		//再通过beanDefinitionName获取到对应的bean定义
@@ -338,15 +347,19 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 
 		// Parse each @Configuration class
+		//类解析器
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
 
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
+		//已经解析的ConfigurationClass
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
 			StartupStep processConfig = this.applicationStartup.start("spring.context.config-classes.parse");
+			//解析所有的配置类，并添加到配置类容器中
 			parser.parse(candidates);
+			//验证
 			parser.validate();
 
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
@@ -354,11 +367,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 			// Read the model and create bean definitions based on its content
 			if (this.reader == null) {
+				//实例化配置类bean定义阅读器
 				this.reader = new ConfigurationClassBeanDefinitionReader(
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
+			//将配置类加载到bean定义信息中
 			this.reader.loadBeanDefinitions(configClasses);
+			//添加到已经解析的类中
 			alreadyParsed.addAll(configClasses);
 			processConfig.tag("classCount", () -> String.valueOf(configClasses.size())).end();
 
