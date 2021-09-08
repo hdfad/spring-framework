@@ -61,14 +61,25 @@ final class PostProcessorRegistrationDelegate {
 	 * @param beanFactory
 	 * @param beanFactoryPostProcessors
 	 *
+	 * ConfigurableListableBeanFactory与DefaultListableBeanFactory关系：
+	 * 		ConfigurableListableBeanFactory是DefaultListableBeanFactory的父接口
 	 * 重要类跳转：
 	 * @see org.springframework.beans.factory.support.DefaultListableBeanFactory
 	 *
 	 * 参考：
 	 * 	https://segmentfault.com/a/1190000040357076
+	 * 	http://www.itsoku.com/article/294
 	 *
-	 * 未完，差后续分析和总结 xwj todo
 	 * 对bean工厂后置处理器实现类进行调用，调用顺序上优先调用实现了PriorityOrdered的实现类进行调用，再调用order实现类，最后调用其他的
+	 *
+	 * 整个方法围绕2个接口BeanFactoryPostProcessor和BeanDefinitionRegistryPostProcessor
+	 * 顺序上BeanDefinitionRegistryPostProcessor优先于BeanFactoryPostProcessor，与PriorityOrdered和Ordered有关
+	 * 		原因是在invokeBeanFactoryPostProcessors中会先获取BeanDefinitionRegistryPostProcessor接口下实现了PriorityOrdered的类bean，再获取实现了Ordered的实现类bean，
+	 * 		然后分别调用invokeBeanDefinitionRegistryPostProcessors进行处理，
+	 * 		所以流程上会优先调用PriorityOrdered的BeanDefinitionRegistryPostProcessor实现类，再调用Ordered的BeanDefinitionRegistryPostProcessor实现类
+	 *	invokeBeanFactoryPostProcessors重要做2件事：
+	 *		Ⅰ：bean注册：调用BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry，这一阶段对所有bean进行注册，bean的注册阶段在此完成，其他地方不会再进行bean注册
+	 *		Ⅱ：ben扩展：通过invokeBeanFactoryPostProcessors调用BeanFactoryPostProcessor的postProcessBeanFactory对BeanDefinitionRegistry进行修改或补充
 	 */
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
@@ -105,6 +116,8 @@ final class PostProcessorRegistrationDelegate {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =(BeanDefinitionRegistryPostProcessor) postProcessor;
 					// 直接执行BeanDefinitionRegistryPostProcessor接口的postProcessBeanDefinitionRegistry方法
+
+					//第一阶段：Bean注册阶段，所有bean的注册都会在此阶段完成，按照规范，所有bean的注册必须在此阶段进行，其他阶段不要再进行bean的注册。
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);
 					//  添加到registryProcessors(用于最后执行postProcessBeanFactory方法)
 					registryProcessors.add(registryProcessor);
@@ -120,6 +133,7 @@ final class PostProcessorRegistrationDelegate {
 			// Separate between BeanDefinitionRegistryPostProcessors that implement
 			// PriorityOrdered, Ordered, and the rest.
 
+			/*根据实现PriorityOrdered或者Ordered接口按照顺序进行处理，PriorityOrdered.getOrder() asc,Ordered.getOrder() asc*/
 			//currentRegistryProcessors：当前需要处理的后置处理器BeanDefinitionRegistryPostProcessor
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
@@ -128,6 +142,8 @@ final class PostProcessorRegistrationDelegate {
 			//获取所有BeanDefinitionRegistryPostProcessor的实现类，
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
+
+
 			/*循环所有的postProcessorName，判断类型是否实现了PriorityOrdered，对于实现了PriorityOrdered的类实例化优先级要高于Order接口*/
 			for (String ppName : postProcessorNames) {
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
@@ -148,6 +164,8 @@ final class PostProcessorRegistrationDelegate {
 
 			//在调用完清空currentRegistryProcessors list.clear()
 			currentRegistryProcessors.clear();
+
+
 
 			// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.
 			//然后，调用已经实现了Ordered的BeanDefinitionRegistryPostProcessors
@@ -392,6 +410,7 @@ final class PostProcessorRegistrationDelegate {
 		/*
 		*
 		* 遍历所有的postProcessor集合，执行postProcessBeanDefinitionRegistry方法
+		* 所有bean的注册必须在此阶段进行，其他阶段不要再进行bean的注册
 		* */
 		for (BeanDefinitionRegistryPostProcessor postProcessor : postProcessors) {
 			StartupStep postProcessBeanDefRegistry = applicationStartup.start("spring.context.beandef-registry.post-process")
@@ -403,6 +422,8 @@ final class PostProcessorRegistrationDelegate {
 
 	/**
 	 * Invoke the given BeanFactoryPostProcessor beans.
+	 * 第二个阶段，通过调用postProcessBeanFactory进行扩展处理，此时的bean已经完成注册，调用时按照PriorityOrdered、order顺序来进行调用
+	 * 在此postProcessBeanFactory中可以修改bean定义信息何对bean定义信息进行补充
 	 */
 	private static void invokeBeanFactoryPostProcessors(
 			Collection<? extends BeanFactoryPostProcessor> postProcessors, ConfigurableListableBeanFactory beanFactory) {

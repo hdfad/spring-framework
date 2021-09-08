@@ -59,7 +59,12 @@ import org.springframework.beans.BeansException;
  * @see BeanPostProcessor
  * @see PropertyResourceConfigurer
  *
- * bean 工厂后置处理器
+ * bean 工厂后置处理器，通过这个后处理工厂对bean定义信息进行更改补充或者添加，调用此接口前，bean定义信息已经初始化完成
+ * 重要实现类：
+ * PropertySourcesPlaceholderConfigurer：处理xml中属性中的${xxx}，对这种格式的进行解析处理为真正的值。
+ * CustomScopeConfigurer：向容器中注册自定义的Scope对象
+ * EventListenerMethodProcessor：处理@EventListener注解的，即spring中事件机制
+ *
  */
 @FunctionalInterface
 public interface BeanFactoryPostProcessor {

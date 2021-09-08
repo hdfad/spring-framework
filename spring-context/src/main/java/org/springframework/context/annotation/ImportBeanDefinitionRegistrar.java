@@ -59,6 +59,7 @@ import org.springframework.core.type.AnnotationMetadata;
  * @see Configuration
  *
  * 导入自定义对BeanDefinition的注册，使其在spring构造过程中加载到容器中,要是对象起效需要通过@Import导入
+ * 容器在loadBeanDefinitions阶段会对ImportBeanDefinitionRegistrar进行加载
  */
 public interface ImportBeanDefinitionRegistrar {
 

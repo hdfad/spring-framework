@@ -61,6 +61,7 @@ import org.springframework.util.StringValueResolver;
  * @see org.springframework.core.env.ConfigurableEnvironment
  * @see org.springframework.beans.factory.config.PlaceholderConfigurerSupport
  * @see org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
+ * 处理xml中属性中的${xxx}，会对这种格式的进行解析处理为真正的值。
  */
 public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerSupport implements EnvironmentAware {
 

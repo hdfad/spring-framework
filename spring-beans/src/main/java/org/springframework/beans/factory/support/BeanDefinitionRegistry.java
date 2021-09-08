@@ -45,6 +45,7 @@ import org.springframework.core.AliasRegistry;
  * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
  * @see PropertiesBeanDefinitionReader。
  *
+ * -- 提供方法来操作容器中的bean
  * 本接口作用在于对BeanDefinition的操作，包括注册BeanDefinition，获取、移除以及判断bean是否正在被使用中
  * DefaultListableBeanFactory extends BeanDefinitionRegistry,spring在创建bean工厂时会通过obtainFreshBeanFactory创建一个DefaultListableBeanFactory
  * spring怎么在初始化前对bean信息进行
