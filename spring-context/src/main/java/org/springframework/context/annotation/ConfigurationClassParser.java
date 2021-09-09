@@ -173,6 +173,8 @@ class ConfigurationClassParser {
 			//获取配置类的bean定义信息
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
+				//带注解标识的BeanDefinition
+				// @see org.springframework.context.annotation.ConfigurationClassParser.processConfigurationClass
 				if (bd instanceof AnnotatedBeanDefinition) {
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
@@ -255,6 +257,7 @@ class ConfigurationClassParser {
 		// Recursively process the configuration class and its superclass hierarchy.
 		SourceClass sourceClass = asSourceClass(configClass, filter);
 		do {
+			//读取注解配置：装载含有@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean的方法
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass, filter);
 		}
 		while (sourceClass != null);

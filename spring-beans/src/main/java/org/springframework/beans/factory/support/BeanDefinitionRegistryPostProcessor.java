@@ -31,6 +31,9 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
  * @see org.springframework.context.annotation.ConfigurationClassPostProcessor
  *
  * bean定义注册后置处理器，所有的bean注册都需要通过此接口的postProcessBeanDefinitionRegistry完成
+ * 除了通过postProcessBeanDefinitionRegistry之外没有将bean注册经的阶段
+ * 多个容器怎么指定加载的顺序呢？
+ * 		通过实现的core包下的PriorityOrdered或者Ordered接口
  */
 public interface BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor {
 
@@ -42,6 +45,8 @@ public interface BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProc
 	 * @param registry the bean definition registry used by the application context
 	 *                 默认的beanFactory是BeanDefinitionRegistry的实现类，registry就是beanFactory
 	 * @throws org.springframework.beans.BeansException in case of errors
+	 *
+	 * 解析@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean
 	 */
 	void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException;
 

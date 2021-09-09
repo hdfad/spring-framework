@@ -138,7 +138,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	private final Set<Integer> factoriesPostProcessed = new HashSet<>();
 
 	/**
-	 * Bean定义阅读器配置类
+	 * BeanDefinition阅读器配置类
 	 */
 	@Nullable
 	private ConfigurationClassBeanDefinitionReader reader;
@@ -240,6 +240,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	/**
+	 *  注册配置类，对配置类中的注解进行装载
 	 * Derive further bean definitions from the configuration classes in the registry.
 	 */
 	@Override
@@ -256,7 +257,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		this.registriesPostProcessed.add(registryId);
 
 		/*
-		* 注册配置类
+		* 注册配置类，对配置类中的注解进行装载
 		* */
 		processConfigBeanDefinitions(registry);
 	}
@@ -287,10 +288,33 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * Build and validate a configuration model based on the registry of
 	 * {@link Configuration} classes.
 	 *
-	 * 将配置类注册
+	 * 1、通过registry中获取的BeanDefinition，通过ConfigurationClassUtils#checkConfigurationClassCandidate获取所有@Configuration标识的非空方法的配置类信息装载到容器configCandidates中
+	 * 2、对configCandidates中的配置类按照order值进行排序值越大于低
+	 * 3、构造类解析器，通过ConfigurationClassParser的parser对配置类中的@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean进行解析装填
+	 * 4、实例化beandefinition阅读器ConfigurationClassBeanDefinitionReader,通过BeanDefinition阅读器将所有的配置类通过loadBeanDefinitions将@Bean的方法转载进BeanDefinition中
+	 * 5、配置类的加载顺序：通过configCandidates.sort对order值进行排序，order值越大，越后执行  asc
+	 * 如果bean存在别名，则通过一个ConcurrentHashMap容器存储别名信息，上一个别名做为key，下一个别名作为value，别名通过 names.remove(0)移除
+	 * 别名信息见
+	 * @see ConfigurationClassBeanDefinitionReader#loadBeanDefinitionsForBeanMethod(org.springframework.context.annotation.BeanMethod)
+	 * 		//获取@Bean标识的属性，进行解析
+	 * 		AnnotationAttributes bean = AnnotationConfigUtils.attributesFor(metadata, Bean.class);
+	 * 		Assert.state(bean != null, "No @Bean annotation attributes");
+	 *
+	 * 		// Consider name and any aliases
+	 * 		//获取所有别名
+	 * 		List<String> names = new ArrayList<>(Arrays.asList(bean.getStringArray("name")));
+	 * 		//获取第一个别名,没有别名就用方法名，有则将第一个移除再返回
+	 * 		String beanName = (!names.isEmpty() ? names.remove(0) : methodName);
+	 *
+	 * 		// Register aliases even when overridden
+	 * 		//当存在多个别名时，循环多个别名
+	 * 		for (String alias : names) {
+	 * 			//注册别名，通过一个ConcurrentHashMap映射别名信息，上一个别名做为key，下一个别名作为值，因为 names.remove(0)会将上一个别名移除掉
+	 * 			this.registry.registerAlias(beanName, alias);
+	 *      }
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
-		//所有@Configuration注解标识的类
+		//存放所有@Configuration注解标识的类
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		//获取所有的BeanDefinitionName
 		String[] candidateNames = registry.getBeanDefinitionNames();
@@ -347,7 +371,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 
 		// Parse each @Configuration class
-		//类解析器
+		//实例化解析器 解析解析器对配置类中的注解进行解析装载，包括@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
@@ -357,7 +381,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
 			StartupStep processConfig = this.applicationStartup.start("spring.context.config-classes.parse");
-			//解析所有的配置类，并添加到配置类容器中
+			//解析所有的配置类包括@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean的方法，并添加到配置类容器Map中
 			parser.parse(candidates);
 			//验证
 			parser.validate();
@@ -366,8 +390,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			configClasses.removeAll(alreadyParsed);
 
 			// Read the model and create bean definitions based on its content
+			//构造BeanDefinition阅读器
 			if (this.reader == null) {
-				//实例化配置类bean定义阅读器
+				//实例化BeanDefinition阅读器
 				this.reader = new ConfigurationClassBeanDefinitionReader(
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
@@ -378,6 +403,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			alreadyParsed.addAll(configClasses);
 			processConfig.tag("classCount", () -> String.valueOf(configClasses.size())).end();
 
+			//清除配置类信息
 			candidates.clear();
 			if (registry.getBeanDefinitionCount() > candidateNames.length) {
 				String[] newCandidateNames = registry.getBeanDefinitionNames();
