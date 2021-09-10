@@ -584,27 +584,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
 				// Invoke factory processors registered as beans in the context.
 
-				//http://www.itsoku.com/article/294
 				/*
-				* 主要是处理BeanDefinitionRegistryPostProcessor和BeanFactoryPostProcessor
-				* BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor
-				* 是Spring在初始化前一个重要的扩展点。
-				* 所有bean的注册必须在此阶段进行，其他阶段不要再进行bean的注册，所以bean的注册只有这一步，其他地方不在进行
-				* 对bean工厂后置处理器实现类进行调用，调用顺序上优先调用实现了PriorityOrdered的实现类进行调用，再调用order实现类，最后调用其他的
-				* 整个方法围绕2个接口BeanFactoryPostProcessor和BeanDefinitionRegistryPostProcessor
-				* 顺序上BeanDefinitionRegistryPostProcessor优先于BeanFactoryPostProcessor，与PriorityOrdered和Ordered有关
-				* 		原因是在invokeBeanFactoryPostProcessors中会先获取BeanDefinitionRegistryPostProcessor接口下实现了PriorityOrdered的类bean，再获取实现了Ordered的实现类bean，
-				* 		然后分别调用invokeBeanDefinitionRegistryPostProcessors进行处理，
-				* 		所以流程上会优先调用PriorityOrdered的BeanDefinitionRegistryPostProcessor实现类，再调用Ordered的BeanDefinitionRegistryPostProcessor实现类
-				*	invokeBeanFactoryPostProcessors重要做2件事：
-				*		Ⅰ：bean注册：调用BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry，这一阶段对所有bean进行注册，bean的注册阶段在此完成，其他地方不会再进行bean注册
-				* 			对于@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean注解的扫描填充通过ConfigurationClassParser#doProcessConfigurationClass进行
-				*		Ⅱ：ben扩展：通过invokeBeanFactoryPostProcessors调用BeanFactoryPostProcessor的postProcessBeanFactory对BeanDefinitionRegistry进行修改或补充
-				*
-				*
-				*
-				* 与ioc关系：di阶段通过此完成
-				* */
+				 * 是Spring在初始化前一个重要的扩展点，通过BeanFactoryPostProcessors对BeanDefinition进行扩展
+				 * 作用在BeanDefinition 加载完成之后，Bean实例化之前对BeanDefinition进行修改，常见的配置类信息加载就是通过ConfigurationClassPostProcessor来完成
+				 * 对实现BeanDefinitionRegistry、BeanFactoryPostProcessor的类进行处理
+				 * 与ioc关系：di阶段通过此完成？
+				 * */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
