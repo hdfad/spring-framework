@@ -254,6 +254,10 @@ public interface ConfigurableApplicationContext extends ApplicationContext, Life
 	 * @see #refresh()
 	 * @see #close()
 	 * @see #addBeanFactoryPostProcessor
+	 *
+	 * 对于得到的ApplicationContext转换成BeanFactory通过getBeanFactory获取真正底层实现而非而非直接进行转换，所以ApplicationContext转换成BeanFactory通过此方法
+	 *
+	 * 为什么ApplicationContext继承于BeanFactory同时底层组合了一个 BeanFactory实现？
 	 */
 	ConfigurableListableBeanFactory getBeanFactory() throws IllegalStateException;
 

@@ -54,6 +54,15 @@ import org.springframework.lang.Nullable;
  * @see ConfigurableApplicationContext
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.core.io.ResourceLoader
+ *
+ * 	 对于spring ioc容器，BeanFactory和ApplicationContext都是ioc容器，在官网中指出context包是Spring框架的IoC容器的基础，
+ * 	 该 BeanFactory 界面提供了一种高级配置机制，能够管理任何类型的对象「这里提到的是管理对象，不是管理Bean」
+ * 	 ApplicationContext是BeanFactory的子接口，在BeanFactory 的基础上增加了AOP继承、国际化、事件发布应用层特定的上下文
+ * 	 所以BeanFactory提供了配置框架和基本功能，ApplicationContext做企业级升华
+ * 	 对于2者而言，都是同一类事物，ApplicationContext继承于BeanFactory同时底层组合了一个 BeanFactory实现，
+ * 	 对于得到的ApplicationContext转换成BeanFactory通过getBeanFactory获取真正底层实现而非而非直接进行转换
+ * 	 具体的转换：
+ * 	 @see org.springframework.context.ConfigurableApplicationContext#getBeanFactory()
  */
 public interface ApplicationContext extends EnvironmentCapable, ListableBeanFactory, HierarchicalBeanFactory,
 		MessageSource, ApplicationEventPublisher, ResourcePatternResolver {

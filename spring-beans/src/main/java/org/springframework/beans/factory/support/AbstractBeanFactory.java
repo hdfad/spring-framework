@@ -1382,8 +1382,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				mbd = this.mergedBeanDefinitions.get(beanName);
 			}
 
+
 			if (mbd == null || mbd.stale) {
 				previous = mbd;
+				/*实例化RootBeanDefinition装载BeanDefinition信息*/
 				if (bd.getParentName() == null) {
 					// Use copy of given root bean definition.
 					if (bd instanceof RootBeanDefinition) {
@@ -1423,6 +1425,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Set default singleton scope, if not configured before.
+				//设置BeanDefinition中的bean为单例
 				if (!StringUtils.hasLength(mbd.getScope())) {
 					mbd.setScope(SCOPE_SINGLETON);
 				}
@@ -1437,6 +1440,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 				// Cache the merged bean definition for the time being
 				// (it might still get re-merged later on in order to pick up metadata changes)
+				/*
+				* 如果BeanDefinition为null 并且 允许缓存bean信息
+				* isCacheBeanMetadata:默认为true
+				* 将当前的BeanDefinition添加到mergedBeanDefinitions中
+				* */
 				if (containingBd == null && isCacheBeanMetadata()) {
 					this.mergedBeanDefinitions.put(beanName, mbd);
 				}
