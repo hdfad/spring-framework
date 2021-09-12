@@ -43,6 +43,14 @@ import org.springframework.util.ReflectionUtils;
  * @author Phillip Webb
  * @author Sam Brannen
  * @since 2.5
+ *
+ *
+ * 该类主要用于获取元数据
+ * 存在两个实现类分别为 StandardAnnotationMetadata与 AnnotationMetadataReadingVisitor
+ * StandardAnnotationMetadata主要使用 Java 反射原理获取元数据
+ * AnnotationMetadataReadingVisitor 使用 ASM 框架获取元数据
+ *
+ * 参考：http://www.justdojava.com/2019/07/06/spring-annotationMetadata/
  */
 public class StandardAnnotationMetadata extends StandardClassMetadata implements AnnotationMetadata {
 

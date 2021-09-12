@@ -52,6 +52,8 @@ import org.springframework.util.Assert;
  * @see AnnotatedBeanDefinitionReader
  * @see ClassPathBeanDefinitionScanner
  * @see org.springframework.context.support.GenericXmlApplicationContext
+ *
+ * extends GenericApplicationContext:本就是一个BeanDefinitionRegistry
  */
 public class AnnotationConfigApplicationContext extends GenericApplicationContext implements AnnotationConfigRegistry {
 
@@ -63,13 +65,30 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	/**
 	 * Create a new AnnotationConfigApplicationContext that needs to be populated
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
+	 *
+	 *	构建AnnotationConfigApplicationContext做了啥？
+	 *	1、首先会根据BeanDefinitionRegistry构造一个AnnotatedBeanDefinitionReader，同时会在reader中生成一个唯一id和displayName，规则是className+调用对象hash取十六进制字符串，2者相同
+	 * 	2、提供对 @Component、@Repository、@Service、@Controller、@ManagedBean、@Named 的支持 -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
+	 *  Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener 的支持    -> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
+	 *	3、注册AnnotatedBeanDefinitionReader生成beanName，对存在懒加载、优先注入的注解添加到当前BeanDefinitionReader中，最后对存在别名的情况使用ConcurrentHashMap容器添加别名映射
+	 *
+	 * 即：此时生成了BeanDefinitionReader、添加了对部分注解到容器中
+	 *
 	 */
 	public AnnotationConfigApplicationContext() {
 		StartupStep createAnnotatedBeanDefReader = this.getApplicationStartup().start("spring.context.annotated-bean-reader.create");
-		//初始化读取bean定义的读取器，完成Spring内部bean定义的注册
+		/*
+		*	初始化BeanDefinitionReader，实例化DefaultListableBeanFactory工厂 完成Spring 部分注解的支持
+		*	AnnotatedBeanDefinitionReader reader=new AnnotatedBeanDefinitionReader(BeanDefinitionRegistry,Environment);
+		*	提供对
+		* 	@Component、@Repository、@Service、@Controller、@ManagedBean、@Named   -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
+		* 	@Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、
+		* 	@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener	-> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
+		* 	this->BeanDefinitionRegistry：包含唯一id和展示名称，2者相同，使用AbstractApplicationContext#id、displayName，2者为为className+调用对象的hash取十六进制字符串
+		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		createAnnotatedBeanDefReader.end();
-		//初始化一个类扫描器，其实这个方法进来，是没有用到这个扫描器的
+		//初始化一个类扫描器，扫描 @Component、@Repository、@Service、@Controller、@ManagedBean、@Named
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 
@@ -88,14 +107,37 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * from the given component classes and automatically refreshing the context.
 	 * @param componentClasses one or more component classes &mdash; for example,
 	 * {@link Configuration @Configuration} classes
+	 *
+	 * 构建AnnotationConfigApplicationContext做了啥？
+	 * 1、利用BeanDefinitionRegistry、Environment构建一个AnnotatedBeanDefinitionReader，
+	 * 同时会在reader中生成一个唯一id和displayName，规则是className+调用对象hash取十六进制字符串，2者相同
+	 * 2、提供对注解的支持
+	 * 	@Component、@Repository、@Service、@Controller、@ManagedBean、@Named   -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
+	 * 	@Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、
+	 * 	@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener	-> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
+	 *	3、构造AnnotatedBeanDefinitionReader读取 BeanDefinition，对
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
-		//调用无参构造方法，初始化容器，创建bean工厂,加载各种内部重要类的bean定义，用于初始化我们或者其他引入类
-		//填充BeanDefinitionRegistry,RootBeanDefinition,beanDefinitionMap,beanDefinitionNames 通过此步完成，后续就能直接使用
+		/*
+		*	1、首先会根据BeanDefinitionRegistry构造一个AnnotatedBeanDefinitionReader，同时会在reader中生成一个唯一id和displayName，规则是className+调用对象hash取十六进制字符串，2者相同
+		* 	2、提供对 @Component、@Repository、@Service、@Controller、@ManagedBean、@Named 的支持 -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
+		*  Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener 的支持    -> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
+		*	3、注册AnnotatedBeanDefinitionReader生成beanName，对存在懒加载、优先注入的注解添加到当前BeanDefinitionReader中，最后对存在别名的情况使用ConcurrentHashMap容器添加别名映射
+		*
+		* */
 		this();
-		//注册我们配置类的bean定义，初始化容器，从这个类开始
+		//使用reder构建BeanDefinition，根据类class，初始化容器，注册bean，构建BeanDefinition
+
+		/*
+		*
+		* 调用doRegister，根据beanClass构建AnnotatedGenericBeanDefinition，接下来会对AnnotatedGenericBeanDefinition进行赋值
+		* 首先会生成BeanName，使用BeanNameGenerator#generateBeanName；
+		* 再设置BeanDefinition的属性值，判断是否存在Lazy、Primary、DependsOn、Role、Description注解描述的beanDefinition
+		* 未完：2021-09-13
+		* */
 		register(componentClasses);
-		refresh();//初始化上下文，进行bean信息装配
+		//初始化上下文，进行bean信息装配
+		refresh();
 	}
 
 	/**
@@ -164,12 +206,21 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * {@link Configuration @Configuration} classes
 	 * @see #scan(String...)
 	 * @see #refresh()
+	 *
+	 *
+	 * 使用reder构建BeanDefinition添加到beanDefinitionMap中，对存在别名的添加别名映射,k:别名，v:真实名称
 	 */
 	@Override
 	public void register(Class<?>... componentClasses) {
 		Assert.notEmpty(componentClasses, "At least one component class must be specified");
 		StartupStep registerComponentClass = this.getApplicationStartup().start("spring.context.component-classes.register")
 				.tag("classes", () -> Arrays.toString(componentClasses));
+		/*
+		* 对已经初始化完毕的AnnotatedBeanDefinitionReader开始注册bean
+		* reader在上一步初始化构建。
+		* 设置AnnotatedGenericBeanDefinition的作用域，Lazy、Primary、DependsOn、Role、Description注解的支持、别名，
+		* 使用BeanDefinitionHolder将beanDefinition添加到beanDefinitionMap中，对存在别名的添加别名映射,k:别名，v:真实名称
+		*  */
 		this.reader.register(componentClasses);
 		registerComponentClass.end();
 	}
@@ -178,7 +229,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * Perform a scan within the specified base packages.
 	 * <p>Note that {@link #refresh()} must be called in order for the context
 	 * to fully process the new classes.
-	 * @param basePackages the packages to scan for component classes
+	 * @param basePackages the packages to scan for component classesenumConstants = null
 	 * @see #register(Class...)
 	 * @see #refresh()
 	 */

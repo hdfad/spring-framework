@@ -156,7 +156,7 @@ public interface BeanFactory {
 	 * {@code myJndiObject} is a FactoryBean, getting {@code &myJndiObject}
 	 * will return the factory, not the instance returned by the factory.
 	 *
-	 * 使用容器获取bean时，添加转义自符&可以获取到FactoryBean本身而吧是Factory产生的对象
+	 * 对于FactoryBean对象，通过getBean方法使用beanName获取bean时，需要在beanName前面添加一个&符号
 	 *
 	 */
 	String FACTORY_BEAN_PREFIX = "&";
@@ -301,7 +301,7 @@ public interface BeanFactory {
 	 * @param name the name of the bean to query
 	 * @return whether a bean with the given name is present
 	 *
-	 * 是否单例
+	 * 是否包含bean
 	 *
 	 */
 	boolean containsBean(String name);

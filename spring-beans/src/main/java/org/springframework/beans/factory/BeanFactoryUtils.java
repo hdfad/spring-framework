@@ -77,6 +77,9 @@ public abstract class BeanFactoryUtils {
 	 * @param name the name of the bean
 	 * @return the transformed name
 	 * @see BeanFactory#FACTORY_BEAN_PREFIX
+	 *
+	 * 普通bean和FactoryBean，在进行transformedBeanName时普通beanName会直接进行返回，FactoryBean类型的bean则会将“&”进行截取，添加到transformedBeanNameCache中，并返回截取后的beanName
+	 * transformedBeanNameCache：k为原始&+beanName，v:beanName
 	 */
 	public static String transformedBeanName(String name) {
 		Assert.notNull(name, "'name' must not be null");

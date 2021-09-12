@@ -32,6 +32,8 @@ import org.springframework.lang.Nullable;
  *
  * @author Juergen Hoeller
  * @since 5.0
+ *
+ * NullBean："null"
  */
 final class NullBean {
 

@@ -66,6 +66,8 @@ public class AnnotatedBeanDefinitionReader {
 	 * in the form of a {@code BeanDefinitionRegistry}
 	 * @see #AnnotatedBeanDefinitionReader(BeanDefinitionRegistry, Environment)
 	 * @see #setEnvironment(Environment)
+	 *
+	 * 通过BeanDefinitionRegistry实例化一个AnnotatedBeanDefinitionReader、ConditionEvaluator，添加注解支持
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
 		this(registry, getOrCreateEnvironment(registry));
@@ -79,13 +81,15 @@ public class AnnotatedBeanDefinitionReader {
 	 * @param environment the {@code Environment} to use when evaluating bean definition
 	 * profiles.
 	 * @since 3.1
+	 *
+	 * 实例化BeanDefinitionRegistry、ConditionEvaluator，添加注解支持
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry, Environment environment) {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
-		//注册AnnotationConfigProcessors
+		//注册注解处理器，详细见方法
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
 
@@ -251,19 +255,39 @@ public class AnnotatedBeanDefinitionReader {
 			@Nullable Class<? extends Annotation>[] qualifiers, @Nullable Supplier<T> supplier,
 			@Nullable BeanDefinitionCustomizer[] customizers) {
 
+		/*
+		 * 通过 beanClass 构造 AnnotatedGenericBeanDefinition，
+		 * 此处是否有反射获取注解信息暂未发现？
+		 */
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
+
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
 		}
 
+		/*
+		* 对AnnotatedGenericBeanDefinition进赋值
+		* beanNameGenerator.generateBeanName：生成BeanName
+		* */
 		abd.setInstanceSupplier(supplier);
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
 		abd.setScope(scopeMetadata.getScopeName());
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 
+		//对存在Lazy、Primary、DependsOn、Role、Description注解的BeanDefinition将其对应属性设置成true
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+		//根据传入的qualifiers设置当前beanDefinition
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
+				/*
+				*
+				* 如果使用了@Primary标识，则将当前AnnotatedGenericBeanDefinition的Primary设置为true
+				* @Primary的作用：当你一个接口的实现类有多个的时候，你通过@Component来注册你的实现类有多个，但是在注入的时候使用@Autowired
+				* 这样问题就来了，Spring就不知道你注入哪个，那现在就可以通过下面两个办法解决：
+				* - @Primary 优先考虑，优先考虑被注解的对象注入
+				* - @Qualifier 名字声明，声明后对名字进行使用
+				* 但是此处只是告诉了AnnotatedGenericBeanDefinition有使用@Primary注解，并未说是哪个
+				* */
 				if (Primary.class == qualifier) {
 					abd.setPrimary(true);
 				}
@@ -281,8 +305,13 @@ public class AnnotatedBeanDefinitionReader {
 			}
 		}
 
+		/*
+		* BeanDefinitionHolder封装了beanDefinition、beanName、aliases
+		* */
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
+		//根据scope作用域，创建代理，详见：@Scope-proxyMode
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
+		//使用BeanDefinitionHolder将beanDefinition添加到beanDefinitionMap中，对存在别名的添加别名映射,k:别名，v:真实名称
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
 	}
 

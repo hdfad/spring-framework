@@ -76,6 +76,8 @@ dependencies {
 	testRuntime("org.glassfish:javax.el")
 	testRuntime("com.sun.xml.bind:jaxb-core")
 	testRuntime("com.sun.xml.bind:jaxb-impl")
+
+	compile("javax.annotation:javax.annotation-api:1.3.2")
 }
 
 task junit(type: Test) {

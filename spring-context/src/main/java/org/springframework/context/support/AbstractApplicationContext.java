@@ -177,10 +177,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	/** Logger used by this class. Available to subclasses. */
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	/** Unique id for this context, if any. */
+	/**
+	 * Unique id for this context, if any.
+	 * 唯一id：
+	 * 构造上下文或者AbstractApplicationContext的子类时会生成一个唯一id，id为className+调用对象hash取十六进制字符串
+	 *
+	 * */
 	private String id = ObjectUtils.identityToString(this);
 
-	/** Display name. */
+	/**
+	 *  Display name.
+	 * 	展示名称：
+	 * 	同唯一id
+	 *
+	 * */
 	private String displayName = ObjectUtils.identityToString(this);
 
 	/** Parent context. */
@@ -566,18 +576,23 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			//obtainFreshBeanFactory：销毁关闭旧工厂，通过new的方式创建DefaultListableBeanFactory工厂，
-			// 通过BeanDefinitionReader读取xml或者注解等配置信息，并装载在BeanDefinition容器中
-			// 此处就是就是ioc流程工厂的创建流程
+			/*
+			* 此处就是就是ioc流程工厂的创建流程
+			* 注解的bean在AnnotationConfigApplicationContext#register时就会初始化BeanDefinition，
+			* 对于xml的bean则是通过obtainFreshBeanFactory时才会初始化BeanDefinition，2个的BeanDefinition初始化地方不一样
+			* 初始化通过BeanDefinitionReader装载在BeanDefinition容器中
+			* 对于存在旧DefaultListableBeanFactory工厂则会先销毁再新建DefaultListableBeanFactory工厂
+			* */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
 			//应用bean工厂属性，包括类加载器，增加AspectJ的支持、
+			//依赖查找，内建bean对象、依赖、非bean对象
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
-				//空方法，模板方法，子类进行实现扩充对一些beanFactory的设置、注册、忽略
+				//空方法，模板方法，自定义进行实现扩充对一些beanFactory的设置、注册、忽略
 				postProcessBeanFactory(beanFactory);
 
 				//start->end
@@ -598,12 +613,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				beanPostProcess.end();
 
 				// Initialize message source for this context.
-				// 消息源初始化
+				// 消息源初始化-国际化
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
 				//构建事件监听多路广播器SimpleApplicationEventMulticaster
 				//事件的执行主要是在Bean初始化之后通过上下文调用publishEvent方法执行
+				//到这一步具备了容器额特性
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
@@ -717,6 +733,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
 		//refreshBeanFactory:销毁bean工厂，通过new 的形式创建一个新的DefaultListableBeanFactory,
 		// 并通过BeanDefinitionReader读取beanFactory中的配置信息，解析来源有xml，注解等
+		//此处注解时调用org.springframework.context.support.GenericApplicationContext#refreshBeanFactory
 		refreshBeanFactory();
 		return getBeanFactory();
 	}
@@ -974,6 +991,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Finish the initialization of this context's bean factory,
 	 * initializing all remaining singleton beans.
 	 * 完成对bean工厂的实例化，开始初始化单例bean对象
+	 * 这一步在初始化单例bean之前做了些啥？
+	 *	注入默认的嵌入值解析器StringValueResolver到List容器中
+	 *  对实现了LoadTimeWeaverAware的bean提前初始化,对外暴露，主要用于加载Spring Bean时织入第三方模块，如AspectJ
+	 *  对bean进行冻结，不允许再对bean定义进行修改合并
+	 *  最后开始初始化单例非懒加载的bean
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.
@@ -987,7 +1009,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Register a default embedded value resolver if no BeanFactoryPostProcessor
 		// (such as a PropertySourcesPlaceholderConfigurer bean) registered any before:
 		// at this point, primarily for resolution in annotation attribute values.
-		// 注册默认的嵌入值解析器StringValueResolver
+		// 如果List容器中不存在一个StringValueResolver类型的 embeddedValueResolvers 则注册默认的嵌入值解析器embeddedValueResolvers
 		if (!beanFactory.hasEmbeddedValueResolver()) {
 			beanFactory.addEmbeddedValueResolver(strVal -> getEnvironment().resolvePlaceholders(strVal));
 		}
@@ -1004,6 +1026,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.setTempClassLoader(null);
 
 		// Allow for caching all bean definition metadata, not expecting further changes.
+		// 冻结bean，不做进一步修改
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.

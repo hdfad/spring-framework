@@ -920,6 +920,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		return (this.configurationFrozen || super.isBeanEligibleForMetadataCaching(beanName));
 	}
 
+	/**
+	 *
+	 * https://blog.csdn.net/qwe6112071/article/details/85224582
+	 * @throws BeansException
+	 */
 	@Override
 	public void preInstantiateSingletons() throws BeansException {
 		if (logger.isTraceEnabled()) {
@@ -934,10 +939,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// Trigger initialization of all non-lazy singleton beans...
 		//遍历所有beanNames，从BeanDefinition获取bean的信息并开始循环创建懒加载的bean实例
 		for (String beanName : beanNames) {
-			//合并bean信息，将BeanDefinition转换为RootBeanDefinition操作
+			//获取合并的RootBeanDefinition信息，将BeanDefinition转换为RootBeanDefinition操作
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			//对非抽象、单例、非懒加载的bean进行初始化
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
-				//对于是FactoryBean还是普通bean的bean初始化不一样
+				/*
+				* 对于是FactoryBean还是普通bean的bean初始化不一样
+				* */
 				if (isFactoryBean(beanName)) {
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
 					if (bean instanceof FactoryBean) {
@@ -958,6 +966,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
+					//普通bean
 					getBean(beanName);
 				}
 			}
@@ -1049,7 +1058,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 			else {
 				// Still in startup registration phase
+				//启动时将解析的beanDefinition信息注册到beanDefinitionMap（ConcurrentHashMap）中，key为beanName，value为beanDefinition
 				this.beanDefinitionMap.put(beanName, beanDefinition);
+				//将beanName添加到beanDefinitionNames中
 				this.beanDefinitionNames.add(beanName);
 				removeManualSingletonName(beanName);
 			}
