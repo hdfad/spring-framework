@@ -256,7 +256,7 @@ public class AnnotatedBeanDefinitionReader {
 			@Nullable BeanDefinitionCustomizer[] customizers) {
 
 		/*
-		 * 通过 beanClass 构造 AnnotatedGenericBeanDefinition，
+		 * 通过 beanClass 构造 AnnotatedGenericBeanDefinition，AnnotatedGenericBeanDefinition是BeanDefinition的子类
 		 * 此处是否有反射获取注解信息暂未发现？
 		 */
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
@@ -311,7 +311,7 @@ public class AnnotatedBeanDefinitionReader {
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
 		//根据scope作用域，创建代理，详见：@Scope-proxyMode
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
-		//使用BeanDefinitionHolder将beanDefinition添加到beanDefinitionMap中，对存在别名的添加别名映射,k:别名，v:真实名称
+		//使用BeanDefinitionRegistry将beanDefinition添加到beanDefinitionMap中，同时对存在别名的添加别名映射,k:别名，v:真实名称
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
 	}
 

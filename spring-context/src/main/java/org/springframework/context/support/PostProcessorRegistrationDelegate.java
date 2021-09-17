@@ -131,7 +131,7 @@ final class PostProcessorRegistrationDelegate {
 					/*
 					 * 第一阶段：执行BeanDefinitionRegistryPostProcessor接口的postProcessBeanDefinitionRegistry方法
 					 * 对配置bean进行装载，解析配置bean中的@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean
-					 * 如何解决bean中的别名映射呢？
+					 * 如何解决@Bean中的别名映射呢？
 					 * 		使用容器ConcurrentHashMap对别名存储，key为上一个别名，value为当前别名
 					 */
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);

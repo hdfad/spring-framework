@@ -32,7 +32,7 @@ package org.springframework.beans.factory;
  * @author Juergen Hoeller
  * @since 3.1
  *
- * 通过aware将bean整合到spring框架中
+ * Aware 接口，提供了类似回调函数的功能
  */
 public interface Aware {
 

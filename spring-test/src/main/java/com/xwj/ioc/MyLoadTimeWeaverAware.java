@@ -2,8 +2,10 @@ package com.xwj.ioc;
 
 import org.springframework.context.weaving.LoadTimeWeaverAware;
 import org.springframework.instrument.classloading.LoadTimeWeaver;
+import org.springframework.stereotype.Component;
 
 
+@Component
 public class MyLoadTimeWeaverAware implements LoadTimeWeaverAware {
 
 	public MyLoadTimeWeaverAware() {
