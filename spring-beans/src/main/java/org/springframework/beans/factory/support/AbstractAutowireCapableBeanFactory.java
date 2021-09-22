@@ -1589,7 +1589,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					if (filteredPds == null) {
 						filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 					}
-					//第六次调用后置处理器，完成对属性的各种操作，注解中元数据的解析等，
+					//第六次调用后置处理器，在配置的BeanDefinition的propertyValues被设置到bean实例中之前，我们有机会拦截属性，并更改属性
 					pvsToUse = bp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
 						return;
