@@ -226,7 +226,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(beanName, "Bean name must not be null");
-		synchronized (this.singletonObjects) {
+		synchronized (this.singletonObjects) {//使用了synchronized锁保证对象创建过程的安全
+			//singletonObject：单例对象，首先会从singletonObjects以及缓存获取，如果没有就开始创建单例对象，如果存在直接返回
 			Object singletonObject = this.singletonObjects.get(beanName);
 			if (singletonObject == null) {
 				if (this.singletonsCurrentlyInDestruction) {
@@ -244,7 +245,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					this.suppressedExceptions = new LinkedHashSet<>();
 				}
 				try {
+					//创建对象，调用AbstractBeanFactory#createBean创建bean实例
 					singletonObject = singletonFactory.getObject();
+					//创建完成后将newSingleton标识变为true避免重复创建单例对象
 					newSingleton = true;
 				}
 				catch (IllegalStateException ex) {
@@ -269,6 +272,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					}
 					afterSingletonCreation(beanName);
 				}
+
+				//如果是新创建的对象，则添加到singletonObjects和registeredSingletons中
 				if (newSingleton) {
 					addSingleton(beanName, singletonObject);
 				}

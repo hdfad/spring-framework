@@ -83,7 +83,7 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 	public void setPropertyValues(PropertyValues pvs, boolean ignoreUnknown) throws BeansException {
 		setPropertyValues(pvs, ignoreUnknown, false);
 	}
-	//设置属性值
+	//设置属性值，即对@Autowired、@Resource标识的属性的set方法进行注入
 	@Override
 	public void setPropertyValues(PropertyValues pvs, boolean ignoreUnknown, boolean ignoreInvalid)
 			throws BeansException {
@@ -101,7 +101,7 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 				// here, if there is a critical failure such as no matching field.
 				// We can attempt to deal only with less serious exceptions.
 				try {
-					//设置属性值
+					//注入属性
 					setPropertyValue(pv);
 				}
 				catch (NotWritablePropertyException ex) {

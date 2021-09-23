@@ -263,6 +263,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 			if (nestedPa == this) {
 				pv.getOriginalPropertyValue().resolvedTokens = tokens;
 			}
+			//属性注入
 			nestedPa.setPropertyValue(tokens, pv);
 		}
 		else {
@@ -275,6 +276,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 			processKeyedProperty(tokens, pv);
 		}
 		else {
+			//对bean中的@Autowired、@Resource属性进行注入
 			processLocalProperty(tokens, pv);
 		}
 	}
@@ -433,6 +435,9 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 		return propValue;
 	}
 
+	/*
+	* 对bean中的@Autowired、@Resource属性进行注入
+	* */
 	private void processLocalProperty(PropertyTokenHolder tokens, PropertyValue pv) {
 		PropertyHandler ph = getLocalPropertyHandler(tokens.actualName);
 		if (ph == null || !ph.isWritable()) {

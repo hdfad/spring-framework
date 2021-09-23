@@ -1156,6 +1156,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #destroyBeans()
 	 * @see #close()
 	 * @see #registerShutdownHook()
+	 *
+	 * 关闭调用的方法
 	 */
 	@SuppressWarnings("deprecation")
 	protected void doClose() {

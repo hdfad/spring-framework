@@ -341,12 +341,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				/*
+				* bean的初始化
 				* 判断对象是单例还是原型
 				* */
 				// Create bean instance.
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
+							//lambda表达式创建bean对象getSingleton#getObject
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {
