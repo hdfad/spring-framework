@@ -70,7 +70,6 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 *	1、首先会根据BeanDefinitionRegistry构造一个AnnotatedBeanDefinitionReader，同时会在reader中生成一个唯一id和displayName，规则是className+调用对象hash取十六进制字符串，2者相同
 	 * 	2、提供对 @Component、@Repository、@Service、@Controller、@ManagedBean、@Named 的支持 -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
 	 *  Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener 的支持    -> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
-	 *	3、注册AnnotatedBeanDefinitionReader生成beanName，对存在懒加载、优先注入的注解添加到当前BeanDefinitionReader中，最后对存在别名的情况使用ConcurrentHashMap容器添加别名映射
 	 *
 	 * 即：此时生成了BeanDefinitionReader、添加了对部分注解到容器中
 	 *
@@ -78,7 +77,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	public AnnotationConfigApplicationContext() {
 		StartupStep createAnnotatedBeanDefReader = this.getApplicationStartup().start("spring.context.annotated-bean-reader.create");
 		/*
-		*	初始化BeanDefinitionReader，实例化DefaultListableBeanFactory工厂 完成Spring 部分注解的支持
+		*	初始化BeanDefinitionReader，实例化DefaultListableBeanFactory工厂 完成Spring部分注解的支持
 		*	AnnotatedBeanDefinitionReader reader=new AnnotatedBeanDefinitionReader(BeanDefinitionRegistry,Environment);
 		*	提供对
 		* 	@Component、@Repository、@Service、@Controller、@ManagedBean、@Named   -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
@@ -119,10 +118,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
 		/*
+		*	利用当前BeanDefinitionRegistry生成一个AnnotatedBeanDefinitionReader并填充，同时声明对spring注解的支持
 		*	1、首先会根据BeanDefinitionRegistry构造一个AnnotatedBeanDefinitionReader，同时会在reader中生成一个唯一id和displayName，规则是className+调用对象hash取十六进制字符串，2者相同
 		* 	2、提供对 @Component、@Repository、@Service、@Controller、@ManagedBean、@Named 的支持 -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
 		*  Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener 的支持    -> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
-		*	3、注册AnnotatedBeanDefinitionReader生成beanName，对存在懒加载、优先注入的注解添加到当前BeanDefinitionReader中，最后对存在别名的情况使用ConcurrentHashMap容器添加别名映射
 		*
 		* */
 		this();

@@ -436,7 +436,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 	}
 
 	/*
-	* 对bean中的@Autowired、@Resource属性进行注入
+	* 对bean中的@Autowired、@Resource属性进行注入,对应的值存储在PropertyValue中
 	* */
 	private void processLocalProperty(PropertyTokenHolder tokens, PropertyValue pv) {
 		PropertyHandler ph = getLocalPropertyHandler(tokens.actualName);

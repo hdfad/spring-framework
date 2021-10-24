@@ -438,29 +438,38 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 */
 	protected Object createProxy(Class<?> beanClass, @Nullable String beanName,
 			@Nullable Object[] specificInterceptors, TargetSource targetSource) {
-
+		// 如果当前beanFactory实现了ConfigurableListableBeanFactory接口，则将需要被代理的对象暴露出来
 		if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
 			AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
 		}
-
+		// 创建代理工厂
 		ProxyFactory proxyFactory = new ProxyFactory();
+		// 复制proxyTargetClass，exposeProxy等属性
 		proxyFactory.copyFrom(this);
-
+		// 如果当前设置了不使用Cglib代理目标类，则判断目标类是否设置了preserveTargetClass属性，
+		// 如果设置了，则还是强制使用Cglib代理目标类；如果没有设置，则判断目标类是否实现了相关接口，
+		// 没有设置，则还是使用Cglib代理。需要注意的是Spring默认使用的是Jdk代理来织入切面逻辑。
 		if (!proxyFactory.isProxyTargetClass()) {
+			// 判断目标类是否设置了preserveTargetClass属性
 			if (shouldProxyTargetClass(beanClass, beanName)) {
 				proxyFactory.setProxyTargetClass(true);
 			}
 			else {
+				// 判断目标类是否实现了相关接口
 				evaluateProxyInterfaces(beanClass, proxyFactory);
 			}
 		}
-
+		// 将需要织入的切面逻辑都转换为Advisor对象
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+		// 提供的hook方法，供子类实现以实现对代理工厂的定制
 		proxyFactory.addAdvisors(advisors);
 		proxyFactory.setTargetSource(targetSource);
 		customizeProxyFactory(proxyFactory);
 
 		proxyFactory.setFrozen(this.freezeProxy);
+		// 当前判断逻辑默认返回false，子类可进行重写，对于AnnotationAwareAspectJAutoProxyCreator，
+		// 其重写了该方法返回true，因为其已经对获取到的Advisor进行了过滤，后面不需要在对目标类进行重新
+		// 匹配了
 		if (advisorsPreFiltered()) {
 			proxyFactory.setPreFiltered(true);
 		}
@@ -470,6 +479,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (classLoader instanceof SmartClassLoader && classLoader != beanClass.getClassLoader()) {
 			classLoader = ((SmartClassLoader) classLoader).getOriginalClassLoader();
 		}
+		// 生成代理类
 		return proxyFactory.getProxy(classLoader);
 	}
 

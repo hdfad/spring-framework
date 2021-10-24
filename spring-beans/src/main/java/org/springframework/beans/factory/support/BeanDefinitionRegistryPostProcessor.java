@@ -47,6 +47,7 @@ public interface BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProc
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 *
 	 * 解析@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean
+	 * 注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
 	 */
 	void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException;
 

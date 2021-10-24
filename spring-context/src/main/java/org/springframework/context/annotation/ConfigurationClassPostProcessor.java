@@ -240,7 +240,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	/**
-	 *  注册配置类，对配置类中的注解进行装载
+	 *  注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
 	 * Derive further bean definitions from the configuration classes in the registry.
 	 */
 	@Override
@@ -257,7 +257,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		this.registriesPostProcessed.add(registryId);
 
 		/*
-		* 注册配置类，对配置类中的注解进行装载
+		* 注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
 		* */
 		processConfigBeanDefinitions(registry);
 	}
@@ -390,14 +390,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			configClasses.removeAll(alreadyParsed);
 
 			// Read the model and create bean definitions based on its content
-			//构造BeanDefinition阅读器
+			//构造BeanDefinition读取器
 			if (this.reader == null) {
 				//实例化BeanDefinition阅读器
 				this.reader = new ConfigurationClassBeanDefinitionReader(
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
-			//将配置类加载到bean定义信息中
+			//将配置类加载到bean定义信息中,同时也会处理别名信息
 			this.reader.loadBeanDefinitions(configClasses);
 			//添加到已经解析的类中
 			alreadyParsed.addAll(configClasses);

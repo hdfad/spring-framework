@@ -15,3 +15,7 @@ org.springframework.test.context.TestExecutionListener = \
 org.springframework.test.context.ContextCustomizerFactory = \
 	org.springframework.test.context.web.socket.MockServerContainerContextCustomizerFactory,\
 	org.springframework.test.context.support.DynamicPropertiesContextCustomizerFactory
+
+# spi测试
+com.xwj.spi.service.SpringSpiInterface=\
+  com.xwj.spi.service.impl.SpringSpiInterfaceAImpl

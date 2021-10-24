@@ -8,6 +8,16 @@ public class A {
 	@Autowired
 	private B b;
 
+	private String name;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public void setB(B b) {
 		this.b = b;
 	}

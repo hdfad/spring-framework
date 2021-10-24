@@ -218,7 +218,7 @@ class ConfigurationClassBeanDefinitionReader {
 		// Register aliases even when overridden
 		//当存在多个别名时，循环多个别名
 		for (String alias : names) {
-			//注册别名，通过一个ConcurrentHashMap映射别名信息，上一个别名做为key，下一个别名作为值，因为 names.remove(0)会将上一个别名移除掉
+			//注册别名，通过一个ConcurrentHashMap映射别名信息，当存在多个别名时，key为别名，value为真实beanName
 			this.registry.registerAlias(beanName, alias);
 		}
 

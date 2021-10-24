@@ -603,7 +603,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 是Spring在初始化前一个重要的扩展点，通过BeanFactoryPostProcessors对BeanDefinition进行扩展
 				 * 作用在BeanDefinition 加载完成之后，Bean实例化之前对BeanDefinition进行修改，常见的配置类信息加载就是通过ConfigurationClassPostProcessor来完成
 				 * 对实现BeanDefinitionRegistry、BeanFactoryPostProcessor的类进行处理
-				 * 与ioc关系：di阶段通过此完成？
 				 * */
 				invokeBeanFactoryPostProcessors(beanFactory);
 

@@ -256,8 +256,7 @@ public class AnnotatedBeanDefinitionReader {
 			@Nullable BeanDefinitionCustomizer[] customizers) {
 
 		/*
-		 * 通过 beanClass 构造 AnnotatedGenericBeanDefinition，AnnotatedGenericBeanDefinition是BeanDefinition的子类
-		 * 此处是否有反射获取注解信息暂未发现？
+		 * 构造BeanDefinition，填充class、metadata
 		 */
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
 

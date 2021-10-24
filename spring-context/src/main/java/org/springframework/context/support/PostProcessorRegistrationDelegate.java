@@ -80,7 +80,7 @@ final class PostProcessorRegistrationDelegate {
 	 * 执行其postProcessBeanDefinitionRegistry，处理BeanDefinitionRegistryPostProcessor的实现类，
 	 * 在ConfigurationClassPostProcessor中，会对@Configuration标识的类进行处理和对类的order值进行排序处理，order值越大顺序越低，
 	 * 对配置bean中的@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean标识的方法进行装载，
-	 * 当存在多个@Bean别名时，会使用一个ConcurrentHashMap对别名进行存储，key为上一个别名，value为当前别名，通过Map的remove移除并获取上一个别名，
+	 * 当存在多个@Bean别名时，会使用一个ConcurrentHashMap对别名进行存储，key为别名，value为真实beanName，
 	 * 然后将处理好的BeanDefinitionRegistryPostProcessor添加到BeanDefinitionRegistryPostProcessor中，
 	 * 对于非BeanDefinitionRegistryPostProcessor类型则 添加到regularPostProcessors中
 	 * 接下来会对BeanFactoryPostProcessor的实现类进行处理，优先处理PriorityOrdered的实现类，对其进行排序，通过invokeBeanDefinitionRegistryPostProcessors将registryProcessors容器中的配置类的注解进行注入（注解同上）
@@ -183,7 +183,8 @@ final class PostProcessorRegistrationDelegate {
 
 			//将当前的需要处理的后置处理器BeanDefinitionRegistryPostProcessor添加到BeanDefinitionRegistryPostProcessor中
 			registryProcessors.addAll(currentRegistryProcessors);
-			//执行BeanDefinitionRegistry后置处理器，调用BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry方法处理当前PriorityOrdered的实现接口
+			//执行BeanDefinitionRegistry后置处理器，调用BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry方法处理当前PriorityOrdered的实现接口，
+			//注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
 
 			//在调用完清空currentRegistryProcessors list.clear()
@@ -211,6 +212,7 @@ final class PostProcessorRegistrationDelegate {
 			//将当前处理的BeanDefinitionRegistryPostProcessor添加到registryProcessors
 			registryProcessors.addAll(currentRegistryProcessors);
 			//执行BeanDefinitionRegistry后置处理器，调用BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry方法处理当前的currentRegistryProcessors
+			//注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
 			//clear
 			currentRegistryProcessors.clear();
@@ -238,6 +240,7 @@ final class PostProcessorRegistrationDelegate {
 				//添加到registryProcessors中
 				registryProcessors.addAll(currentRegistryProcessors);
 				//执行BeanDefinitionRegistry后置处理器，调用BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry方法处理当前的currentRegistryProcessors
+				//注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
 				invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
 				//clear
 				currentRegistryProcessors.clear();
@@ -433,11 +436,12 @@ final class PostProcessorRegistrationDelegate {
 
 		/*
 		 *
-		 * 遍历所有的postProcessor集合，执行postProcessBeanDefinitionRegistry方法
+		 * 遍历所有的postProcessor集合，执行postProcessBeanDefinitionRegistry方法，装载配置类注解，映射@Bean别名信息
 		 * */
 		for (BeanDefinitionRegistryPostProcessor postProcessor : postProcessors) {
 			StartupStep postProcessBeanDefRegistry = applicationStartup.start("spring.context.beandef-registry.post-process")
 					.tag("postProcessor", postProcessor::toString);
+			//注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
 			postProcessor.postProcessBeanDefinitionRegistry(registry);
 			postProcessBeanDefRegistry.end();
 		}
@@ -445,7 +449,7 @@ final class PostProcessorRegistrationDelegate {
 
 	/**
 	 * Invoke the given BeanFactoryPostProcessor beans.
-	 * 通过调用postProcessBeanFactory进行扩展处理，此时的bean已经完成注册，调用时按照PriorityOrdered、order顺序来进行调用
+	 * 通过调用postProcessBeanFactory进行扩展处理，此时的bean已经完成注册，调用时按照PriorityOrdered、Ordered顺序来进行调用
 	 * 在此postProcessBeanFactory中可以修改bean定义信息何对bean定义信息进行补充
 	 */
 	private static void invokeBeanFactoryPostProcessors(
