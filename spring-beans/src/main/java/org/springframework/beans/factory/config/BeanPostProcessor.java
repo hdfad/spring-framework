@@ -55,7 +55,13 @@ import org.springframework.lang.Nullable;
  * @see ConfigurableBeanFactory#addBeanPostProcessor
  * @see BeanFactoryPostProcessor
  *
- * bean后置处理器顶层接口，spring生命周期中的八大后置处理器扩展点都是BeanPostProcessor的子类，用于完成bean的初始化和初始化完成后的各种扩展
+ * bean后置处理器顶层接口，spring生命周期中的八大后置处理器扩展点都是BeanPostProcessor的子类，用于在bean的**初始化前**和**初始化后**的各种扩展
+ * 在BeanPostProcessor接口中有2个Nullable注解标注得Initialization方法：
+ * 		postProcessBeforeInitialization：bean初始化之前执行
+ * 		init-method
+ * 		postProcessAfterInitialization：bean初始化之后执行
+ * 	有默认返回值：传入的bean对象
+ * 	// TODO: 2021/11/16  执行入口
  */
 public interface BeanPostProcessor {
 
@@ -71,6 +77,8 @@ public interface BeanPostProcessor {
 	 * if {@code null}, no subsequent BeanPostProcessors will be invoked
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet
+	 *
+	 * 在初始化前对bean进行操作
 	 */
 	@Nullable
 	default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -97,6 +105,8 @@ public interface BeanPostProcessor {
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet
 	 * @see org.springframework.beans.factory.FactoryBean
+	 *
+	 * 在初始化后对bean进行操作
 	 */
 	@Nullable
 	default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {

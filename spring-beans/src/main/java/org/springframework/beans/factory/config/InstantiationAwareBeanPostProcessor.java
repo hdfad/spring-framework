@@ -43,6 +43,16 @@ import org.springframework.lang.Nullable;
  * @since 1.2
  * @see org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator#setCustomTargetSourceCreators
  * @see org.springframework.aop.framework.autoproxy.target.LazyInitTargetSourceCreator
+ *
+ *
+ * 继承自BeanPostProcessor接口，在实例化前对bean进行操作
+ *
+ *
+ * 实例化 Instantiation：即将生成对象，对象还未生成
+ * 初始化 Initialization：已经生成对象，对对象进行赋值
+ *
+ *
+ *
  */
 public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 
@@ -69,6 +79,18 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @see #postProcessAfterInstantiation
 	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition#getBeanClass()
 	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition#getFactoryMethodName()
+	 *
+	 * 在实例化前调用，不同于BeanPostProcessor的postProcessBerforeInitialization是在初始化阶段，初始化前对bean进行操作，
+	 * postProcessBeforeInstantiation是在实例化阶段，此时的bean还未产生，
+	 * postProcessBeforeInstantiation是在bean对象实例化前对bean进行操作，
+	 * 通过
+	 * #AbstractAutowireCapableBeanFactory # createBean
+	 * 	|____AbstractAutowireCapableBeanFactory # resolveBeforeInstantiation
+	 * 		|____AbstractAutowireCapableBeanFactory # applyBeanPostProcessorsBeforeInstantiation
+	 * 进行调用
+	 * 默认返回null，在实例化前不会对bean进行操作
+	 * 如果返回非null对象，bean的创建过程就会短路，实例化阶段就完成了，不再进行doCreateBean流程
+	 *
 	 */
 	@Nullable
 	default Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
@@ -89,6 +111,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * instances being invoked on this bean instance.
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see #postProcessBeforeInstantiation
+	 *
+	 * 在实例化后调用，不同于BeanPostProcessor的postProcessAfterInstantiation在初始化前对bean进行操作，
+	 * postProcessBeforeInstantiation在实例化bean对象后对bean进行操作
 	 */
 	default boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
 		return true;
