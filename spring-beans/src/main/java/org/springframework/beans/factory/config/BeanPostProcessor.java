@@ -61,7 +61,15 @@ import org.springframework.lang.Nullable;
  * 		init-method
  * 		postProcessAfterInitialization：bean初始化之后执行
  * 	有默认返回值：传入的bean对象
+ *
+ *
+ * 	bean创建过程的后置处理器调用流程：
+ * 		InstantiationAwareBeanPostProcessor -> SmartInstantiationAwareBeanPostProcessor ->
+ *
  * 	// TODO: 2021/11/16  执行入口
+ *
+ *
+ *
  */
 public interface BeanPostProcessor {
 

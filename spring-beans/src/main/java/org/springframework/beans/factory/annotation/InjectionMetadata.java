@@ -118,12 +118,14 @@ public class InjectionMetadata {
 	 * 一个element有可能代表的是方法, 也有可能代表的是属性,
 	 *   而在InjectedElement中, Spring是通过接口编程, 放置的不是Method, 也不是Field, 而是它们的公共父类
 	 *   Member
+	 *
+	 *   InjectionMetadata # inject 注入
 	 * @param target
 	 * @param beanName
 	 * @param pvs
 	 * @throws Throwable
 	 */
-	public void inject(Object target, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+	public void  inject(Object target, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 		Collection<InjectedElement> checkedElements = this.checkedElements;
 		Collection<InjectedElement> elementsToIterate =
 				(checkedElements != null ? checkedElements : this.injectedElements);

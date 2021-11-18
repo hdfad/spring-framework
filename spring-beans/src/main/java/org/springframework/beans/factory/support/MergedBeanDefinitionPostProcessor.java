@@ -34,6 +34,9 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  * @author Juergen Hoeller
  * @since 2.5
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#getMergedBeanDefinition
+ *
+ * MergedBeanDefinitionPostProcessor后置处理器，直接继承BeanPostProcessor接口，在bean实例化之后但未初始化时进行调用
+ *
  */
 public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 

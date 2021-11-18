@@ -35,10 +35,9 @@ import org.springframework.lang.Nullable;
  * @since 2.0.3
  * @see InstantiationAwareBeanPostProcessorAdapter
  *
- * SmartInstantiationAwareBean后处理器
+ * SmartInstantiationAwareBeanPostProcessor后置处理器
  * 继承InstantiationAwareBeanPostProcessor，并未直接继承BeanPostProcessor
- *
- *
+ * 整个SmartInstantiationAwareBeanPostProcessor后置处理器发生在doCreateBean阶段属性填充之前
  *
  */
 public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessor {
@@ -51,6 +50,26 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	 * @param beanName the name of the bean
 	 * @return the type of the bean, or {@code null} if not predictable
 	 * @throws org.springframework.beans.BeansException in case of errors
+	 *
+	 * 预测Bean的类型，determineCandidateConstructors方法返回多个构造参数后需要通过predictBeanType选择合适的构造函数
+	 * 调用链
+	 *  AbstractBeanFactory # doGetBean
+	 *  |____DefaultSingletonBeanRegistry # getSingleton
+	 *  	 |____AbstractAutowireCapableBeanFactory # createBean
+	 *  	 	  |____AbstractAutowireCapableBeanFactory # doCreateBean
+	 *  	 	  	   |____AbstractAutowireCapableBeanFactory # createBeanInstance
+	 *  	 	  	   		|____AbstractAutowireCapableBeanFactory # autowireConstructor
+	 *  	 	  	   			 |____ConstructorResolver # createArgumentArray
+	 *  	 	  	   			 	  |____ConstructorResolver # resolveAutowiredArgument
+	 *  	 	  	   			 	  	   |____DefaultListableBeanFactory # resolveDependency
+	 *  	 	  	   			 	  	   	    |____DefaultListableBeanFactory # doResolveDependency
+	 *  	 	  	   			 	  	   	    	 |____DefaultListableBeanFactory # findAutowireCandidates
+	 *  	 	  	   			 	  	   	    	 	  |____BeanFactoryUtils # beanNamesForTypeIncludingAncestors
+	 *  	 	  	   			 	  	   	    	 	  	   |____DefaultListableBeanFactory # getBeanNamesForType
+	 *  	 	  	   			 	  	   	    	 	  	   		|____DefaultListableBeanFactory # doGetBeanNamesForType
+	 *  	 	  	   			 	  	   	    	 	  	   			 |____AbstractBeanFactory # isTypeMatch
+	 *  	 	  	   			 	  	   	    	 	  	   			 	  |____AbstractAutowireCapableBeanFactory # predictBeanType
+	 * 默认返回null
 	 */
 	@Nullable
 	default Class<?> predictBeanType(Class<?> beanClass, String beanName) throws BeansException {
@@ -64,6 +83,34 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	 * @param beanName the name of the bean
 	 * @return the candidate constructors, or {@code null} if none specified
 	 * @throws org.springframework.beans.BeansException in case of errors
+	 *
+	 * 获取所有注入的构造函数，返回构造函数的数组
+	 *
+	 *
+	 * 示例：
+	 * @Component
+	 * public class A {
+	 *        @Autowired
+	 *    private B b;
+	 *
+	 *    @Autowired(required = false)
+	 * 	public A(B b) {
+	 * 		this.b = b;
+	 *    }
+	 *
+	 *    @Autowired(required = false)
+	 * 	public A() {
+	 *    }
+	 * }
+	 *
+	 * 调用链
+	 *  AbstractBeanFactory # doGetBean
+	 *  |____DefaultSingletonBeanRegistry # getSingleton
+	 *  	 |____AbstractAutowireCapableBeanFactory # createBean
+	 *  	 	  |____AbstractAutowireCapableBeanFactory # doCreateBean
+	 *  	 	  	   |____AbstractAutowireCapableBeanFactory # createBeanInstance
+	 *  	 	  	   		|____AbstractAutowireCapableBeanFactory # determineConstructorsFromBeanPostProcessors
+	 * 默认返回null
 	 */
 	@Nullable
 	default Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, String beanName)
@@ -92,6 +139,17 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	 * @return the object to expose as bean reference
 	 * (typically with the passed-in bean instance as default)
 	 * @throws org.springframework.beans.BeansException in case of errors
+	 *
+	 * 获取提前引用对象，返回的对象是已实例化未初始化对象，如果存在代理则返回代理对象
+	 *
+	 * 调用链
+	 *  AbstractBeanFactory # doGetBean
+	 *  |____DefaultSingletonBeanRegistry # getSingleton
+	 *  	 |____AbstractAutowireCapableBeanFactory # createBean
+	 *  	 	  |____AbstractAutowireCapableBeanFactory # doCreateBean
+	 *  	 	  	   |____AbstractAutowireCapableBeanFactory # getEarlyBeanReference
+	 *
+	 * 默认返回传入的bean
 	 */
 	default Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
 		return bean;
