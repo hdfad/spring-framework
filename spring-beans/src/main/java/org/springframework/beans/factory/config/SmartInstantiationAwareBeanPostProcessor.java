@@ -34,6 +34,12 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @since 2.0.3
  * @see InstantiationAwareBeanPostProcessorAdapter
+ *
+ * SmartInstantiationAwareBean后处理器
+ * 继承InstantiationAwareBeanPostProcessor，并未直接继承BeanPostProcessor
+ *
+ *
+ *
  */
 public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessor {
 

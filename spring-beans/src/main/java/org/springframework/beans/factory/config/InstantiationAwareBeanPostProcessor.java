@@ -45,12 +45,15 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.aop.framework.autoproxy.target.LazyInitTargetSourceCreator
  *
  *
- * 继承自BeanPostProcessor接口，在实例化前对bean进行操作
+ * InstantiationAwareBean 后处理器
+ *
+ * 继承自BeanPostProcessor接口，在实例化前后对bean进行操作
  *
  *
  * 实例化 Instantiation：即将生成对象，对象还未生成
  * 初始化 Initialization：已经生成对象，对对象进行赋值
  *
+ * bean实例化过程中会调用此后置处理器，首先会调用的后置处理器
  *
  *
  */
@@ -80,17 +83,17 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition#getBeanClass()
 	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition#getFactoryMethodName()
 	 *
-	 * 在实例化前调用，不同于BeanPostProcessor的postProcessBerforeInitialization是在初始化阶段，初始化前对bean进行操作，
-	 * postProcessBeforeInstantiation是在实例化阶段，此时的bean还未产生，
+	 * 在实例化前调用进行扩展，此时的bean还未进行创建，
+	 * 不同于父接口BeanPostProcessor的postProcessBerforeInitialization是在初始化阶段，初始化前对bean进行操作，postProcessBeforeInstantiation是在实例化阶段，此时的bean还未产生，
 	 * postProcessBeforeInstantiation是在bean对象实例化前对bean进行操作，
-	 * 通过
-	 * #AbstractAutowireCapableBeanFactory # createBean
+	 * 调用链：
+	 *  AbstractAutowireCapableBeanFactory # createBean
 	 * 	|____AbstractAutowireCapableBeanFactory # resolveBeforeInstantiation
 	 * 		|____AbstractAutowireCapableBeanFactory # applyBeanPostProcessorsBeforeInstantiation
-	 * 进行调用
+	 *
 	 * 默认返回null，在实例化前不会对bean进行操作
 	 * 如果返回非null对象，bean的创建过程就会短路，实例化阶段就完成了，不再进行doCreateBean流程
-	 *
+	 * 如果创建了代理类在此步就会直接返回
 	 */
 	@Nullable
 	default Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
@@ -112,8 +115,18 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see #postProcessBeforeInstantiation
 	 *
-	 * 在实例化后调用，不同于BeanPostProcessor的postProcessAfterInstantiation在初始化前对bean进行操作，
+	 *
+	 * 在实例化后调用，发生在populateBean阶段，此时的bean已经被实例化完成，
+	 * 不同于父接口BeanPostProcessor的postProcessAfterInitialization在初始化后对bean进行操作，
 	 * postProcessBeforeInstantiation在实例化bean对象后对bean进行操作
+	 * 调用链
+	 * AbstractAutowireCapableBeanFactory # createBean
+	 * |____AbstractAutowireCapableBeanFactory # doCreateBean
+	 * 		|____AbstractAutowireCapableBeanFactory # populateBean
+	 *
+	 * 	返回值默认是true，
+	 * 	当返回false时不会对bean进行属性填充,直接结束populateBean
+	 *
 	 */
 	default boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
 		return true;
@@ -136,6 +149,24 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @since 5.1
 	 * @see #postProcessPropertyValues
+	 *
+	 *
+	 * 实例化后调用，发生在applyPropertyValues应用属性值前，
+	 * 调用实现类覆写了postProcessProperties的方法，对注解属性进行注入
+	 * 实现类：
+	 * 	AutowiredAnnotationBeanPostProcessor#postProcessProperties：对Autowired、Value、Inject、Lookup注解进行注入
+	 * 	CommonAnnotationBeanPostProcessor#postProcessProperties：对PostConstruct、PreDestroy、Resource、WebServiceRef、EJB注解进行注入
+	 * 	ConfigurationClassPostProcessor#postProcessProperties：对Configuration、Bean注解进行注入
+	 *  PersistenceAnnotationBeanPostProcessor#postProcessProperties：jpa包下，对PersistenceUnit、PersistenceContext注解进行注入
+	 *
+	 * 调用链：
+	 * AbstractAutowireCapableBeanFactory # createBean
+	 * |____AbstractAutowireCapableBeanFactory # doCreateBean
+	 * 		|____AbstractAutowireCapableBeanFactory # populateBean
+	 * 			 |____InstantiationAwareBeanPostProcessor # postProcessProperties
+	 *
+	 * 默认返回null
+	 *
 	 */
 	@Nullable
 	default PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)
@@ -163,6 +194,16 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @see #postProcessProperties
 	 * @see org.springframework.beans.MutablePropertyValues
 	 * @deprecated as of 5.1, in favor of {@link #postProcessProperties(PropertyValues, Object, String)}
+	 *
+	 *
+	 * 已经过时的方法，在PropertyValues应用到bean实列之前对对属性值进行拦截更改
+	 * 调用链：
+	 * AbstractAutowireCapableBeanFactory # createBean
+	 * |____AbstractAutowireCapableBeanFactory # doCreateBean
+	 * 		|____AbstractAutowireCapableBeanFactory # populateBean
+	 * 			 |____InstantiationAwareBeanPostProcessor # postProcessPropertyValues
+	 *
+	 * 默认返回当前PropertyValues
 	 */
 	@Deprecated
 	@Nullable
