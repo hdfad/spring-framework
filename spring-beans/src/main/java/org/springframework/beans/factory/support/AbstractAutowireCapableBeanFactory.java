@@ -1172,11 +1172,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @param mbd the bean definition for the bean
 	 * @return the shortcut-determined bean instance, or {@code null} if none
 	 *
-	 * #1、InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation
-	 *
-	 * 第一次通过AbstractAutowireCapableBeanFactory#resolveBeforeInstantiation
-	 * 调用后置处理器InstantiationAwareBeanPostProcessor的postProcessBeforeInstantiation，
-	 * 如果BeanDefinition中的beforeInstantiationResolved、synthetic标识为true且为InstantiationAwareBeanPostProcessor的实现类时调用返回子类创建的bean
+	 * #1、
+	 * 首先调用InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation，此时的bean还未进行实例化，在实例化之前对bean进行操作，
+	 * 如果返回bean对象，不再进行doCreateBean流程,比如对对象创建代理
 	 *
 	 * #2、BeanPostProcessor#postProcessAfterInitialization
 	 *
@@ -1193,7 +1191,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
-					//第一次调用后置处理器
+					//第一次调用后置处理器,此时的bean还未实例化
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {//如果返回的bean不为null, 还需要执行实例化之后的处理器, 来保证流程的完整性
 						//第二次调用后置处理器
@@ -1558,14 +1556,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// 4：AUTOWIRE_AUTODETECT(已启用)
 		int resolvedAutowireMode = mbd.getResolvedAutowireMode();
 		/*
-		* 判断注入类型resolvedAutowireMode
-		* 当我们手动设置了注入模型为byType/byName的时候,
-		* Spring就会利用Java的内省机制拿到所有的
-		* set方法, 如果一个set方法有参数, Spring就会将其封装成一个PropertyValue, 然后放入到新创建的newPvs
-		* 中, 最终用这个newPvs来替换原来的pvs, 这里有一个注意点, 在获取pvs的时候, 如果程序员没有提供, pvs
-		* 被设置成了null, 因为 mbd.getPropertyValues()这段代码始终是能拿到一个集合对象的, 只是这个集合对象
-		* 中没有PropertyValue而已
-		* */
+		 * 判断注入类型resolvedAutowireMode
+		 * 当我们手动设置了注入模型为byType/byName的时候,
+		 * Spring就会利用Java的内省机制拿到所有的
+		 * set方法, 如果一个set方法有参数, Spring就会将其封装成一个PropertyValue, 然后放入到新创建的newPvs
+		 * 中, 最终用这个newPvs来替换原来的pvs, 这里有一个注意点, 在获取pvs的时候, 如果程序员没有提供, pvs
+		 * 被设置成了null, 因为 mbd.getPropertyValues()这段代码始终是能拿到一个集合对象的, 只是这个集合对象
+		 * 中没有PropertyValue而已
+		 * */
 		if (resolvedAutowireMode == AUTOWIRE_BY_NAME || resolvedAutowireMode == AUTOWIRE_BY_TYPE) {//如果是AUTOWIRE_BY_NAME||AUTOWIRE_BY_TYPE
 			MutablePropertyValues newPvs = new MutablePropertyValues(pvs);//实例化一个MutablePropertyValues，存储AbstractBeanDefinition中的propertyValues
 			// Add property values based on autowire by name if applicable.
