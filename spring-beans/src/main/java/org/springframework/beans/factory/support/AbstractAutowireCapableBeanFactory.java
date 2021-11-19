@@ -543,7 +543,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
 			//此步还未实例化bean，判断是否需要创建bean代理对象，且返回代理bean
 			//对于jdk还是cglib代理会根据DefaultAopProxyFactory下的createAopProxy创建指定的AopProxy实现类（jdk或cglib）
-			//第一次调用后置处理器
+			//第一、二次调用后置处理器
 			//如果BeanDefinition的beforeInstantiationResolved标识为true、synthetic标识也为true且包含InstantiationAwareBeanPostProcessor的子类则会调用2个后置处理器
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			//如果在经历到后置处理器的处理后的bean对象不为null，则直接对外提供bean对象
@@ -557,7 +557,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
-			//第二到第九次后置处理器调用入口
+			//第三到第九次后置处理器调用入口
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -598,7 +598,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
-			//第二次后置处理器调用入口，获取bean包装器BeanWrapper，首先会获取所有被@Autowired标记的构造器，然后根据合适的构造器进行对象的创建，并返回对象包装器BeanWrapper
+			//第三次后置处理器调用入口，获取bean包装器BeanWrapper，首先会获取所有被@Autowired标记的构造器，然后根据合适的构造器进行对象的创建，并返回对象包装器BeanWrapper
 			//此时已经实例化出对象了
 			/*
 			使用createBeanInstance创建对象时当bean存在自动注入@Autowired标识的构造器
@@ -627,7 +627,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
-					//第三次调用后置处理器入口,属性合并后置处理器，对@PostConstruct @PreDestroy @Resource进行扫描并进行注册，设置注册和销毁的回调方法
+					//第四次调用后置处理器入口,属性合并后置处理器，对@PostConstruct @PreDestroy @Resource进行扫描并进行注册，设置注册和销毁的回调方法
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -1160,7 +1160,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
 		for (MergedBeanDefinitionPostProcessor processor : getBeanPostProcessorCache().mergedDefinition) {
-			//第三个后置处理器，扫描 @PostConstruct,@PreDestroy,@Resource并进行注册，设置注册和销毁的回调方法
+			//第四个后置处理器，扫描 @PostConstruct,@PreDestroy,@Resource并进行注册，设置注册和销毁的回调方法
 			processor.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 		}
 	}
@@ -1292,7 +1292,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Candidate constructors for autowiring?
-		//第二个次后置处理器调用,获取所有的@Autowired标识的构造器，如果不存在则返回null数组
+		//第三个次后置处理器调用,获取所有的@Autowired标识的构造器，如果不存在则返回null数组
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		//当bean存在自动注入@Autowired标识的构造器||或者注入模型autowireMode=AUTOWIRE_CONSTRUCTOR:3 || 构造函数参数值存在 || constructor不为null满足其一
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||

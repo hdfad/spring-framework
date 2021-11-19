@@ -84,8 +84,8 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	 * @return the candidate constructors, or {@code null} if none specified
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 *
-	 * 获取所有注入的构造函数，返回构造函数的数组
-	 *
+	 * 整个bean创建的生命周期中只会创建一次，发生在createBeanInstance阶段，此时的bean处于未实例化阶段
+	 * 目的是获取所有注入的构造函数，返回构造函数的数组
 	 *
 	 * 示例：
 	 * @Component

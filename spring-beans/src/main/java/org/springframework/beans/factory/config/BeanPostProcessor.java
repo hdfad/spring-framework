@@ -64,11 +64,17 @@ import org.springframework.lang.Nullable;
  *
  *
  * 	bean创建过程的后置处理器调用流程：
- * 		InstantiationAwareBeanPostProcessor -> SmartInstantiationAwareBeanPostProcessor ->
+ * 		   InstantiationAwareBeanPostProcessor # postProcessBeforeInstantiation
+ * 		-> BeanPostProcessor # postProcessAfterInitialization
+ * 		-> SmartInstantiationAwareBeanPostProcessor # determineCandidateConstructors
+ * 		-> MergedBeanDefinitionPostProcessor # postProcessMergedBeanDefinition
+ * 	 	-> InstantiationAwareBeanPostProcessor # postProcessAfterInstantiation
+ * 	 	-> InstantiationAwareBeanPostProcessor # postProcessProperties
+ * 	 	-> InstantiationAwareBeanPostProcessor # postProcessPropertyValues
+ * 	 	-> BeanPostProcessor # postProcessBeforeInitialization
+ * 	 	-> BeanPostProcessor # postProcessAfterInitialization
  *
- * 	// TODO: 2021/11/16  执行入口
- *
- *
+ * 	 调用的顶层后置处理器接口就4种 InstantiationAwareBeanPostProcessor -> BeanPostProcessor -> SmartInstantiationAwareBeanPostProcessor ->MergedBeanDefinitionPostProcessor
  *
  */
 public interface BeanPostProcessor {
@@ -115,6 +121,13 @@ public interface BeanPostProcessor {
 	 * @see org.springframework.beans.factory.FactoryBean
 	 *
 	 * 在初始化后对bean进行操作
+	 *
+	 * 在bean生命周期中会调用 次，但是调用阶段都是在bean初始化之后，对bean进行一些操作
+	 * 第一次调用是发生在如果 InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation返回非空时对初始化完成的bean进行后续操作
+	 * 调用链
+	 *  AbstractAutowireCapableBeanFactory # createBean
+	 * 	|____AbstractAutowireCapableBeanFactory # resolveBeforeInstantiation
+	 * 		 |____AbstractAutowireCapableBeanFactory # applyBeanPostProcessorsAfterInitialization
 	 */
 	@Nullable
 	default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {

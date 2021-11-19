@@ -36,6 +36,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#getMergedBeanDefinition
  *
  * MergedBeanDefinitionPostProcessor后置处理器，直接继承BeanPostProcessor接口，在bean实例化之后但未初始化时进行调用
+ * 用于对实例化的bean进行部分部分属性重置或者合并
  *
  */
 public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
@@ -46,6 +47,15 @@ public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 	 * @param beanType the actual type of the managed bean instance
 	 * @param beanName the name of the bean
 	 * @see AbstractAutowireCapableBeanFactory#applyMergedBeanDefinitionPostProcessors
+	 *
+	 * 整个生命周期中只会调用一次，发生在
+	 * 合并beanDefinition定义
+	 * 过程发生在实例化之后但未属性填充前
+	 *
+	 * 调用链
+	 * AbstractAutowireCapableBeanFactory # createBean
+	 * |____AbstractAutowireCapableBeanFactory # doCreateBean
+	 * 		|____AbstractAutowireCapableBeanFactory # applyMergedBeanDefinitionPostProcessors
 	 */
 	void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName);
 
@@ -56,6 +66,8 @@ public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 	 * @param beanName the name of the bean
 	 * @since 5.1
 	 * @see DefaultListableBeanFactory#resetBeanDefinition
+	 *
+	 * 重置beanDefinition
 	 */
 	default void resetBeanDefinition(String beanName) {
 	}

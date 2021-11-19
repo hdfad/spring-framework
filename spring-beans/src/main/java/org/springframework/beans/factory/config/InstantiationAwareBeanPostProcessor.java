@@ -38,6 +38,7 @@ import org.springframework.lang.Nullable;
  * {@link InstantiationAwareBeanPostProcessorAdapter} in order to be shielded
  * from extensions to this interface.
  *
+ *
  * @author Juergen Hoeller
  * @author Rod Johnson
  * @since 1.2
@@ -54,6 +55,7 @@ import org.springframework.lang.Nullable;
  * 初始化 Initialization：已经生成对象，对对象进行赋值
  *
  * bean实例化过程中会调用此后置处理器，首先会调用的后置处理器
+ * 过程中会在postProcessProperties阶段调用部分注解
  *
  *
  */
@@ -83,17 +85,18 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition#getBeanClass()
 	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition#getFactoryMethodName()
 	 *
-	 * 在实例化前调用进行扩展，此时的bean还未进行创建，
-	 * 不同于父接口BeanPostProcessor的postProcessBerforeInitialization是在初始化阶段，初始化前对bean进行操作，postProcessBeforeInstantiation是在实例化阶段，此时的bean还未产生，
-	 * postProcessBeforeInstantiation是在bean对象实例化前对bean进行操作，
+	 *
+	 *
+	 * 整个bean创建周期中只会调用一次，在createBean阶段，此时的bean处于未实例化
+	 * 默认返回null，在实例化前不会对bean进行操作
+	 * 如果返回非null对象，bean的创建过程就会短路，实例化阶段就完成了，不再进行doCreateBean流程
+	 * 如果创建了代理类在此步就会直接返回
 	 * 调用链：
 	 *  AbstractAutowireCapableBeanFactory # createBean
 	 * 	|____AbstractAutowireCapableBeanFactory # resolveBeforeInstantiation
 	 * 		|____AbstractAutowireCapableBeanFactory # applyBeanPostProcessorsBeforeInstantiation
 	 *
-	 * 默认返回null，在实例化前不会对bean进行操作
-	 * 如果返回非null对象，bean的创建过程就会短路，实例化阶段就完成了，不再进行doCreateBean流程
-	 * 如果创建了代理类在此步就会直接返回
+	 *
 	 */
 	@Nullable
 	default Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
