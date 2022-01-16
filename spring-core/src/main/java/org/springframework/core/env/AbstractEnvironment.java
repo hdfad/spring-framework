@@ -118,6 +118,9 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 * allow subclasses to contribute or manipulate {@link PropertySource} instances as
 	 * appropriate.
 	 * @see #customizePropertySources(MutablePropertySources)
+	 *
+	 * new MutablePropertySources():创建一个空的MutablePropertySources，再通过this调用有参AbstractEnvironment函数
+	 * {@link AbstractEnvironment#AbstractEnvironment(org.springframework.core.env.MutablePropertySources)}
 	 */
 	public AbstractEnvironment() {
 		this(new MutablePropertySources());
@@ -131,6 +134,10 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 * {@link PropertySource} instances as appropriate.
 	 * @since 5.3.4
 	 * @see #customizePropertySources(MutablePropertySources)
+	 *
+	 * 通过System.getProperties()和System.getenv()构造系统环境
+	 * {@link AbstractEnvironment#getSystemProperties()}
+	 * {@link AbstractEnvironment#getSystemEnvironment()}
 	 */
 	protected AbstractEnvironment(MutablePropertySources propertySources) {
 		this.propertySources = propertySources;
@@ -233,6 +240,9 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 * @see MutablePropertySources
 	 * @see PropertySourcesPropertyResolver
 	 * @see org.springframework.context.ApplicationContextInitializer
+	 *
+	 * 封装对应的系统资源运行环境，通过子类实现
+	 *
 	 */
 	protected void customizePropertySources(MutablePropertySources propertySources) {
 	}
@@ -435,6 +445,10 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 		return this.propertySources;
 	}
 
+	/**
+	 *  System.getProperties()：获取jvm系统资源环境
+	 * @return
+	 */
 	@Override
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public Map<String, Object> getSystemProperties() {
@@ -461,6 +475,10 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 		}
 	}
 
+	/**
+	 * System.getenv():获取运行环境
+	 * @return
+	 */
 	@Override
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public Map<String, Object> getSystemEnvironment() {

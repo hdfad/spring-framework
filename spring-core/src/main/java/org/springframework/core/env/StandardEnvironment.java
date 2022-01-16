@@ -62,6 +62,10 @@ public class StandardEnvironment extends AbstractEnvironment {
 
 	/**
 	 * Create a new {@code StandardEnvironment} instance.
+	 *
+	 * 调用自己的构造方法时，会优先去调用父类的构造方法
+	 * @see AbstractEnvironment#AbstractEnvironment()
+	 * 最终会通过父类的构造方法调用  {@link StandardEnvironment#customizePropertySources}
 	 */
 	public StandardEnvironment() {
 	}
@@ -88,6 +92,8 @@ public class StandardEnvironment extends AbstractEnvironment {
 	 * @see AbstractEnvironment#customizePropertySources(MutablePropertySources)
 	 * @see #getSystemProperties()
 	 * @see #getSystemEnvironment()
+	 *
+	 * 获取系统资源运行环境
 	 */
 	@Override
 	protected void customizePropertySources(MutablePropertySources propertySources) {
