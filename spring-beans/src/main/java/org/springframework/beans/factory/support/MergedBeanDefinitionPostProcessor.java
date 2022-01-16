@@ -48,9 +48,8 @@ public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 	 * @param beanName the name of the bean
 	 * @see AbstractAutowireCapableBeanFactory#applyMergedBeanDefinitionPostProcessors
 	 *
-	 * 整个生命周期中只会调用一次，发生在
-	 * 合并beanDefinition定义
-	 * 过程发生在实例化之后但未属性填充前
+	 * 整个生命周期中只会调用一次，发生在createBeanInstance之后，此时的bean已经被实例化但未进行属性填充，
+	 * 目的是为了合并beanDefinition定义
 	 *
 	 * 调用链
 	 * AbstractAutowireCapableBeanFactory # createBean

@@ -32,7 +32,7 @@ package org.springframework.beans.factory;
  * @author Juergen Hoeller
  * @since 3.1
  *
- * Aware 接口，提供了类似回调函数的功能
+ * Aware 接口，感知bean中的信息，如实现BeanNameAware后可以感知到bean的name
  */
 public interface Aware {
 

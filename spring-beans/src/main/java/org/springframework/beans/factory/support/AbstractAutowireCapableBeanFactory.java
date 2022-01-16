@@ -430,7 +430,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {//循环遍历所有的BeanPostProcessor执行postProcessBeforeInitialization
-			//第七个后置处理器:调用此接口前bean已经被实例化完成，并且完成了属性的填充，因此这个过程属于后续的bean的初始化过程
+			//第八次后置处理器:调用此接口前bean已经被实例化完成，并且完成了属性的填充，因此这个过程属于后续的bean的初始化过程
 			//如果处理这个对象的beanFactory中被注册了ApplicationContextAwareProcessor、LoadTimeWeaverAwareProcessor就会对部分注解进行扫描注册，设置生命函数（注册销毁），添加AspectJ支持等
 			//通过在prepareBeanFactory方法中的beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 			// 注入对ApplicationContextAwareProcessor支持，然后完成对部分Aware接口实现类的回调
@@ -658,9 +658,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object exposedObject = bean;
 		try {
 
-			//第五次，六次后置处理器入口，对bean进行属性注入
+			//第六、七次后置处理器入口，对bean进行属性注入
 			populateBean(beanName, mbd, instanceWrapper);
-			//第七，八个后置处理器入口，初始化bean
+			//第八，九次后置处理器入口，初始化bean
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1590,7 +1590,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 			//遍历所有的InstantiationAwareBeanPostProcessor后置处理器实现类，调用postProcessProperties和postProcessPropertyValues，获取到结果值
 			for (InstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().instantiationAware) {
-				//调用后置处理器
+				//第六次调用后置处理器
 				//Spring的@Autowire注入,JSR330的@Inject以及JSR250的@Resource等注入操作都是通过这个方法完成 ，使用反射将注入的bean实例赋值给属性。
 				//对于自动注入的对象，spring调用InjectedElement.inject对对象进行注入
 				PropertyValues pvsToUse = bp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
@@ -1598,7 +1598,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					if (filteredPds == null) {
 						filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 					}
-					//第六次调用后置处理器，在配置的BeanDefinition的propertyValues被设置到bean实例中之前，我们有机会拦截属性，并更改属性
+					//第七次调用后置处理器，在配置的BeanDefinition的propertyValues被设置到bean实例中之前，我们有机会拦截属性，并更改属性
 					pvsToUse = bp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
 						return;
@@ -2011,7 +2011,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
 
-			//第七个后置处理器调用口，在init-method方法之前，回调部分Aware接口
+			//第八次后置处理器调用口，在init-method方法之前，回调部分Aware接口
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
@@ -2025,7 +2025,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
-			//第八个后置处理器调用口
+			//第九次后置处理器调用口
 			//遍历执行所有BeanPostProcessor的postProcessAfterInitialization方法。
 			//bean的各种方法执行属性为，先执行构造方法，再执行后置管理器中的before方法及@PostContrust方法，最后执行后置处理器的after方法。
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);

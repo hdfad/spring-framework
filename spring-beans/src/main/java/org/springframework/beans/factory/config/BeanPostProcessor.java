@@ -92,7 +92,15 @@ public interface BeanPostProcessor {
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet
 	 *
-	 * 在初始化前对bean进行操作
+	 * 在初始化前对bean进行操作,在bean生命周期中只会被调用一次
+	 * 调用此接口前bean已经被实例化完成，并且完成了属性的填充，因此这个过程属于后续的bean的初始化过程，此接口在初始化之前调用
+	 *
+	 * 调用链
+	 * AbstractAutowireCapableBeanFactory # createBean
+	 * |____AbstractAutowireCapableBeanFactory # doCreateBean
+	 * 		|____AbstractAutowireCapableBeanFactory # initializeBean
+	 * 			 |____AbstractAutowireCapableBeanFactory # applyBeanPostProcessorsBeforeInitialization
+	 *
 	 */
 	@Nullable
 	default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -122,12 +130,23 @@ public interface BeanPostProcessor {
 	 *
 	 * 在初始化后对bean进行操作
 	 *
-	 * 在bean生命周期中会调用 次，但是调用阶段都是在bean初始化之后，对bean进行一些操作
+	 * 在bean生命周期中会调用2次，但是调用阶段都是在bean初始化之后，对bean进行一些操作p
 	 * 第一次调用是发生在如果 InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation返回非空时对初始化完成的bean进行后续操作
 	 * 调用链
 	 *  AbstractAutowireCapableBeanFactory # createBean
 	 * 	|____AbstractAutowireCapableBeanFactory # resolveBeforeInstantiation
 	 * 		 |____AbstractAutowireCapableBeanFactory # applyBeanPostProcessorsAfterInitialization
+	 *
+	 * 	第二次调用发生在 AbstractAutowireCapableBeanFactory # initializeBean，
+	 * 	进入此步或者第二次后置处理器调用都需要第一次InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation返回null
+	 * 	才会经历后续步骤调用，也才会经过doCreateBean创建初始化bean，在initializeBean阶段通过applyBeanPostProcessorsAfterInitialization对postProcessAfterInitialization进行调用
+	 * 	调用链
+	 * AbstractAutowireCapableBeanFactory # createBean
+	 * |____AbstractAutowireCapableBeanFactory # doCreateBean
+	 * 		|____AbstractAutowireCapableBeanFactory # initializeBean
+	 * 			 |____AbstractAutowireCapableBeanFactory # applyBeanPostProcessorsAfterInitialization
+	 *
+	 *
 	 */
 	@Nullable
 	default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
