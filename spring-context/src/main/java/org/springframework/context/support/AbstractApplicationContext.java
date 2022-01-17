@@ -339,11 +339,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * form, allowing for further customization.
 	 * <p>If none specified, a default environment will be initialized via
 	 * {@link #createEnvironment()}.
+	 *
+	 * 创建运行环境并缓存
 	 */
 	@Override
 	public ConfigurableEnvironment getEnvironment() {
 		if (this.environment == null) {
-			//创建环境并缓存
+			//创建运行环境并缓存
 			this.environment = createEnvironment();
 		}
 		return this.environment;
@@ -353,9 +355,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Create and return a new {@link StandardEnvironment}.
 	 * <p>Subclasses may override this method in order to supply
 	 * a custom {@link ConfigurableEnvironment} implementation.
+	 * 创建一个StandardEnvironment,封装jvm和系统运行环境
 	 */
 	protected ConfigurableEnvironment createEnvironment() {
-		//调用自己的构造方法时，会优先去调用父类的构造方法
+		//调用自己的构造方法时，会优先去调用父类的构造方法，根据父类构造方法调用子类的实现，再从子类实现中获取系统和jvm运行环境
 		return new StandardEnvironment();
 	}
 
@@ -574,7 +577,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			StartupStep contextRefresh = this.applicationStartup.start("spring.context.refresh");
 
 			// Prepare this context for refreshing.
-			//容器状态设置，初始化属性设置，属性校验
+			/**
+			 * 1：设置容器启动时间
+			 * 2：设置活跃状态为true
+			 * 3：设置关闭状态为false
+			 * 4：构建Environment缓存并校验
+			 * 5：准备监听器和事件的集合对象，默认为空集合
+			 */
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
@@ -585,6 +594,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			* 初始化通过BeanDefinitionReader装载在BeanDefinition容器中
 			* 对于存在旧DefaultListableBeanFactory工厂则会先销毁再新建DefaultListableBeanFactory工厂
 			* */
+			/**
+			 *
+			 */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -696,7 +708,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Validate that all properties marked as required are resolvable:
 		// see ConfigurablePropertyResolver#setRequiredProperties
-		//校验属性的合法性
+		//构建Environment缓存并校验
 		getEnvironment().validateRequiredProperties();
 
 		//初始化earlyApplicationListeners监听器-LinkedHashSet结构
