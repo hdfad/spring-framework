@@ -185,6 +185,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	private ApplicationStartup applicationStartup = ApplicationStartup.DEFAULT;
 
 	/**
+	 * 创建一个AbstractBeanFactory,提供对bean别名、单列bean注册、factorybean支持
+	 * 实现了SimpleAliasRegistry、DefaultSingletonBeanRegistry、FactoryBeanRegistrySupport
 	 * Create a new AbstractBeanFactory.
 	 */
 	public AbstractBeanFactory() {

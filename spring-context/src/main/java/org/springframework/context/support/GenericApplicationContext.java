@@ -105,6 +105,9 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 
 
 	/**
+	 * 构造默认的bean工厂:DefaultListableBeanFactory，
+	 * 当前这个DefaultListableBeanFactory内部会通过父类定义好对bean别名处理，单例创建支持，factoryBean支持
+	 * 以及Aware部分接口的忽略定义和定义bean实例创建策略
 	 * Create a new GenericApplicationContext.
 	 * @see #registerBeanDefinition
 	 * @see #refresh

@@ -22,8 +22,10 @@ import java.util.function.Supplier;
 import org.springframework.beans.factory.config.BeanDefinitionCustomizer;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.metrics.StartupStep;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -66,12 +68,13 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * Create a new AnnotationConfigApplicationContext that needs to be populated
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 *
-	 *	构建AnnotationConfigApplicationContext做了啥？
-	 *	1、首先会根据BeanDefinitionRegistry构造一个AnnotatedBeanDefinitionReader，同时会在reader中生成一个唯一id和displayName，规则是className+调用对象hash取十六进制字符串，2者相同
-	 * 	2、提供对 @Component、@Repository、@Service、@Controller、@ManagedBean、@Named 的支持 -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
-	 *  Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener 的支持    -> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
+	 *	父类构造方法：
+	 *	@see DefaultResourceLoader：啥都没干，提供了对资源加载器的支持
+	 *  @see AbstractApplicationContext：配置部分bean名称，与国际化、生命周期bean名称、多播器，以及spel配置表达式是否支持，这部分参数在refresh时会使用到
+	 *  @see GenericApplicationContext：继承AbstractApplicationContext，配置默认bean工厂，
+	 *  	在bean工厂中会通过父类实现对AbstractAutowireCapableBeanFactory来支持bean别名处理，单例创建支持，factoryBean支持
+	 *  	对部分aware的忽略设置和bean实例创建策略
 	 *
-	 * 即：此时生成了BeanDefinitionReader、添加了对部分注解到容器中
 	 *
 	 */
 	public AnnotationConfigApplicationContext() {
@@ -124,6 +127,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		*  Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener 的支持    -> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
 		*
 		* */
+		/**
+		 * 调用当前无参构造方法，从父类开始的静态方法和静态代码块开始
+		 */
 		this();
 		//使用reder构建BeanDefinition，根据类class，初始化容器，注册bean，构建BeanDefinition
 

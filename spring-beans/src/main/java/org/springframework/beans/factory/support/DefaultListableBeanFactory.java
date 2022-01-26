@@ -188,9 +188,19 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 
 	/**
+	 * 创建默认的bean工厂，在这个bean工厂中提供了AbstractAutowireCapableBeanFactory来支持bean别名处理，单例创建支持，factoryBean支持
+	 * 同时对部分aware的忽略设置
+	 * 根据是否存在GraalVM环境决定bean的实例化方式是选择SimpleInstantiationStrategy还是CglibSubclassingInstantiationStrategy
 	 * Create a new DefaultListableBeanFactory.
 	 */
 	public DefaultListableBeanFactory() {
+		/**
+		 * 创建一个AbstractAutowireCapableBeanFactory，提供对bean别名、单例创建、factoryBean的支持
+		 * 忽略部分aware接口
+		 * 实例化一个InstantiationStrategy实现类，根据GraalVM环境决定，
+		 * 	如果存在GraalVM则实例化一个SimpleInstantiationStrategy
+		 * 	不存在则实例化一个CglibSubclassingInstantiationStrategy
+		 */
 		super();
 	}
 

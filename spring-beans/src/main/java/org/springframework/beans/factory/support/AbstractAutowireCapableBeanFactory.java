@@ -125,7 +125,12 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory
 		implements AutowireCapableBeanFactory {
 
-	/** Strategy for creating bean instances. */
+	/**
+	 * Strategy for creating bean instances.
+	 * 实例化策略
+	 * bean实例创建模式，根据是否存在GraalVM环境判断
+	 *
+	 * */
 	private InstantiationStrategy instantiationStrategy;
 
 	/** Resolver strategy for method parameter names. */
@@ -171,17 +176,28 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 
 	/**
+	 * 创建一个AbstractAutowireCapableBeanFactory(有能力自动注入的抽象bean工厂)
+	 * 调用父类的无参构造方法，提供对bean别名、单例创建、factoryBean的支持
+	 * 忽略掉三个aware接口
+	 * 根据vm环境进行判断，判断是否存在GraalVM的条件是属性中是否存在org.graalvm.nativeimage.imagecode属性值
+	 * 	如果是GraalVM环境，使用SimpleInstantiationStrategy创建InstantiationStrategy（实例化策略）
+	 * 	非GraalVM则构建CglibSubclassingInstantiationStrategy的InstantiationStrategy
+	 * 	@see InstantiationStrategy
 	 * Create a new AbstractAutowireCapableBeanFactory.
 	 */
 	public AbstractAutowireCapableBeanFactory() {
+		//调用父类提供对bean别名、单列bean注册、factorybean支持
 		super();
+		//忽略掉一些Aware接口
 		ignoreDependencyInterface(BeanNameAware.class);
 		ignoreDependencyInterface(BeanFactoryAware.class);
 		ignoreDependencyInterface(BeanClassLoaderAware.class);
+		//对于存在GraalVM环境才会调用，GraalVM环境构建SimpleInstantiationStrategy
 		if (NativeDetector.inNativeImage()) {
 			this.instantiationStrategy = new SimpleInstantiationStrategy();
 		}
 		else {
+			//非GraalVM环境构建CglibSubclassingInstantiationStrategy
 			this.instantiationStrategy = new CglibSubclassingInstantiationStrategy();
 		}
 	}
