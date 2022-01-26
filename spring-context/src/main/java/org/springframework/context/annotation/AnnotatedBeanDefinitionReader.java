@@ -27,6 +27,8 @@ import org.springframework.beans.factory.support.AutowireCandidateQualifier;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
@@ -67,9 +69,14 @@ public class AnnotatedBeanDefinitionReader {
 	 * @see #AnnotatedBeanDefinitionReader(BeanDefinitionRegistry, Environment)
 	 * @see #setEnvironment(Environment)
 	 *
+	 * 构建一个AnnotatedBeanDefinitionReader，
 	 * 通过BeanDefinitionRegistry实例化一个AnnotatedBeanDefinitionReader、ConditionEvaluator，添加注解支持
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
+		/**
+		 * 获取系统运行环境，包括jvm环境和系统环境并调用AnnotatedBeanDefinitionReader方法，
+		 * 代入当前BeanDefinitionRegistry和运行环境
+		 */
 		this(registry, getOrCreateEnvironment(registry));
 	}
 
@@ -82,7 +89,7 @@ public class AnnotatedBeanDefinitionReader {
 	 * profiles.
 	 * @since 3.1
 	 *
-	 * 实例化BeanDefinitionRegistry、ConditionEvaluator，添加注解支持
+	 * 在当前AnnotatedBeanDefinitionReader容器中赋值registry和conditionEvaluator
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry, Environment environment) {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
@@ -316,12 +323,26 @@ public class AnnotatedBeanDefinitionReader {
 
 
 	/**
+	 * 获取系统运行环境包括jvm环境和系统环境
+	 * 接口BeanDefinitionRegistry 是 ConfigurableApplicationContext的子接口
+	 * @see ConfigurableApplicationContext#getEnvironment()
+	 * 最终getEnvironment就是调用的ConfigurableApplicationContext#getEnvironment()
 	 * Get the Environment from the given registry if possible, otherwise return a new
 	 * StandardEnvironment.
 	 */
 	private static Environment getOrCreateEnvironment(BeanDefinitionRegistry registry) {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+		/**
+		 * BeanDefinitionRegistry真实类型 org.springframework.context.annotation.AnnotationConfigApplicationContext 是 EnvironmentCapable 子类
+		 * 此处不强转也可以通过registry.getEnvironment()
+		 * EnvironmentCapable 真实类型 ConfigurableEnvironment
+		 */
 		if (registry instanceof EnvironmentCapable) {
+			/**
+			 * 会调用 registry是ConfigurableApplicationContext的子接口，
+			 * 所以会调用ConfigurableApplicationContext的getEnvironment方法
+			 * 最终获取到jvm环境和系统环境
+			 */
 			return ((EnvironmentCapable) registry).getEnvironment();
 		}
 		return new StandardEnvironment();

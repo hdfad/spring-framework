@@ -67,6 +67,8 @@ package org.springframework.core.env;
  * @see org.springframework.context.ConfigurableApplicationContext#getEnvironment
  * @see org.springframework.context.ConfigurableApplicationContext#setEnvironment
  * @see org.springframework.context.support.AbstractApplicationContext#createEnvironment
+ *
+ * 系统vm运行环境相关接口
  */
 public interface Environment extends PropertyResolver {
 

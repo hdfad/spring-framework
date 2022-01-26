@@ -354,12 +354,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>If none specified, a default environment will be initialized via
 	 * {@link #createEnvironment()}.
 	 *
-	 * 创建运行环境并缓存
+	 * 创建运行环境并缓存，包括jvm环境和系统环境
 	 */
 	@Override
 	public ConfigurableEnvironment getEnvironment() {
 		if (this.environment == null) {
-			//创建运行环境并缓存
+			//创建运行环境并缓存，包括jvm环境和系统环境
 			this.environment = createEnvironment();
 		}
 		return this.environment;

@@ -88,6 +88,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		* 	@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener	-> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
 		* 	this->BeanDefinitionRegistry：包含唯一id和展示名称，2者相同，使用AbstractApplicationContext#id、displayName，2者为为className+调用对象的hash取十六进制字符串
 		 */
+		/**
+		 * AnnotationConfigApplicationContext 是 BeanDefinitionRegistry子类
+		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		createAnnotatedBeanDefReader.end();
 		//初始化一个类扫描器，扫描 @Component、@Repository、@Service、@Controller、@ManagedBean、@Named

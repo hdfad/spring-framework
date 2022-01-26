@@ -144,6 +144,13 @@ class ConditionEvaluator {
 		@Nullable
 		private final ClassLoader classLoader;
 
+		/**
+		 * todo 接下来待处理
+		 * 通过构造函数，赋值registry、beanFactory
+		 * @param registry
+		 * @param environment
+		 * @param resourceLoader
+		 */
 		public ConditionContextImpl(@Nullable BeanDefinitionRegistry registry,
 				@Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
 
