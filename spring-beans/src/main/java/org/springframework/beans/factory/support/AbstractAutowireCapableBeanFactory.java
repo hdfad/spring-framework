@@ -71,13 +71,7 @@ import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor;
 import org.springframework.beans.factory.config.TypedStringValue;
-import org.springframework.core.DefaultParameterNameDiscoverer;
-import org.springframework.core.MethodParameter;
-import org.springframework.core.NamedThreadLocal;
-import org.springframework.core.NativeDetector;
-import org.springframework.core.ParameterNameDiscoverer;
-import org.springframework.core.PriorityOrdered;
-import org.springframework.core.ResolvableType;
+import org.springframework.core.*;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -177,7 +171,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 	/**
 	 * 创建一个AbstractAutowireCapableBeanFactory(有能力自动注入的抽象bean工厂)
-	 * 调用父类的无参构造方法，提供对bean别名、单例创建、factoryBean的支持
+	 * 调用父类的无参构造方法，提供对bean别名{@link SimpleAliasRegistry}、单例创建{@link DefaultSingletonBeanRegistry}、factoryBean的支持{@link FactoryBeanRegistrySupport}
 	 * 忽略掉三个aware接口
 	 * 根据vm环境进行判断，判断是否存在GraalVM的条件是属性中是否存在org.graalvm.nativeimage.imagecode属性值
 	 * 	如果是GraalVM环境，使用SimpleInstantiationStrategy创建InstantiationStrategy（实例化策略）
@@ -186,13 +180,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * Create a new AbstractAutowireCapableBeanFactory.
 	 */
 	public AbstractAutowireCapableBeanFactory() {
-		//调用父类提供对bean别名、单列bean注册、factorybean支持
+		/**
+		 * 调用父类提供对bean别名{@link SimpleAliasRegistry}、单例创建{@link DefaultSingletonBeanRegistry}、factoryBean的支持{@link FactoryBeanRegistrySupport}
+		 */
 		super();
 		//忽略掉一些Aware接口
 		ignoreDependencyInterface(BeanNameAware.class);
 		ignoreDependencyInterface(BeanFactoryAware.class);
 		ignoreDependencyInterface(BeanClassLoaderAware.class);
-		//对于存在GraalVM环境才会调用，GraalVM环境构建SimpleInstantiationStrategy
+		//对于存在 环境才会调用，GraalVM环境构建SimpleInstantiationStrategy
 		if (NativeDetector.inNativeImage()) {
 			this.instantiationStrategy = new SimpleInstantiationStrategy();
 		}

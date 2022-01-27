@@ -72,6 +72,7 @@ import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.config.NamedBeanHolder;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.SimpleAliasRegistry;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.annotation.MergedAnnotations.SearchStrategy;
@@ -150,7 +151,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/** Whether to allow eager class loading even for lazy-init beans. */
 	private boolean allowEagerClassLoading = true;
 
-	/** Optional OrderComparator for dependency Lists and arrays. */
+	/**
+	 * 依赖比较器，就Comparator，一个比较接口
+	 * Optional OrderComparator for dependency Lists and arrays.
+	 */
 	@Nullable
 	private Comparator<Object> dependencyComparator;
 
@@ -195,7 +199,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 */
 	public DefaultListableBeanFactory() {
 		/**
-		 * 创建一个AbstractAutowireCapableBeanFactory，提供对bean别名、单例创建、factoryBean的支持
+		 * 创建一个AbstractAutowireCapableBeanFactory，
+		 * 提供对bean别名{@link SimpleAliasRegistry}、单例创建{@link DefaultSingletonBeanRegistry}、factoryBean的支持{@link FactoryBeanRegistrySupport}
 		 * 忽略部分aware接口
 		 * 实例化一个InstantiationStrategy实现类，根据GraalVM环境决定，
 		 * 	如果存在GraalVM则实例化一个SimpleInstantiationStrategy

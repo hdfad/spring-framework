@@ -32,6 +32,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.EnvironmentCapable;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -69,7 +70,8 @@ public class AnnotatedBeanDefinitionReader {
 	 * @see #AnnotatedBeanDefinitionReader(BeanDefinitionRegistry, Environment)
 	 * @see #setEnvironment(Environment)
 	 *
-	 * 构建一个AnnotatedBeanDefinitionReader，
+	 * 构建AnnotatedBeanDefinitionReader时首先从ConfigurableApplicationContext中获取当前系统运行环境
+	 * 然后通过系统环境和当前的BeanDefinitionRegistry构建一个AnnotatedBeanDefinitionReader
 	 * 通过BeanDefinitionRegistry实例化一个AnnotatedBeanDefinitionReader、ConditionEvaluator，添加注解支持
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
@@ -89,14 +91,25 @@ public class AnnotatedBeanDefinitionReader {
 	 * profiles.
 	 * @since 3.1
 	 *
-	 * 在当前AnnotatedBeanDefinitionReader容器中赋值registry和conditionEvaluator
+	 * 通过Environment获取对应的AnnotatedBeanDefinitionReader，
+	 * 当前Reader容器内封装了了BeanDefinitionRegistry、ConditionEvaluator，
+	 * 在赋值ConditionEvaluator时初始化了ConfigurableListableBeanFactory、ResourceLoader和指定了ClassLoader
+	 * 最终通过
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry, Environment environment) {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		Assert.notNull(environment, "Environment must not be null");
+		/**
+		 * 初始化AnnotatedBeanDefinitionReader容器中的BeanDefinitionRegistry
+		 */
 		this.registry = registry;
+		/**
+		 * 创建ConditionEvaluator时赋值BeanDefinitionRegistry、ConfigurableListableBeanFactory，初始化ResourceLoader：默认{@link DefaultResourceLoader}和ClassLoader
+		 */
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
-		//注册注解处理器，详细见方法
+		/**
+		 * 通过AnnotationConfigUtils将注解注入到容器中
+		 */
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
 
@@ -324,17 +337,16 @@ public class AnnotatedBeanDefinitionReader {
 
 	/**
 	 * 获取系统运行环境包括jvm环境和系统环境
-	 * 接口BeanDefinitionRegistry 是 ConfigurableApplicationContext的子接口
-	 * @see ConfigurableApplicationContext#getEnvironment()
+	 * 接口BeanDefinitionRegistry 是 ConfigurableApplicationContext的子接口 {@link ConfigurableApplicationContext#getEnvironment()}
 	 * 最终getEnvironment就是调用的ConfigurableApplicationContext#getEnvironment()
+	 *
 	 * Get the Environment from the given registry if possible, otherwise return a new
 	 * StandardEnvironment.
 	 */
 	private static Environment getOrCreateEnvironment(BeanDefinitionRegistry registry) {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		/**
-		 * BeanDefinitionRegistry真实类型 org.springframework.context.annotation.AnnotationConfigApplicationContext 是 EnvironmentCapable 子类
-		 * 此处不强转也可以通过registry.getEnvironment()
+		 * BeanDefinitionRegistry真实类型 AnnotationConfigApplicationContext 是 EnvironmentCapable 子类
 		 * EnvironmentCapable 真实类型 ConfigurableEnvironment
 		 */
 		if (registry instanceof EnvironmentCapable) {

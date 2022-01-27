@@ -69,10 +69,7 @@ import org.springframework.beans.factory.config.DestructionAwareBeanPostProcesso
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.beans.factory.config.Scope;
 import org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor;
-import org.springframework.core.AttributeAccessor;
-import org.springframework.core.DecoratingClassLoader;
-import org.springframework.core.NamedThreadLocal;
-import org.springframework.core.ResolvableType;
+import org.springframework.core.*;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.log.LogMessage;
 import org.springframework.core.metrics.ApplicationStartup;
@@ -185,7 +182,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	private ApplicationStartup applicationStartup = ApplicationStartup.DEFAULT;
 
 	/**
-	 * 创建一个AbstractBeanFactory,提供对bean别名、单列bean注册、factorybean支持
+	 * 创建一个AbstractBeanFactory,提供对bean别名{@link SimpleAliasRegistry}、单例创建{@link DefaultSingletonBeanRegistry}、factoryBean的支持{@link FactoryBeanRegistrySupport}
 	 * 实现了SimpleAliasRegistry、DefaultSingletonBeanRegistry、FactoryBeanRegistrySupport
 	 * Create a new AbstractBeanFactory.
 	 */

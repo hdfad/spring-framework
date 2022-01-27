@@ -26,6 +26,8 @@ import org.springframework.core.annotation.MergedAnnotations.SearchStrategy;
 import org.springframework.lang.Nullable;
 
 /**
+ * OrderComparator子类，提供排序用
+ *
  * {@code AnnotationAwareOrderComparator} is an extension of
  * {@link OrderComparator} that supports Spring's
  * {@link org.springframework.core.Ordered} interface as well as the
@@ -47,6 +49,7 @@ import org.springframework.lang.Nullable;
 public class AnnotationAwareOrderComparator extends OrderComparator {
 
 	/**
+	 * 优先初始化一个AnnotationAwareOrderComparator
 	 * Shared default instance of {@code AnnotationAwareOrderComparator}.
 	 */
 	public static final AnnotationAwareOrderComparator INSTANCE = new AnnotationAwareOrderComparator();

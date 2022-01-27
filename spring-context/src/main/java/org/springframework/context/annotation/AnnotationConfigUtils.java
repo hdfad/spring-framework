@@ -173,6 +173,10 @@ public abstract class AnnotationConfigUtils {
 		if (beanFactory != null) {
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
 				//1. 排序用，解析 @Order @Priority 注解或 PriorityOrdered Ordered 接口
+				/**
+				 * 当beanFactory中不存在比较器时，将默认的AnnotationAwareOrderComparator对象指定到beanFactory中
+				 * dependencyComparator用于排序使用
+				 */
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {

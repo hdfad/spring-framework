@@ -24,6 +24,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
+ * Comparator的实现类
+ * 按照优先级进行排序 PriorityOrdered排序高于Ordered，如果对象不提供order，将给与默认的order值：Integer.MAX_VALUE，
+ * 值越大，优先级越低，相同值的对象将任意排序到末尾，
  * {@link Comparator} implementation for {@link Ordered} objects, sorting
  * by order value ascending, respectively by priority descending.
  *
@@ -76,9 +79,11 @@ public class OrderComparator implements Comparator<Object> {
 	private int doCompare(@Nullable Object o1, @Nullable Object o2, @Nullable OrderSourceProvider sourceProvider) {
 		boolean p1 = (o1 instanceof PriorityOrdered);
 		boolean p2 = (o2 instanceof PriorityOrdered);
+
 		if (p1 && !p2) {
 			return -1;
 		}
+
 		else if (p2 && !p1) {
 			return 1;
 		}

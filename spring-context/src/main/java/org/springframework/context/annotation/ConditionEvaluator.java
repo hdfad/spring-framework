@@ -51,11 +51,15 @@ class ConditionEvaluator {
 
 
 	/**
+	 * 创建ConditionEvaluator，赋值BeanDefinitionRegistry、ConfigurableListableBeanFactory，初始化ResourceLoader：默认{@link DefaultResourceLoader}和ClassLoader
 	 * Create a new {@link ConditionEvaluator} instance.
 	 */
 	public ConditionEvaluator(@Nullable BeanDefinitionRegistry registry,
 			@Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
 
+		/**
+		 * 创建ConditionEvaluator，赋值BeanDefinitionRegistry、beanFactory，初始化ResourceLoader：默认{@link DefaultResourceLoader}和ClassLoader
+		 */
 		this.context = new ConditionContextImpl(registry, environment, resourceLoader);
 	}
 
@@ -127,6 +131,7 @@ class ConditionEvaluator {
 
 
 	/**
+	 * 私有的静态内部类，实现ConditionContext
 	 * Implementation of a {@link ConditionContext}.
 	 */
 	private static class ConditionContextImpl implements ConditionContext {
@@ -145,8 +150,8 @@ class ConditionEvaluator {
 		private final ClassLoader classLoader;
 
 		/**
-		 * todo 接下来待处理
-		 * 通过构造函数，赋值registry、beanFactory
+		 * 通过构造函数，赋值BeanDefinitionRegistry、ConfigurableListableBeanFactory，
+		 * 初始化ResourceLoader：默认{@link DefaultResourceLoader}和ClassLoader
 		 * @param registry
 		 * @param environment
 		 * @param resourceLoader

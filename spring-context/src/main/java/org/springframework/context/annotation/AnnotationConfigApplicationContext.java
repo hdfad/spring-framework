@@ -20,8 +20,10 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.config.BeanDefinitionCustomizer;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -74,6 +76,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 *  @see GenericApplicationContext：继承AbstractApplicationContext，配置默认bean工厂，
 	 *  	在bean工厂中会通过父类实现对AbstractAutowireCapableBeanFactory来支持bean别名处理，单例创建支持，factoryBean支持
 	 *  	对部分aware的忽略设置和bean实例创建策略
+	 *  父接口：
+	 *  @see ConfigurableApplicationContext：提供系统运行环境参数 {@link ConfigurableApplicationContext#getEnvironment()}
+	 *  @see BeanDefinitionRegistry：对BeanDefinition注册和移除提供支持
+	 *
 	 *
 	 *
 	 */
@@ -89,7 +95,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		* 	this->BeanDefinitionRegistry：包含唯一id和展示名称，2者相同，使用AbstractApplicationContext#id、displayName，2者为为className+调用对象的hash取十六进制字符串
 		 */
 		/**
-		 * AnnotationConfigApplicationContext 是 BeanDefinitionRegistry子类
+		 * AnnotationConfigApplicationContext 是 BeanDefinitionRegistry子类，所以当前this指代的是BeanDefinitionRegistry
 		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		createAnnotatedBeanDefReader.end();
@@ -113,23 +119,24 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * @param componentClasses one or more component classes &mdash; for example,
 	 * {@link Configuration @Configuration} classes
 	 *
-	 * 构建AnnotationConfigApplicationContext做了啥？
-	 * 1、利用BeanDefinitionRegistry、Environment构建一个AnnotatedBeanDefinitionReader，
-	 * 同时会在reader中生成一个唯一id和displayName，规则是className+调用对象hash取十六进制字符串，2者相同
-	 * 2、提供对注解的支持
-	 * 	@Component、@Repository、@Service、@Controller、@ManagedBean、@Named   -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
-	 * 	@Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、
-	 * 	@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener	-> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
-	 *	3、构造AnnotatedBeanDefinitionReader读取 BeanDefinition，对
+	 *
+	 * 1:调用无参构造方法，优先加载父类的静态属性和构造方法
+	 *  有三个父类：
+	 *		DefaultResourceLoader：提供资源加载器的支持
+	 *	    AbstractApplicationContext：提供部分内置默认bean名称：
+	 *	    								国际化MessageSourceBeanName，
+	 *	        							生命周期lifecycleProcessorBeanName,
+	 *	        							多播器applicationEventMulticasterName
+	 *	        						除此之外，还判断是否启用了spel的支持
+	 *	        						这部分参数在refresh时会被使用到
+	 *	     GenericApplicationContext：实例化bean工厂-DefaultListableBeanFactory，
+	 *	                       		    然后通过bean工厂的父类AbstractAutowireCapableBeanFactory提供对bean别名、单例对象、factoryBean的支持，
+	 *	                       			然后设置对部分Aware接口的忽略，判断对象生成策略，
+	 *	                       				有2种：SimpleInstantiationStrategy和CglibSubclassingInstantiationStrategy，根据GraalVM判断
+	 *
+	 *
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
-		/*
-		*	利用当前BeanDefinitionRegistry生成一个AnnotatedBeanDefinitionReader并填充，同时声明对spring注解的支持
-		*	1、首先会根据BeanDefinitionRegistry构造一个AnnotatedBeanDefinitionReader，同时会在reader中生成一个唯一id和displayName，规则是className+调用对象hash取十六进制字符串，2者相同
-		* 	2、提供对 @Component、@Repository、@Service、@Controller、@ManagedBean、@Named 的支持 -> @see ClassPathScanningCandidateComponentProvider#registerDefaultFilters
-		*  Order、@Priority、@Qualifier、@Value、@Configuration、@Autowired、@Required、@Resource、@PostConstruct、@PreDestroy、@PersistenceContext、@EventListener 的支持    -> @see AnnotationConfigUtils#registerAnnotationConfigProcessors
-		*
-		* */
 		/**
 		 * 调用当前无参构造方法，从父类开始的静态方法和静态代码块开始
 		 */
