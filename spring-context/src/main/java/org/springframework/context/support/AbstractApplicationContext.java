@@ -915,6 +915,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 *
 	 * spring 通过ApplicationEvent 类和 ApplicationListener 接口提供 ApplicationContext 中的事件处理
 	 * 如果bean实现ApplicationListener，则在有新的事件发布时都会通知bean
+	 * 如果我们定义了ApplicationEventMulticaster，就使用自定义的事件处理器，否则使用默认SimpleApplicationEventMulticaster事件处理器
 	 * 使用的观察者模式
 	 * ApplicationEvent：事件
 	 * ApplicationEventPublisher 、 ApplicationEventMulticaster：事件发布者
