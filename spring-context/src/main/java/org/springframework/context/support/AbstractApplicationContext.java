@@ -928,7 +928,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void initApplicationEventMulticaster() {
 		//获取bean工厂
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
-		//如果包含applicationEventMulticaster的bean，则设置为原有的applicationEventMulticaster，否则则构建一个默认的SimpleApplicationEventMulticaster
+		/**
+		 * 如果bean工厂（beanFactory）中包含applicationEventMulticaster的bean，
+		 * 则设置为原有bean工厂中的applicationEventMulticaster，
+		 * 否则则构建一个默认的SimpleApplicationEventMulticaster
+		 */
 		if (beanFactory.containsLocalBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME)) {
 			this.applicationEventMulticaster =
 					beanFactory.getBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, ApplicationEventMulticaster.class);
