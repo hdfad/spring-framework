@@ -569,7 +569,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
-			//第三到第九次后置处理器调用入口
+			//开始创建bean，同时提供后置处理器对bean进行扩展
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -673,6 +673,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			//第六、七次后置处理器入口，对bean进行属性注入
 			populateBean(beanName, mbd, instanceWrapper);
 			//第八，九次后置处理器入口，初始化bean
+			/**
+			 *
+			 * 调用initializeBean时的bean已经完成实例化，属性填充的BeanWrapper了
+			 * 此步完成对Aware接口的扩展、BeanPostProcessor的扩展、InitializingBean的扩展
+			 *
+			 * */
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -2007,6 +2013,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see #applyBeanPostProcessorsBeforeInitialization
 	 * @see #invokeInitMethods
 	 * @see #applyBeanPostProcessorsAfterInitialization
+	 *
+	 * 后置处理器,在bean完成属性填充后对bean调用的后置处理器,进行扩展
+	 * 首先aware接口扩展,
+	 * 再调用applyBeanPostProcessorsBeforeInitialization扩展支持对@PostConstruct的支持,
+	 * 完成之后
+	 *
 	 */
 	protected Object initializeBean(String beanName, Object bean, @Nullable RootBeanDefinition mbd) {
 		if (System.getSecurityManager() != null) {
@@ -2024,11 +2036,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (mbd == null || !mbd.isSynthetic()) {
 
 			//第八次后置处理器调用口，在init-method方法之前，回调部分Aware接口
+			/**
+			 * BeanPostProcessor后置处理器的调用,调用postProcessBeforeInitialization,在bean属性填充之后通过BeanWrapper进行操作
+			 * 对于jdk的扩展注解:@PostConstruct的入口(InitDestroyAnnotationBeanPostProcessor#postProcessBeforeInitialization)
+			 */
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
-			//通过判断调用bean实现的InitializingBean的afterPropertiesSet方法。调用xml中自定义的 init方法，就是用于对象创建完之后，针对对象的一些初始化操作
+			/**
+			 * 执行InitializingBean的afterPropertiesSet方法,在BeanPostProcessor#postProcessBeforeInitialization之后,对bean进行自定义扩展,调用init-method方法
+			 */
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
 		catch (Throwable ex) {
@@ -2091,6 +2109,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (logger.isTraceEnabled()) {
 				logger.trace("Invoking afterPropertiesSet() on bean with name '" + beanName + "'");
 			}
+			/**
+			 * afterPropertiesSet: 调用bean的InitializingBean接口扩展,
+			 * 注释中说的是检查属性或者执行自定义初始化
+			 */
 			if (System.getSecurityManager() != null) {
 				try {
 					AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
@@ -2107,6 +2129,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+		/**
+		 * xml中的init-method调用入口
+		 */
 		if (mbd != null && bean.getClass() != NullBean.class) {
 			String initMethodName = mbd.getInitMethodName();
 			if (StringUtils.hasLength(initMethodName) &&

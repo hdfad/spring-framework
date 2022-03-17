@@ -7,5 +7,6 @@
 		<property name="id" value="1"></property>
 	</bean>-->
 
+	<bean class="com.xwj.ioc.DemoController" init-method="init" destroy-method="cleanUp"></bean>
 
 </beans>
