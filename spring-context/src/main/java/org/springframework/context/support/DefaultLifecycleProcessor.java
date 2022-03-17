@@ -138,10 +138,20 @@ public class DefaultLifecycleProcessor implements LifecycleProcessor, BeanFactor
 
 	// Internal helpers
 
+	/**
+	 * 启动lifecycleBeans的实现类
+	 * @param autoStartupOnly
+	 */
 	private void startBeans(boolean autoStartupOnly) {
+		/**
+		 * 获取所有Lifecycle和SmartLifecycle的bean及其名称封装成map
+		 */
 		Map<String, Lifecycle> lifecycleBeans = getLifecycleBeans();
 		Map<Integer, LifecycleGroup> phases = new TreeMap<>();
 
+		/**
+		 * 遍历所有Lifecycle和SmartLifecycle的bean，获取对应的phase添加到phases的map容器中
+		 */
 		lifecycleBeans.forEach((beanName, bean) -> {
 			if (!autoStartupOnly || (bean instanceof SmartLifecycle && ((SmartLifecycle) bean).isAutoStartup())) {
 				int phase = getPhase(bean);
@@ -152,6 +162,10 @@ public class DefaultLifecycleProcessor implements LifecycleProcessor, BeanFactor
 			}
 		});
 		if (!phases.isEmpty()) {
+
+			/**
+			 * 遍历phases容器，调用LifecycleGroup的start方法，执行doStart
+			 */
 			phases.values().forEach(LifecycleGroup::start);
 		}
 	}
@@ -175,6 +189,9 @@ public class DefaultLifecycleProcessor implements LifecycleProcessor, BeanFactor
 					logger.trace("Starting bean '" + beanName + "' of type [" + bean.getClass().getName() + "]");
 				}
 				try {
+					/**
+					 * 通过start启动所有lifecycleBeans，rabbitlistener的注解监听入口便是于此
+					 */
 					bean.start();
 				}
 				catch (Throwable ex) {
@@ -267,6 +284,7 @@ public class DefaultLifecycleProcessor implements LifecycleProcessor, BeanFactor
 	// overridable hooks
 
 	/**
+	 * 获取所有Lifecycle和SmartLifecycle的bean及其名称
 	 * Retrieve all applicable Lifecycle beans: all singletons that have already been created,
 	 * as well as all SmartLifecycle beans (even if they are marked as lazy-init).
 	 * @return the Map of applicable beans, with bean names as keys and bean instances as values

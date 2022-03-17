@@ -662,11 +662,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Instantiate all remaining (non-lazy-init) singletons.
 				//加载非懒加载的bean,ioc
 				//通过obtainFreshBeanFactory创建beanFactory，finishBeanFactoryInitialization通过beanFactory加载非懒加载的bean对象
-				//循环依赖，aop，ioc都通过此处产生并解决
+				//循环依赖，aop，ioc，事件回调、注解驱动等都通过此处产生并解决
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
 				//发布事件与清除上下文环境
+				/**
+				 * 事件发布
+				 */
 				finishRefresh();
 			}
 
@@ -1003,8 +1006,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let post-processors apply to them!
-		// 只是添加 并没有执行
-		//再获取ApplicationListener的子类添加到ApplicationEventMulticaster中
+		/**
+		 * 获取ApplicationListener的子类
+		 * 并通过addApplicationListenerBean将子类监听器添加/注册到事件多播器中
+		 */
 		String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
 		for (String listenerBeanName : listenerBeanNames) {
 			getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
@@ -1082,6 +1087,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		initLifecycleProcessor();
 
 		// Propagate refresh to lifecycle processor first.
+		/**
+		 * 获取LifecycleProcessor，调用onRefresh方法，
+		 * 通过startBeans调用lifecycleBeans的实现类，
+		 * 通过doStart执行子类
+		 */
 		getLifecycleProcessor().onRefresh();
 
 		// Publish the final event.

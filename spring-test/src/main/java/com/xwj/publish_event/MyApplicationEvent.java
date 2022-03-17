@@ -2,6 +2,7 @@ package com.xwj.publish_event;
 
 import org.springframework.context.ApplicationEvent;
 
+import java.io.Serializable;
 import java.time.Clock;
 
 /**
@@ -9,9 +10,11 @@ import java.time.Clock;
  * Email buming@uoko.com
  * @Date: 2022/02/15 10:24
  */
-public class MyApplicationEvent extends ApplicationEvent {
+public class MyApplicationEvent extends ApplicationEvent{
 
-    public MyApplicationEvent(Object source) {
+	private static final long serialVersionUID =1;
+
+	public MyApplicationEvent(Object source) {
         super(source);
     }
 

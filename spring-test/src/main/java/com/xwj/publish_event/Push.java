@@ -8,11 +8,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 /**
+ * 此处调用是因为aware接口被调用
  * @author buming
  * Email buming@uoko.com
  * @Date: 2022/02/15 10:46
  */
-@Component
+//@Component
 public class Push implements ApplicationContextAware {
     ApplicationContext applicationContext;
     @Override
