@@ -636,6 +636,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Register bean processors that intercept bean creation.
 				//注册bean后置处理器,将BeanPostProcessors根据实现的接口是PriorityOrdered、Ordered还是其他的按顺序加载到容器中，首先注册实现PriorityOrdered的类，再注册实现了Ordered的类，最后再注册其他的类
+
+				/**
+				 * 对bean后置处理器组件进行注册，后续在后createBean时需要调用多个后置处理器完成对容器属性的注入和依赖，如@PostConstruct注册、@Resource注册等
+				 */
 				registerBeanPostProcessors(beanFactory);
 				beanPostProcess.end();
 

@@ -141,6 +141,8 @@ import org.springframework.util.StringValueResolver;
  * @see #setResourceFactory
  * @see org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor
  * @see org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+ *
+ * 后置处理器注册，完成对Resource、PreDestroy、PostConstruct、WebServiceRef注册
  */
 @SuppressWarnings("serial")
 public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBeanPostProcessor
@@ -195,8 +197,20 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	 * respectively.
 	 */
 	public CommonAnnotationBeanPostProcessor() {
+
+		/**
+		 * 排序
+		 */
 		setOrder(Ordered.LOWEST_PRECEDENCE - 3);
+
+		/**
+		 * 添加对PostConstruct的支持
+		 */
 		setInitAnnotationType(PostConstruct.class);
+
+		/**
+		 * 添加对PreDestroy的支持
+		 */
 		setDestroyAnnotationType(PreDestroy.class);
 		ignoreResourceType("javax.xml.ws.WebServiceContext");
 	}
@@ -287,10 +301,11 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 			this.embeddedValueResolver = new EmbeddedValueResolver((ConfigurableBeanFactory) beanFactory);
 		}
 	}
+
 	/**
-	 * https://www.yht7.com/news/107075
-	 * 1.遍历扫描方法上标注了 @PostConstruct  和 @PreDestroy 注解的类
-	 * 2.遍历扫描方法上标注了 @Resource 注解的类
+	 * 通过MergedBeanDefinitionPostProcessor#postProcessMergedBeanDefinition进行调用，
+	 * 合并BeanDefinition,后续通过initializeBean阶段通过后置处理器调用BeanDefinition的组件
+	 * 此方法目的是为了扫描@PostConstruct  和 @PreDestroy 、@Resource的类
 	 * @param beanDefinition
 	 * @param beanType
 	 * @param beanName

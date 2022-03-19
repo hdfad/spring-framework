@@ -1175,6 +1175,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @param beanType the actual type of the managed bean instance
 	 * @param beanName the name of the bean
 	 * @see MergedBeanDefinitionPostProcessor#postProcessMergedBeanDefinition
+	 *
+	 * 通过后置处理器合并BeanDefinition对bean的定义信息，包括向bean容器中的注册过的组件
 	 */
 	protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
 		for (MergedBeanDefinitionPostProcessor processor : getBeanPostProcessorCache().mergedDefinition) {
@@ -2016,8 +2018,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 *
 	 * 后置处理器,在bean完成属性填充后对bean调用的后置处理器,进行扩展
 	 * 首先aware接口扩展,
-	 * 再调用applyBeanPostProcessorsBeforeInitialization扩展支持对@PostConstruct的支持,
-	 * 完成之后
+	 * 再调用applyBeanPostProcessorsBeforeInitialization对bean进行扩展，@PreDestroy、@PostConstruct、@Resource的支持入口
+	 * 完成之后再通过invokeInitMethods调用后置处理器InitializingBean和init-method配置方法调用
 	 *
 	 */
 	protected Object initializeBean(String beanName, Object bean, @Nullable RootBeanDefinition mbd) {
@@ -2045,7 +2047,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			/**
-			 * 执行InitializingBean的afterPropertiesSet方法,在BeanPostProcessor#postProcessBeforeInitialization之后,对bean进行自定义扩展,调用init-method方法
+			 * InitializingBean接口实现类afterPropertiesSet调用，init-method配置方法调用
 			 */
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
