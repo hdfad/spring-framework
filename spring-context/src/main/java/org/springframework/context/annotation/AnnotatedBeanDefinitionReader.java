@@ -104,7 +104,8 @@ public class AnnotatedBeanDefinitionReader {
 		 */
 		this.registry = registry;
 		/**
-		 * 创建ConditionEvaluator时赋值BeanDefinitionRegistry、ConfigurableListableBeanFactory，初始化ResourceLoader：默认{@link DefaultResourceLoader}和ClassLoader
+		 * 创建ConditionEvaluator时赋值BeanDefinitionRegistry、ConfigurableListableBeanFactory，
+		 * 初始化ResourceLoader：默认{@link DefaultResourceLoader}和ClassLoader
 		 */
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
 		/**

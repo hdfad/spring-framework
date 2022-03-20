@@ -56,6 +56,8 @@ import org.springframework.util.ClassUtils;
  * @see CommonAnnotationBeanPostProcessor
  * @see org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
  * @see org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor
+ *
+ * 注解配置相关工具类
  */
 public abstract class AnnotationConfigUtils {
 
@@ -145,7 +147,7 @@ public abstract class AnnotationConfigUtils {
 	 * @return a Set of BeanDefinitionHolders, containing all bean definitions
 	 * that have actually been registered by this call
 	 *
-	 * 注册注解处理器
+	 * 注册注解配置 处理器
 	 *
 	 * 使用 Spring 提供的注解开发时，必须在 Spring 容器中声明相关的组件。
 	 * 如 @Autowired 必须注册 AutowiredAnnotationBeanPostProcessor 组件，
@@ -202,6 +204,13 @@ public abstract class AnnotationConfigUtils {
 		}
 
 		// Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
+		/**
+		 * JSR-250 java原生注解注册到BeanDefinition
+		 * CommonAnnotationBeanPostProcessor：提供对Resource、PreDestroy、PostConstruct、WebServiceRef的支持
+		 * 将CommonAnnotationBeanPostProcessor装载到BeanDefinition中，
+		 * 通过容器启动时AnnotationConfigApplicationContext无参实例化
+		 * 使用AnnotatedBeanDefinitionReader调用AnnotationConfigUtils.registerAnnotationConfigProcessors到达此步
+		 */
 		if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			// 5. @Resource、@PostConstruct、@PreDestroy -> CommonAnnotationBeanPostProcessor
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
