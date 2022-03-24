@@ -316,6 +316,8 @@ public abstract class ReflectionUtils {
 	 * @throws IllegalStateException if introspection fails
 	 * @since 4.2
 	 * @see #doWithMethods
+	 *
+	 * 通过反射获取本类所有的申明方法，包括private、protected、默认以及public的方法
 	 */
 	public static void doWithLocalMethods(Class<?> clazz, MethodCallback mc) {
 		Method[] methods = getDeclaredMethods(clazz, false);

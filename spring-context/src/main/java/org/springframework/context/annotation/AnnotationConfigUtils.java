@@ -210,11 +210,13 @@ public abstract class AnnotationConfigUtils {
 		 * 将CommonAnnotationBeanPostProcessor装载到BeanDefinition中，
 		 * 通过容器启动时AnnotationConfigApplicationContext无参实例化
 		 * 使用AnnotatedBeanDefinitionReader调用AnnotationConfigUtils.registerAnnotationConfigProcessors到达此步
+		 * 注册完后通过registerPostProcessor添加到beanDefinitionNames和beanDefinitionMap中
 		 */
 		if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			// 5. @Resource、@PostConstruct、@PreDestroy -> CommonAnnotationBeanPostProcessor
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
 			def.setSource(source);
+			//registerPostProcessor:通过DefaultListableBeanFactory#registerBeanDefinition添加到beanDefinitionNames和beanDefinitionMap中
 			beanDefs.add(registerPostProcessor(registry, def, COMMON_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
