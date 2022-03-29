@@ -154,7 +154,7 @@ import org.springframework.core.Ordered;
  * @since 3.1
  * @see Async
  * @see AsyncConfigurer
- * @see AsyncConfigurationSelector
+ * @see AsyncConfigurationSelector: 异步配置选择器，返回使用的代理模式class，
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -170,6 +170,8 @@ public @interface EnableAsync {
 	 * <p>This attribute exists so that developers can provide their own
 	 * custom annotation type to indicate that a method (or all methods of
 	 * a given class) should be invoked asynchronously.
+	 *
+	 * 提供对Async的注解支持或者Asynchronous的支持
 	 */
 	Class<? extends Annotation> annotation() default Annotation.class;
 
@@ -184,6 +186,8 @@ public @interface EnableAsync {
 	 * will be upgraded to subclass proxying at the same time. This approach has no
 	 * negative impact in practice unless one is explicitly expecting one type of proxy
 	 * vs. another &mdash; for example, in tests.
+	 *
+	 * cglib的支持，true：启用cglib，false：默认，不启用，使用jdk动态代理
 	 */
 	boolean proxyTargetClass() default false;
 
@@ -196,6 +200,8 @@ public @interface EnableAsync {
 	 * since Spring's interceptor does not even kick in for such a runtime scenario.
 	 * For a more advanced mode of interception, consider switching this to
 	 * {@link AdviceMode#ASPECTJ}.
+	 *
+	 * 代理方式：默认JDK proxy，可选：AspectJ
 	 */
 	AdviceMode mode() default AdviceMode.PROXY;
 
@@ -205,6 +211,8 @@ public @interface EnableAsync {
 	 * <p>The default is {@link Ordered#LOWEST_PRECEDENCE} in order to run
 	 * after all other post-processors, so that it can add an advisor to
 	 * existing proxies rather than double-proxy.
+	 *
+	 * 控制@EnableXX执行顺序
 	 */
 	int order() default Ordered.LOWEST_PRECEDENCE;
 

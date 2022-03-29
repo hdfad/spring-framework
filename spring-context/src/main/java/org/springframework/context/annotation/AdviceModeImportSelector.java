@@ -46,7 +46,7 @@ public abstract class AdviceModeImportSelector<A extends Annotation> implements 
 	 * generic type {@code A}. The default is {@value #DEFAULT_ADVICE_MODE_ATTRIBUTE_NAME},
 	 * but subclasses may override in order to customize.
 	 */
-	protected String getAdviceModeAttributeName() {
+	protected String  getAdviceModeAttributeName() {
 		return DEFAULT_ADVICE_MODE_ATTRIBUTE_NAME;
 	}
 
@@ -64,9 +64,11 @@ public abstract class AdviceModeImportSelector<A extends Annotation> implements 
 	 */
 	@Override
 	public final String[] selectImports(AnnotationMetadata importingClassMetadata) {
+		//h获取泛型类型
 		Class<?> annType = GenericTypeResolver.resolveTypeArgument(getClass(), AdviceModeImportSelector.class);
 		Assert.state(annType != null, "Unresolvable type argument for AdviceModeImportSelector");
 
+		//根据类型获取到注解转换为AnnotationAttributes
 		AnnotationAttributes attributes = AnnotationConfigUtils.attributesFor(importingClassMetadata, annType);
 		if (attributes == null) {
 			throw new IllegalArgumentException(String.format(
@@ -74,7 +76,9 @@ public abstract class AdviceModeImportSelector<A extends Annotation> implements 
 					annType.getSimpleName(), importingClassMetadata.getClassName()));
 		}
 
+		//从AnnotationAttributes中根据获取对应的类型
 		AdviceMode adviceMode = attributes.getEnum(getAdviceModeAttributeName());
+		//调用指定类型的子类的selectImports
 		String[] imports = selectImports(adviceMode);
 		if (imports == null) {
 			throw new IllegalArgumentException("Unknown AdviceMode: " + adviceMode);
@@ -91,6 +95,7 @@ public abstract class AdviceModeImportSelector<A extends Annotation> implements 
 	 * advice mode attribute} for the annotation specified via generics.
 	 * @return array containing classes to import (empty array if none;
 	 * {@code null} if the given {@code AdviceMode} is unknown)
+	 * 子类处理返回具体实现的代理模式
 	 */
 	@Nullable
 	protected abstract String[] selectImports(AdviceMode adviceMode);

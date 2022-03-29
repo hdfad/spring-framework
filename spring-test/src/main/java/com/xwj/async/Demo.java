@@ -8,7 +8,11 @@ public class Demo {
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext annotationConfigApplicationContext=new AnnotationConfigApplicationContext(Demo.class);
 		AsyncService bean = annotationConfigApplicationContext.getBean(AsyncService.class);
-		bean.doSomething();
-		System.out.println("执行结束");
+		int i=40;
+		while (i>0){
+			bean.doSomething();
+			i--;
+		}
+		System.out.println(Thread.currentThread().getName()+"执行结束");
 	}
 }

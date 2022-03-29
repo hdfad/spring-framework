@@ -41,6 +41,14 @@ public class AsyncConfigurationSelector extends AdviceModeImportSelector<EnableA
 	 * Returns {@link ProxyAsyncConfiguration} or {@code AspectJAsyncConfiguration}
 	 * for {@code PROXY} and {@code ASPECTJ} values of {@link EnableAsync#mode()},
 	 * respectively.
+	 *
+	 * 判断代理模式,返回对应的class类名数组,通过父类AdviceModeImportSelector#selectImports调用
+	 * 代理模式有2种:
+	 * 		面向接口的jdk动态代理,
+	 * 		面向类的AspectJ
+	 * 	如果为null在父类会抛出IllegalArgumentException异常
+	 * 	默认使用的是ProxyAsyncConfiguration
+	 *
 	 */
 	@Override
 	@Nullable

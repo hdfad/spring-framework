@@ -36,6 +36,8 @@ import org.springframework.util.Assert;
  * @since 3.1
  * @see EnableAsync
  * @see AsyncConfigurationSelector
+ *
+ * 异步操作bean处理
  */
 @Configuration(proxyBeanMethods = false)
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)

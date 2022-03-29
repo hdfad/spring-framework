@@ -628,9 +628,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Invoke factory processors registered as beans in the context.
 
 				/*
-				 * 是Spring在初始化前一个重要的扩展点，通过BeanFactoryPostProcessors对BeanDefinition进行扩展
-				 * 作用在BeanDefinition 加载完成之后，Bean实例化之前对BeanDefinition进行修改，常见的配置类信息加载就是通过ConfigurationClassPostProcessor来完成
+				 * 是Spring在初始化前一个扩展点，通过BeanFactoryPostProcessors对BeanDefinition进行扩展
+				 * 作用在BeanDefinition 加载完成之后，Bean实例化之前利用BeanDefinition填充BeanFactory，常见的配置类信息加载就是通过ConfigurationClassPostProcessor来完成
 				 * 对实现BeanDefinitionRegistry、BeanFactoryPostProcessor的类进行处理
+				 * 除此之外部分注解入口也作用于此，@Import
 				 * */
 				invokeBeanFactoryPostProcessors(beanFactory);
 

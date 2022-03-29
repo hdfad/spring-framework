@@ -57,41 +57,11 @@ final class PostProcessorRegistrationDelegate {
 
 
 	/**
-	 * 对bean工厂后置处理器扩展点调用
+	 * 处理2部分：
+	 * 			BeanDefinitionRegistryPostProcessor
+	 * 			BeanFactoryPostProcessor
 	 * @param beanFactory
 	 * @param beanFactoryPostProcessors
-	 *
-	 * ConfigurableListableBeanFactory与DefaultListableBeanFactory关系：
-	 * 		ConfigurableListableBeanFactory是DefaultListableBeanFactory的父接口
-	 * 重要类跳转：
-	 * @see org.springframework.beans.factory.support.DefaultListableBeanFactory
-	 *
-	 * 参考：
-	 * 	https://segmentfault.com/a/1190000040357076
-	 * 	http://www.itsoku.com/article/294
-	 * 	https://mp.weixin.qq.com/s/UlZ7GoBAHNAXtKYV4f9I_w
-	 *
-	 * 对bean工厂后置处理器实现类进行调用，调用顺序上优先调用实现了PriorityOrdered的实现类进行调用，再调用order实现类，最后调用其他的
-	 *
-	 * 处理的部分有2部分：BeanFactoryPostProcessor和BeanDefinitionRegistryPostProcessor
-	 * 首先会声明2个List容器一个为BeanFactoryPostProcessor类型的regularPostProcessors，一个为BeanDefinitionRegistryPostProcessor类型的registryProcessors，
-	 * 这2个容器用来存储BeanFactoryPostProcessor和BeanDefinitionRegistryPostProcessor。
-	 * 在invokeBeanFactoryPostProcessors方法中会首先处理BeanDefinitionRegistryPostProcessor的实现类，
-	 * 执行其postProcessBeanDefinitionRegistry，处理BeanDefinitionRegistryPostProcessor的实现类，
-	 * 在ConfigurationClassPostProcessor中，会对@Configuration标识的类进行处理和对类的order值进行排序处理，order值越大顺序越低，
-	 * 对配置bean中的@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean标识的方法进行装载，
-	 * 当存在多个@Bean别名时，会使用一个ConcurrentHashMap对别名进行存储，key为别名，value为真实beanName，
-	 * 然后将处理好的BeanDefinitionRegistryPostProcessor添加到BeanDefinitionRegistryPostProcessor中，
-	 * 对于非BeanDefinitionRegistryPostProcessor类型则 添加到regularPostProcessors中
-	 * 接下来会对BeanFactoryPostProcessor的实现类进行处理，优先处理PriorityOrdered的实现类，对其进行排序，通过invokeBeanDefinitionRegistryPostProcessors将registryProcessors容器中的配置类的注解进行注入（注解同上）
-	 * 接下来再处理orderd的实现类，过程同上
-	 * 最后再处理剩下的BeanFactoryPostProcessor实现类，解析对应配置加载到BeanDefinition中
-	 *
-	 * 其他：
-	 * 顺序上BeanDefinitionRegistryPostProcessor优先于BeanFactoryPostProcessor，与PriorityOrdered和Ordered有关
-	 * 		原因是在invokeBeanFactoryPostProcessors中会先获取BeanDefinitionRegistryPostProcessor接口下实现了PriorityOrdered的类bean，再获取实现了Ordered的实现类bean，
-	 * 		然后分别调用invokeBeanDefinitionRegistryPostProcessors进行处理，
-	 * 		所以流程上会优先调用PriorityOrdered的BeanDefinitionRegistryPostProcessor实现类，再调用Ordered的BeanDefinitionRegistryPostProcessor实现类
 	 */
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
@@ -112,11 +82,13 @@ final class PostProcessorRegistrationDelegate {
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
 		//已经被处理过的bean
 		Set<String> processedBeans = new HashSet<>();
-		/*
-		 * 判断beanFactory是否是BeanDefinitionRegistry类型
-		 * beanFactory默认是 DefaultListableBeanFactory  是  BeanDefinitionRegistry的实现类
-		 * 所以beanFactory默认条件下就是BeanDefinitionRegistry类型
-		 * */
+
+		/**
+		 * beanFactory->ConfigurableListableBeanFactory,
+		 * DefaultListableBeanFactory是ConfigurableListableBeanFactory子类，整个生命周期中默认bean工厂就是DefaultListableBeanFactory
+		 * DefaultListableBeanFactory实现BeanDefinitionRegistry
+		 * 所以这个instanceof是能匹配到类型的
+		 */
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 			//BeanFactoryPostProcessor--非BeanDefinitionRegistryPostProcessor类型则
@@ -148,7 +120,11 @@ final class PostProcessorRegistrationDelegate {
 			//上面执行的是 BeanDefinitionRegistryPostProcessor
 			//下面开始执行 BeanFactoryPostProcessor
 			//=====================================================
-
+			System.out.println("============================================================");
+			System.out.println("=====    执行结束BeanDefinitionRegistryPostProcessor     =====");
+			System.out.println("-------------------------------------------------------------");
+			System.out.println("=====          开始执行BeanFactoryPostProcessor          =====");
+			System.out.println("=============================================================");
 			// Do not initialize FactoryBeans here: We need to leave all regular beans
 			// uninitialized to let the bean factory post-processors apply to them!
 			// Separate between BeanDefinitionRegistryPostProcessors that implement
