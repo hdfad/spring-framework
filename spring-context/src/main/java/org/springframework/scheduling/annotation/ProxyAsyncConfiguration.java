@@ -37,7 +37,8 @@ import org.springframework.util.Assert;
  * @see EnableAsync
  * @see AsyncConfigurationSelector
  *
- * 异步操作bean处理
+ * 异步操作bean处理，通过父类AbstractAsyncConfiguration完成对线程执行器，注解属性、异步线程异常处理Handler的封装注入
+ *
  */
 @Configuration(proxyBeanMethods = false)
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
