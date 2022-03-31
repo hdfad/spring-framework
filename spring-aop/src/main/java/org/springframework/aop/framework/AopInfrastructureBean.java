@@ -25,6 +25,8 @@ package org.springframework.aop.framework;
  * @since 2.0.3
  * @see org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator
  * @see org.springframework.aop.scope.ScopedProxyFactoryBean
+ *
+ * 这个接口的目的是标志已实现的Bean不被AOP代理，即使已被切面切入
  */
 public interface AopInfrastructureBean {
 

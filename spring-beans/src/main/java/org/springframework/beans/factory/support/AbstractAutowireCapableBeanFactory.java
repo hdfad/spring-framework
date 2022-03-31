@@ -626,6 +626,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			最终通过权重计算选择权重小的构造函数使用反射BeanUtils.instantiateClass生成一个实例对象封装成BeanWrapper。
 			如果权重相同且lenientConstructorResolution为非宽松的构造函数解析标识，则抛出异常
 			*/
+
+			/**
+			 * 创建bean实例对象,通过反射
+			 */
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 		//获取到了bean对象，被实例化但未初始化赋值

@@ -31,15 +31,26 @@ import org.springframework.lang.Nullable;
  *
  * @author Juergen Hoeller
  * @since 3.2
+ *
+ * spring aop 处理器
  */
 @SuppressWarnings("serial")
 public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSupport implements BeanPostProcessor {
 
+	/**
+	 * 如果是@Async相关的,那么初始化是在AsyncAnnotationBeanPostProcessor#setBeanFactory
+	 */
 	@Nullable
 	protected Advisor advisor;
 
+	/**
+	 * 是否现存Advisors
+	 */
 	protected boolean beforeExistingAdvisors = false;
 
+	/**
+	 * 缓存符合的目标对象
+	 */
 	private final Map<Class<?>, Boolean> eligibleBeans = new ConcurrentHashMap<>(256);
 
 
@@ -62,8 +73,15 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 		return bean;
 	}
 
+	/**
+	 * bean初始化完成后通过BeanPostProcessor处理代理对象,
+	 * @param bean the new bean instance
+	 * @param beanName the name of the bean
+	 * @return
+	 */
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) {
+		//AopInfrastructureBean:不需要被AOP代理的接口
 		if (this.advisor == null || bean instanceof AopInfrastructureBean) {
 			// Ignore AOP infrastructure such as scoped proxies.
 			return bean;

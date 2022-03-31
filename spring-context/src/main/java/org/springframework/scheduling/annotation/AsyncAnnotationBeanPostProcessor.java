@@ -97,6 +97,8 @@ public class AsyncAnnotationBeanPostProcessor extends AbstractBeanFactoryAwareAd
 	 * Configure this post-processor with the given executor and exception handler suppliers,
 	 * applying the corresponding default if a supplier is not resolvable.
 	 * @since 5.1
+	 *
+	 * 在ProxyAsyncConfiguration时将executor和exceptionHandler进行封装
 	 */
 	public void configure(
 			@Nullable Supplier<Executor> executor, @Nullable Supplier<AsyncUncaughtExceptionHandler> exceptionHandler) {
@@ -142,14 +144,26 @@ public class AsyncAnnotationBeanPostProcessor extends AbstractBeanFactoryAwareAd
 	}
 
 
+	/**
+	 * BeanFactoryAware接口的实现类,在initializeBean时,通过invokeAwareMethods调用setBeanFactory
+	 * 此步扩展 将线程执行器和异常处理器Handler、BeanFactory封装到AsyncAnnotationAdvisor
+	 * AsyncAnnotationAdvisor是一个支持异步方法调用的Advisor
+	 * @param beanFactory
+	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
 		super.setBeanFactory(beanFactory);
 
+		/**
+		 * 一个支持异步方法调用的Advisor,封装executor和exceptionHandler
+		 */
 		AsyncAnnotationAdvisor advisor = new AsyncAnnotationAdvisor(this.executor, this.exceptionHandler);
 		if (this.asyncAnnotationType != null) {
 			advisor.setAsyncAnnotationType(this.asyncAnnotationType);
 		}
+		/**
+		 * 封装BeanFactory
+		 */
 		advisor.setBeanFactory(beanFactory);
 		this.advisor = advisor;
 	}

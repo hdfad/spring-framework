@@ -47,13 +47,27 @@ public class ProxyAsyncConfiguration extends AbstractAsyncConfiguration {
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public AsyncAnnotationBeanPostProcessor asyncAdvisor() {
 		Assert.notNull(this.enableAsync, "@EnableAsync annotation metadata was not injected");
+		/**
+		 * 注入的对象
+		 * 通过UML图可以看出来这父类既包含BeanPostProcessor，又是Aware子类，
+		 * 所以在bean加载过程中要么在BeanPostProcessor进行扩展，要么在Aware进行扩展
+		 */
 		AsyncAnnotationBeanPostProcessor bpp = new AsyncAnnotationBeanPostProcessor();
+
+		/**
+		 * 将异步线程池的执行器和异常处理器通过configure封装到AsyncAnnotationBeanPostProcessor中
+		 */
 		bpp.configure(this.executor, this.exceptionHandler);
 		Class<? extends Annotation> customAsyncAnnotation = this.enableAsync.getClass("annotation");
+		/**
+		 * 如果2个class不是一个,那么就设置成java.lang.annotation.Annotation
+		 */
 		if (customAsyncAnnotation != AnnotationUtils.getDefaultValue(EnableAsync.class, "annotation")) {
 			bpp.setAsyncAnnotationType(customAsyncAnnotation);
 		}
+		//代理
 		bpp.setProxyTargetClass(this.enableAsync.getBoolean("proxyTargetClass"));
+		//加载顺序
 		bpp.setOrder(this.enableAsync.<Integer>getNumber("order"));
 		return bpp;
 	}

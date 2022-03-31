@@ -51,12 +51,17 @@ import org.springframework.util.function.SingletonSupplier;
  * @since 3.0
  * @see Async
  * @see AnnotationAsyncExecutionInterceptor
+ *
+ * 支持异步方法调用的Advisor,同时支持spring的@Async、EJB 3.1的Asynchronous
  */
 @SuppressWarnings("serial")
 public class AsyncAnnotationAdvisor extends AbstractPointcutAdvisor implements BeanFactoryAware {
 
 	private Advice advice;
 
+	/**
+	 * 用于匹配指定的异步注解的切面
+	 */
 	private Pointcut pointcut;
 
 

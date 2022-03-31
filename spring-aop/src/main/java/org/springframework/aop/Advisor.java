@@ -32,6 +32,14 @@ import org.aopalliance.aop.Advice;
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
+ *
+ * AOP对象接口，通过Advisor生成代理对象
+ *
+ * Spring AOP的执行过程分为四大步骤：
+ * 	① Spring框架生成Advisor实例，可以是@Aspect，@Async等注解生成的实例，也可以是程序员自定义的AbstractAdvisor子类的实例。
+ * 	② Spring框架在目标实例初始化完成后，也就是使用BeanPostProcessor的postProcessAfterInitialization方法，根据Advisor实例中切入点Pointcut的定义，选择出适合该目标对象的Advisor实例。
+ * 	③ Spring框架根据Advisor实例生成代理对象。
+ * 	④ 调用方法执行过程时，Spring框架执行Advisor实例的通知Advice逻辑。
  */
 public interface Advisor {
 

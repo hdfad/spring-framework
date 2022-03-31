@@ -223,6 +223,9 @@ public abstract class AopUtils {
 	 */
 	public static boolean canApply(Pointcut pc, Class<?> targetClass, boolean hasIntroductions) {
 		Assert.notNull(pc, "Pointcut must not be null");
+		/**
+		 * Pointcut、targetClass类型匹配
+		 */
 		if (!pc.getClassFilter().matches(targetClass)) {
 			return false;
 		}
@@ -279,6 +282,10 @@ public abstract class AopUtils {
 	 * @param hasIntroductions whether or not the advisor chain for this bean includes
 	 * any introductions
 	 * @return whether the pointcut can apply on any method
+	 *
+	 * 对advisor进行判断,两种类型IntroductionAdvisor、PointcutAdvisor
+	 * 	IntroductionAdvisor:只验证是否是同一种class
+	 * 	PointcutAdvisor：
 	 */
 	public static boolean canApply(Advisor advisor, Class<?> targetClass, boolean hasIntroductions) {
 		if (advisor instanceof IntroductionAdvisor) {

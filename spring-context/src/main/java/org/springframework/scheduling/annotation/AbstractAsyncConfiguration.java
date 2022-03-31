@@ -38,20 +38,35 @@ import org.springframework.util.CollectionUtils;
  * @author Stephane Nicoll
  * @since 3.1
  * @see EnableAsync
+ *
+ * 异步配置类，作为一个Aware接口
  */
 @Configuration(proxyBeanMethods = false)
 public abstract class AbstractAsyncConfiguration implements ImportAware {
 
+	/**
+	 * 与注解相关
+	 */
 	@Nullable
 	protected AnnotationAttributes enableAsync;
 
+	/**
+	 * 线程执行器
+	 */
 	@Nullable
 	protected Supplier<Executor> executor;
 
+	/**
+	 * 异步线程异常处理Handler
+ 	 */
 	@Nullable
 	protected Supplier<AsyncUncaughtExceptionHandler> exceptionHandler;
 
 
+	/**
+	 * 导入注解元数据
+	 * @param importMetadata
+	 */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 		this.enableAsync = AnnotationAttributes.fromMap(
@@ -63,6 +78,7 @@ public abstract class AbstractAsyncConfiguration implements ImportAware {
 	}
 
 	/**
+	 * bean注入Executor和AsyncUncaughtExceptionHandler
 	 * Collect any {@link AsyncConfigurer} beans through autowiring.
 	 */
 	@Autowired(required = false)

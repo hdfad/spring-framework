@@ -34,6 +34,15 @@ import org.springframework.aop.TargetSource;
  * @author Juergen Hoeller
  * @since 13.03.2003
  * @see org.springframework.aop.framework.AdvisedSupport
+ *
+ *
+ * aop 底层还是JDK动态代理或CGLB动态代理。通过把增强器封装到Advised中，把Advised与InvocationHandler或者MethodInterceptor联系起来，完美的实现AOP技术。
+ *
+ *
+ * Advice、Advisor、Advised区别：
+ *		Advice：通知/增强，切面在特定接入点的执行动作，如“around”, “before” , “after“等
+ *		Advisor：持有Advice，AOP的基础接口,根据Advisor生成对应的aop代理对象
+ *		Advised：aop代理工厂的配置类接口
  */
 public interface Advised extends TargetClassAware {
 
