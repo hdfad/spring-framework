@@ -44,6 +44,11 @@ public abstract class AbstractBeanFactoryAwareAdvisingPostProcessor extends Abst
 	private ConfigurableListableBeanFactory beanFactory;
 
 
+	/**
+	 * 设置beanFactory，要么是null，要么是ConfigurableListableBeanFactory类型
+	 * @param beanFactory owning BeanFactory (never {@code null}).
+	 * The bean can immediately call methods on the factory.
+	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
 		this.beanFactory = (beanFactory instanceof ConfigurableListableBeanFactory ?

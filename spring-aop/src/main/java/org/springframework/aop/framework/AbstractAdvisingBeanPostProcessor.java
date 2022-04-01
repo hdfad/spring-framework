@@ -44,7 +44,7 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 	protected Advisor advisor;
 
 	/**
-	 * 是否现存Advisors
+	 * 判断advisor执行顺序，true：bpp所得advisor之前执行，false：最后一个位置
 	 */
 	protected boolean beforeExistingAdvisors = false;
 
@@ -75,6 +75,11 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 
 	/**
 	 * bean初始化完成后通过BeanPostProcessor处理代理对象,
+	 * 处理时会判断三个条件：
+	 * 		是否需要代理接口
+	 * 		bean类型是否为Advised
+	 * 		是否满足代理条件
+	 *	如果满足，则返回代理对象
 	 * @param bean the new bean instance
 	 * @param beanName the name of the bean
 	 * @return

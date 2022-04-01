@@ -102,6 +102,9 @@ public abstract class AutoProxyUtils {
 	}
 
 	/**
+	 *
+	 * 设置Bean工厂中的原始目标类到MergedBeanDefinition中
+	 *
 	 * Expose the given target class for the specified bean, if possible.
 	 * @param beanFactory the containing ConfigurableListableBeanFactory
 	 * @param beanName the name of the bean

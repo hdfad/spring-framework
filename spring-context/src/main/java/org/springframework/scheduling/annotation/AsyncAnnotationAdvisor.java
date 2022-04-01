@@ -57,10 +57,13 @@ import org.springframework.util.function.SingletonSupplier;
 @SuppressWarnings("serial")
 public class AsyncAnnotationAdvisor extends AbstractPointcutAdvisor implements BeanFactoryAware {
 
+	/**
+	 * 增强
+	 */
 	private Advice advice;
 
 	/**
-	 * 用于匹配指定的异步注解的切面
+	 * 切点
 	 */
 	private Pointcut pointcut;
 
@@ -152,6 +155,12 @@ public class AsyncAnnotationAdvisor extends AbstractPointcutAdvisor implements B
 	}
 
 
+	/**
+	 * 构造Advice，
+	 * @param executor
+	 * @param exceptionHandler
+	 * @return
+	 */
 	protected Advice buildAdvice(
 			@Nullable Supplier<Executor> executor, @Nullable Supplier<AsyncUncaughtExceptionHandler> exceptionHandler) {
 

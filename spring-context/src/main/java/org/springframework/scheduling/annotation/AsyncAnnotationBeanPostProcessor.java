@@ -87,8 +87,13 @@ public class AsyncAnnotationBeanPostProcessor extends AbstractBeanFactoryAwareAd
 	private Class<? extends Annotation> asyncAnnotationType;
 
 
-
+	/**
+	 * 通过无参构造方法指定@Async的Advisor执行顺序会放在首位
+	 */
 	public AsyncAnnotationBeanPostProcessor() {
+		/**
+		 * true : @Async的Advisor会放在首位
+		 */
 		setBeforeExistingAdvisors(true);
 	}
 
@@ -130,6 +135,8 @@ public class AsyncAnnotationBeanPostProcessor extends AbstractBeanFactoryAwareAd
 	}
 
 	/**
+	 * 设置扫描的注解类型，默认@Async、EJB 3.1 javax.ejb.Asynchronous
+	 *
 	 * Set the 'async' annotation type to be detected at either class or method
 	 * level. By default, both the {@link Async} annotation and the EJB 3.1
 	 * {@code javax.ejb.Asynchronous} annotation will be detected.
@@ -145,7 +152,7 @@ public class AsyncAnnotationBeanPostProcessor extends AbstractBeanFactoryAwareAd
 
 
 	/**
-	 * BeanFactoryAware接口的实现类,在initializeBean时,通过invokeAwareMethods调用setBeanFactory
+	 * BeanFactoryAware接口的实现类,initializeBean阶段,通过invokeAwareMethods调用setBeanFactory
 	 * 此步扩展 将线程执行器和异常处理器Handler、BeanFactory封装到AsyncAnnotationAdvisor
 	 * AsyncAnnotationAdvisor是一个支持异步方法调用的Advisor
 	 * @param beanFactory
