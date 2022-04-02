@@ -41,6 +41,9 @@ public abstract class AutoProxyUtils {
 	 * for a specific bean, and want to enforce that bean can always be cast
 	 * to its target class (even if AOP advices get applied through auto-proxying).
 	 * @see #shouldProxyTargetClass
+	 *
+	 *
+	 * 完全限定名 org.springframework.aop.framework.autoproxy.AutoProxyUtils.preserveTargetClass
 	 */
 	public static final String PRESERVE_TARGET_CLASS_ATTRIBUTE =
 			Conventions.getQualifiedAttributeName(AutoProxyUtils.class, "preserveTargetClass");
@@ -51,12 +54,19 @@ public abstract class AutoProxyUtils {
 	 * on the target class behind an interface-based proxy.
 	 * @since 4.2.3
 	 * @see #determineTargetClass
+	 *
+	 * 完全限定名 org.springframework.aop.framework.autoproxy.AutoProxyUtils.originalTargetClass
 	 */
 	public static final String ORIGINAL_TARGET_CLASS_ATTRIBUTE =
 			Conventions.getQualifiedAttributeName(AutoProxyUtils.class, "originalTargetClass");
 
 
 	/**
+	 *
+	 * 判断bean是否应该被代理，beanFactory中有beanName 且
+	 * org.springframework.aop.framework.autoproxy.AutoProxyUtils.preserveTargetClass值是否为true
+	 * 满足则类应该被代理
+	 *
 	 * Determine whether the given bean should be proxied with its target
 	 * class rather than its interfaces. Checks the
 	 * {@link #PRESERVE_TARGET_CLASS_ATTRIBUTE "preserveTargetClass" attribute}
@@ -76,6 +86,9 @@ public abstract class AutoProxyUtils {
 	}
 
 	/**
+	 * 获取目标真实class
+	 * 如果通过exposeTargetClass暴露过原始目标对象，则返回原始目标对象，否则根据getType获取获取目标真实类型
+	 *
 	 * Determine the original target class for the specified bean, if possible,
 	 * otherwise falling back to a regular {@code getType} lookup.
 	 * @param beanFactory the containing ConfigurableListableBeanFactory
@@ -103,7 +116,7 @@ public abstract class AutoProxyUtils {
 
 	/**
 	 *
-	 * 设置Bean工厂中的原始目标类到MergedBeanDefinition中
+	 * 设置Bean工厂中的原始目标类到MergedBeanDefinition中,在determineTargetClass中会使用ORIGINAL_TARGET_CLASS_ATTRIBUTE来获取bean真实类型
 	 *
 	 * Expose the given target class for the specified bean, if possible.
 	 * @param beanFactory the containing ConfigurableListableBeanFactory
@@ -120,6 +133,11 @@ public abstract class AutoProxyUtils {
 	}
 
 	/**
+	 *
+	 * 判断bean是否是原始类型
+	 * 条件：beanName长度=className长度+“.ORIGINAL”长度
+	 * 并且是否以class的beanName开头，“.ORIGINAL”结尾
+	 *
 	 * Determine whether the given bean name indicates an "original instance"
 	 * according to {@link AutowireCapableBeanFactory#ORIGINAL_INSTANCE_SUFFIX},
 	 * skipping any proxy attempts for it.
@@ -136,5 +154,4 @@ public abstract class AutoProxyUtils {
 		return (beanName.startsWith(beanClass.getName()) &&
 				beanName.endsWith(AutowireCapableBeanFactory.ORIGINAL_INSTANCE_SUFFIX));
 	}
-
 }

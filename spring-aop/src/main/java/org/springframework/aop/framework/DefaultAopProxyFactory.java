@@ -49,6 +49,17 @@ import org.springframework.core.NativeDetector;
 public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 
 
+	/**
+	 * 创建代理对象,
+	 * 		如果targetClass是接口或Proxy.isProxyClass为true,使用JdkDynamicAopProxy
+	 * 		反之ObjenesisCglibAopProxy
+	 * 		默认JdkDynamicAopProxy
+	 *
+	 * @param config the AOP configuration in the form of an
+	 * AdvisedSupport object
+	 * @return
+	 * @throws AopConfigException
+	 */
 	@Override
 	public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
 		if (!NativeDetector.inNativeImage() &&

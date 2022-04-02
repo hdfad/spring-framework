@@ -237,6 +237,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	@Override
 	public Object getEarlyBeanReference(Object bean, String beanName) {
 		Object cacheKey = getCacheKey(bean.getClass(), beanName);
+		/**
+		 * 判断是否允许循环引用，如果允许，则在实例化完成后将提前暴露的bean缓存到earlyProxyReferences中
+ 		 */
 		this.earlyProxyReferences.put(cacheKey, bean);
 		return wrapIfNecessary(bean, beanName, cacheKey);
 	}
@@ -287,6 +290,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * Create a proxy with the configured interceptors if the bean is
 	 * identified as one to proxy by the subclass.
 	 * @see #getAdvicesAndAdvisorsForBean
+	 *
+	 * 创建bean代理
+	 * bean为啥会进入这个方法？
+	 *
 	 */
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
@@ -322,6 +329,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	}
 
 	/**
+	 *
+	 * 包装bean，对bean创建代理对象，
+	 * 前几个判断详见resolveBeforeInstantiation=>postProcessBeforeInstantiation
+	 * 		会对targetSourcedBeans、advisedBeans进行缓存处理
+	 *
 	 * Wrap the given bean if necessary, i.e. if it is eligible for being proxied.
 	 * @param bean the raw bean instance
 	 * @param beanName the name of the bean
@@ -340,6 +352,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			return bean;
 		}
 
+		/**
+		 * 根据Advisor创建代理对象，并缓存
+		 */
 		// Create proxy if we have advice.
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
@@ -435,41 +450,48 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * already pre-configured to access the bean
 	 * @return the AOP proxy for the bean
 	 * @see #buildAdvisors
+	 *
 	 */
 	protected Object createProxy(Class<?> beanClass, @Nullable String beanName,
 			@Nullable Object[] specificInterceptors, TargetSource targetSource) {
-		// 如果当前beanFactory实现了ConfigurableListableBeanFactory接口，则将需要被代理的对象暴露出来
 		if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
+			/**
+			 * 设置代理得原始对象
+			 */
 			AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
 		}
-		// 创建代理工厂
+		// 代理工厂
 		ProxyFactory proxyFactory = new ProxyFactory();
-		// 复制proxyTargetClass，exposeProxy等属性
+
 		proxyFactory.copyFrom(this);
-		// 如果当前设置了不使用Cglib代理目标类，则判断目标类是否设置了preserveTargetClass属性，
-		// 如果设置了，则还是强制使用Cglib代理目标类；如果没有设置，则判断目标类是否实现了相关接口，
-		// 没有设置，则还是使用Cglib代理。需要注意的是Spring默认使用的是Jdk代理来织入切面逻辑。
+
+		/**
+		 * 确定使用类进行代理还是接口进行代理
+		 * 		代理类:proxyTargetClass为true
+		 * 		代理接口:proxyTargetClass为false,AdvisedSupport#interfaces中存储对应接口的class
+		 */
 		if (!proxyFactory.isProxyTargetClass()) {
-			// 判断目标类是否设置了preserveTargetClass属性
+			//class
 			if (shouldProxyTargetClass(beanClass, beanName)) {
 				proxyFactory.setProxyTargetClass(true);
 			}
 			else {
-				// 判断目标类是否实现了相关接口
+				//interface
 				evaluateProxyInterfaces(beanClass, proxyFactory);
 			}
 		}
-		// 将需要织入的切面逻辑都转换为Advisor对象
+
+		/**
+		 * 通过beanName将对象转换成Advisor数组对象
+		 */
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
-		// 提供的hook方法，供子类实现以实现对代理工厂的定制
+
 		proxyFactory.addAdvisors(advisors);
 		proxyFactory.setTargetSource(targetSource);
 		customizeProxyFactory(proxyFactory);
 
 		proxyFactory.setFrozen(this.freezeProxy);
-		// 当前判断逻辑默认返回false，子类可进行重写，对于AnnotationAwareAspectJAutoProxyCreator，
-		// 其重写了该方法返回true，因为其已经对获取到的Advisor进行了过滤，后面不需要在对目标类进行重新
-		// 匹配了
+
 		if (advisorsPreFiltered()) {
 			proxyFactory.setPreFiltered(true);
 		}
@@ -479,7 +501,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (classLoader instanceof SmartClassLoader && classLoader != beanClass.getClassLoader()) {
 			classLoader = ((SmartClassLoader) classLoader).getOriginalClassLoader();
 		}
-		// 生成代理类
+		/**
+		 * 通过构造的ProxyFactory生成代理类,判断使用jdk还是cglib对对象进行代理
+		 * 		通过代理工厂创建代理操作类,判断使用的代理工厂:DefaultAopProxyFactory#createAopProxy
+		 */
 		return proxyFactory.getProxy(classLoader);
 	}
 

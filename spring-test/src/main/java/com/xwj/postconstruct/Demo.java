@@ -7,7 +7,5 @@ public class Demo {
 
     public static void main(String[] args) {
 //        BeanFactory beanFactory=new AnnotationConfigApplicationContext(MyPostConstructTest.class);
-
-		MyAnnotationConfigApplicationContext myAnnotationConfigApplicationContext=new MyAnnotationConfigApplicationContext(MyPppDemo.class);
     }
 }

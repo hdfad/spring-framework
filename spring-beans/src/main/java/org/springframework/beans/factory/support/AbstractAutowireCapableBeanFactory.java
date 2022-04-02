@@ -472,9 +472,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
-			//第八个后置处理器
-			//遍历执行所有BeanPostProcessor的postProcessAfterInitialization方法。
-			// 综上所述，bean的各种方法执行属性为，先执行构造方法，再执行后置管理器中的before方法及@PostContrust方法，最后执行后置处理器的after方法。
 			Object current = processor.postProcessAfterInitialization(result, beanName);
 			if (current == null) {
 				return result;
@@ -600,6 +597,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see #instantiateBean
 	 * @see #instantiateUsingFactoryMethod
 	 * @see #autowireConstructor
+	 *
+	 * 开始创建bean实例，如果对象需要进行代理，则在此阶段的applyMergedBeanDefinitionPostProcessors方法内部生成代理对象
+	 * 执行流程上：
+	 * 		创建bean实例=>createBeanInstance
+	 * 		合并BeanDefinition=>applyMergedBeanDefinitionPostProcessors
+	 * 		填充bean属性=>populateBean
+	 * 		初始化bean=>initializeBean
+	 * 		返回bean对象
+	 *
 	 */
 	protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
 			throws BeanCreationException {
@@ -664,7 +670,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
-			//getEarlyBeanReference:获取提前被引用的对象
+			//
+			// :获取提前被引用的对象
 			//addSingletonFactory:将当前beanName对应的bean添加到bean工厂中，提前暴露，通过synchronized保证只添加一次
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
@@ -680,8 +687,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			/**
 			 *
 			 * 调用initializeBean时的bean已经完成实例化，属性填充的BeanWrapper了
-			 * 此步完成对Aware接口的扩展、BeanPostProcessor的扩展、InitializingBean的扩展
-			 *
+			 * 此步完成对Aware接口的扩展、BeanPostProcessor的扩展、InitializingBean的扩展,代理对象也是通过此步的applyBeanPostProcessorsAfterInitialization完成
+			 * 所以执行流程
+			 * 		Aware
+			 * 		BeanPostProcessor
+			 * 		InitializingBean
+			 * 		initMethod
 			 * */
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
@@ -2061,9 +2072,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
-			//第九次后置处理器调用口
-			//遍历执行所有BeanPostProcessor的postProcessAfterInitialization方法。
-			//bean的各种方法执行属性为，先执行构造方法，再执行后置管理器中的before方法及@PostContrust方法，最后执行后置处理器的after方法。
+			//后置处理器调用
+			/**
+			 * init-method执行之后，对bean进行扩展，如果需要代理对象，那么则在此流程生成代理
+			 * 到这步的bean是初始化完成后对bean进行扩展
+			 */
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 
