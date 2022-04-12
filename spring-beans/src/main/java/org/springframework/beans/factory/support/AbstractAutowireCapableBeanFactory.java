@@ -1628,6 +1628,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				//第六次调用后置处理器
 				//Spring的@Autowire注入,JSR330的@Inject以及JSR250的@Resource等注入操作都是通过这个方法完成 ，使用反射将注入的bean实例赋值给属性。
 				//对于自动注入的对象，spring调用InjectedElement.inject对对象进行注入
+				/**
+				 * 对象注入，
+				 * 如果是Resource，则调用CommonAnnotationBeanPostProcessor#postProcessProperties
+				 * 如果是Autowired，则调用AutowiredAnnotationBeanPostProcessor#postProcessProperties
+				 * 如果是Inject，则调用AutowiredAnnotationBeanPostProcessor#postProcessProperties
+				 */
 				PropertyValues pvsToUse = bp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
 				if (pvsToUse == null) {
 					if (filteredPds == null) {

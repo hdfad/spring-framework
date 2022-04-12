@@ -1359,7 +1359,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 
 			Class<?> type = descriptor.getDependencyType();
-			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
+			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);//QualifierAnnotationAutowireCandidateResolver#getSuggestedValue 解析value
 			if (value != null) {
 				if (value instanceof String) {
 					String strVal = resolveEmbeddedValue((String) value);
@@ -1383,16 +1383,29 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (multipleBeans != null) {
 				return multipleBeans;
 			}
-
+			/**
+			 * 某类型的单实现类,依赖注入和依赖查找数据来源最重要的区别也是在这里完成的
+			 */
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
+			/**
+			 * 如果根据某个类型获取到匹配依赖为空
+			 */
 			if (matchingBeans.isEmpty()) {
+				/**
+				 * 判断该依赖是否是必须的，例如@Autowired的required属性(默认为true)
+				 */
 				if (isRequired(descriptor)) {
 					raiseNoMatchingBeanFound(type, descriptor.getResolvableType(), descriptor);
 				}
 				return null;
 			}
-
+			/**
+			 * 注入bean名称
+			 */
 			String autowiredBeanName;
+			/**
+			 * 实例对象
+			 */
 			Object instanceCandidate;
 
 			if (matchingBeans.size() > 1) {
@@ -1416,7 +1429,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				autowiredBeanName = entry.getKey();
 				instanceCandidate = entry.getValue();
 			}
-
+			/**
+			 * autowiredBeanNames:已经注入的bean的名称
+			 */
 			if (autowiredBeanNames != null) {
 				autowiredBeanNames.add(autowiredBeanName);
 			}
