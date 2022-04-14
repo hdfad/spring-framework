@@ -396,6 +396,14 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 		return (candidateConstructors.length > 0 ? candidateConstructors : null);
 	}
 
+	/**
+	 * 填充bean属性阶段,通过后置处理器InstantiationAwareBeanPostProcessor调用,完成对@Autowired注解注入ioc容器
+	 *
+	 * @param pvs the property values that the factory is about to apply (never {@code null})
+	 * @param bean the bean instance created, but whose properties have not yet been set
+	 * @param beanName the name of the bean
+	 * @return
+	 */
 	@Override
 	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
 		/**
@@ -451,9 +459,18 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 	private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz, @Nullable PropertyValues pvs) {
 		// Fall back to class name as cache key, for backwards compatibility with custom callers.
+		/**
+		 * 缓存injectionMetadataCache的key:className
+		 */
 		String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
 		// Quick check on the concurrent map first, with minimal locking.
 		InjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
+		/**
+		 * 检查是否需要刷新注入注解,如果说 metadata为null 或者 全局目标class不等于当前传入class 就需要刷新
+		 * 刷新时通过dcl锁保证全局安全,如果metadata被其他操作缓存到本地,就判断class,class不相等时清除metadata,然后再重新获取,
+		 * 		为啥要重新获取,因为锁住的是一个对象,而操作者的tagClass不一定是当前class,那么就要清除当前数据,重新处理
+		 * 最后通过buildAutowiringMetadata获取metadata并缓存到本地
+		 */
 		if (InjectionMetadata.needsRefresh(metadata, clazz)) {
 			synchronized (this.injectionMetadataCache) {
 				metadata = this.injectionMetadataCache.get(cacheKey);
@@ -470,6 +487,14 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 	}
 
 	private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
+		/**
+		 * false:创建一个新的InjectionMetadata
+		 * isCandidateClass: 判断class是否以Java.开头,或者是OrderedClass,是的话就创建一个InjectionMetadata
+		 *
+		 * 首先判断注解完全限定名,如果是java.开头,返回true,
+		 * 否则如果是class是java.开头或者是OrderClass,则返回false,此时就需要创建一个InjectionMetadata
+		 * 如果2者都不是,那么也返回true
+		 */
 		if (!AnnotationUtils.isCandidateClass(clazz, this.autowiredAnnotationTypes)) {
 			return InjectionMetadata.EMPTY;
 		}

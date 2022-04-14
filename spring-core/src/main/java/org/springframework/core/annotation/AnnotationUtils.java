@@ -153,6 +153,10 @@ public abstract class AnnotationUtils {
 	}
 
 	/**
+	 *
+	 * 如果注解完全限定名名是已java.开头:返回true,
+	 * 如果class是以java.或者是OrderedClass,则返回false
+	 * 如果2者都不满足,返回true
 	 * Determine whether the given class is a candidate for carrying the specified annotation
 	 * (at type, method or field level).
 	 * @param clazz the class to introspect
