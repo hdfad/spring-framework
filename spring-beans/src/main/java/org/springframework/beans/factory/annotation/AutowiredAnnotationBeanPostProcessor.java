@@ -323,7 +323,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 						else if (primaryConstructor != null) {
 							continue;
 						}
-						//查询有标注有 @Autowired标注的构造函数
+						/**
+						 * 查找类中被Autowired,Value,Inject标识的字段
+						 */
 						MergedAnnotation<?> ann = findAutowiredAnnotation(candidate);
 						if (ann == null) {
 							Class<?> userClass = ClassUtils.getUserClass(beanClass);
@@ -552,9 +554,19 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 		return InjectionMetadata.forElements(elements, clazz);
 	}
 
+	/**
+	 * 查找被autowiredAnnotationTypes容器类型标识的类,如果存在就返回对应的Annotation,否则返回null
+	 * @param ao
+	 * @return
+	 */
 	@Nullable
 	private MergedAnnotation<?> findAutowiredAnnotation(AccessibleObject ao) {
 		MergedAnnotations annotations = MergedAnnotations.from(ao);
+		/**
+		 * autowiredAnnotationTypes:Autowired,Value,Inject注入类型集合
+		 * 从指定字段上查找是否存在autowiredAnnotationTypes中的任意一种注入类型
+		 * 存在就返回对应的Annotation，否则就返回null
+		 */
 		for (Class<? extends Annotation> type : this.autowiredAnnotationTypes) {
 			MergedAnnotation<?> annotation = annotations.get(type);
 			if (annotation.isPresent()) {
@@ -574,6 +586,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 	 */
 	@SuppressWarnings({"deprecation", "cast"})
 	protected boolean determineRequiredStatus(MergedAnnotation<?> ann) {
+		System.out.println(ann);
 		// The following (AnnotationAttributes) cast is required on JDK 9+.
 		return determineRequiredStatus((AnnotationAttributes)
 				ann.asMap(mergedAnnotation -> new AnnotationAttributes(mergedAnnotation.getType())));

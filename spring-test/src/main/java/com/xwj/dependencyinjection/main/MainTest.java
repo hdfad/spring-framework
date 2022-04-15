@@ -5,9 +5,6 @@ import com.xwj.dependencyinjection.impl.TestServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import javax.annotation.Resource;
-import javax.inject.Inject;
-
 /**
  * @author buming
  * Email buming@uoko.com
@@ -23,14 +20,14 @@ public class MainTest {
 	private TestService bean6664;
 */
 
-	@Resource
-	private TestService TestServiceImpl2;
+	@Autowired
+	private TestService testServiceImpl2;
 
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.register(MainTest.class, TestServiceImpl.class);
 		context.refresh();
 //		System.out.println(context.getBean(MainTest.class).bean_111.hashCode());
-		System.out.println(context.getBean(MainTest.class).TestServiceImpl2.hashCode());
+		System.out.println(context.getBean(MainTest.class).testServiceImpl2.hashCode());
 	}
 }
