@@ -27,6 +27,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
+ *
+ * 注解类型map,包含注解类型class，注解名称，是否校验，继承自LinkedHashMap
+ *
  * {@link LinkedHashMap} subclass representing annotation attribute
  * <em>key-value</em> pairs as read by {@link AnnotationUtils},
  * {@link AnnotatedElementUtils}, and Spring's reflection- and ASM-based

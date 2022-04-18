@@ -77,7 +77,10 @@ public abstract class ClassUtils {
 	/** The nested class separator character: {@code '$'}. */
 	private static final char NESTED_CLASS_SEPARATOR = '$';
 
-	/** The CGLIB class separator: {@code "$$"}. */
+	/**
+	 * CGLIB 分隔符
+	 * The CGLIB class separator: {@code "$$"}.
+	 * */
 	public static final String CGLIB_CLASS_SEPARATOR = "$$";
 
 	/** The ".class" file suffix. */

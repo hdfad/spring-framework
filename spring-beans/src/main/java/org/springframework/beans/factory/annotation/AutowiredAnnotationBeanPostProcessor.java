@@ -293,12 +293,21 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 		}
 
 		// Quick check on the concurrent map first, with minimal locking.
+		/**
+		 * 对外提供的构造函数集合
+		 */
 		Constructor<?>[] candidateConstructors = this.candidateConstructorsCache.get(beanClass);
 		if (candidateConstructors == null) {
 			// Fully synchronized resolution now...
 			synchronized (this.candidateConstructorsCache) {
+				/**
+				 * 从缓存中获取当前beanClass的所有构造函数，如果为null，则通过反射获取
+				 */
 				candidateConstructors = this.candidateConstructorsCache.get(beanClass);
 				if (candidateConstructors == null) {
+					/**
+					 * 构造函数集合
+					 */
 					Constructor<?>[] rawCandidates;
 					try {
 						//反射获取所有构造函数
@@ -309,14 +318,29 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 								"Resolution of declared constructors on bean Class [" + beanClass.getName() +
 								"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 					}
+					/**
+					 * candidates：候选构造函数
+					 * 用于存储构造函数，只有在MergedAnnotation类型为MissingMergedAnnotation时，返回非null的MergedAnnotation时才会添加到candidates中
+					 */
 					List<Constructor<?>> candidates = new ArrayList<>(rawCandidates.length);
+					/**
+					 * 必须的构造函数
+					 */
 					Constructor<?> requiredConstructor = null;
+					/**
+					 * 默认的构造函数
+					 */
 					Constructor<?> defaultConstructor = null;
 					Constructor<?> primaryConstructor = BeanUtils.findPrimaryConstructor(beanClass);
+					/**
+					 * 用于统计非合成构造函数数量
+					 */
 					int nonSyntheticConstructors = 0;
 					//遍历构造函数
 					for (Constructor<?> candidate : rawCandidates) {
-						//判断构造方法是否是合成的
+						/**
+						 * 判断构造方法是否是合成的，如果此可执行文件是合成构造，则返回true ; 否则返回false
+						 */
 						if (!candidate.isSynthetic()) {
 							nonSyntheticConstructors++;
 						}
@@ -324,7 +348,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 							continue;
 						}
 						/**
-						 * 查找类中被Autowired,Value,Inject标识的字段
+						 * 查找类中被Autowired,Value,Inject标识的字段，如果类型为TypeMappedAnnotations，则返回null
 						 */
 						MergedAnnotation<?> ann = findAutowiredAnnotation(candidate);
 						if (ann == null) {
@@ -359,6 +383,10 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 							}
 							candidates.add(candidate);
 						}
+						/**
+						 * Constructor#getParameterCount:获取构造方法中的参数个数
+						 * 如果只有无参构造方法，则设置默认的构造方法defaultConstructor为无参构造方法
+						 */
 						else if (candidate.getParameterCount() == 0) {
 							defaultConstructor = candidate;
 						}
@@ -378,9 +406,18 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 						}
 						candidateConstructors = candidates.toArray(new Constructor<?>[0]);
 					}
+
+
+					/**
+					 * 是否只存在一个有参构造方法，true就将candidateConstructors设置成当前有参构造函数
+					 * 如果构造函数的个数为1，且第一个构造函数的参数个数大于0个
+					 */
 					else if (rawCandidates.length == 1 && rawCandidates[0].getParameterCount() > 0) {
 						candidateConstructors = new Constructor<?>[] {rawCandidates[0]};
 					}
+					/**
+					 * 如果有2个构造函数
+					 */
 					else if (nonSyntheticConstructors == 2 && primaryConstructor != null &&
 							defaultConstructor != null && !primaryConstructor.equals(defaultConstructor)) {
 						candidateConstructors = new Constructor<?>[] {primaryConstructor, defaultConstructor};
@@ -490,6 +527,10 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 	private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
 		/**
+		 *
+		 * 判断类中注解完全限定名是否有以非“java.”开头或者class是“Ordered.class”或者“java.”开头，全是"java."或者OrderedClass则直接实例化InjectionMetadata返回
+		 *
+		 *
 		 * false:创建一个新的InjectionMetadata
 		 * isCandidateClass: 判断class是否以Java.开头,或者是OrderedClass,是的话就创建一个InjectionMetadata
 		 *
@@ -508,8 +549,14 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
 
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
+				/**
+				 * 查找autowiredAnnotationTypes容器中的注入类型
+				 */
 				MergedAnnotation<?> ann = findAutowiredAnnotation(field);
 				if (ann != null) {
+					/**
+					 * 判断注入字段是否是静态修饰符修饰，不允许静态修饰符修饰的字段注入
+					 */
 					if (Modifier.isStatic(field.getModifiers())) {
 						if (logger.isInfoEnabled()) {
 							logger.info("Autowired annotation is not supported on static fields: " + field);
@@ -555,20 +602,30 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 	}
 
 	/**
-	 * 查找被autowiredAnnotationTypes容器类型标识的类,如果存在就返回对应的Annotation,否则返回null
+	 * 查找注入点，返回MergedAnnotation
+	 * autowiredAnnotationTypes:Autowired,Value,Inject注入类型集合
 	 * @param ao
 	 * @return
 	 */
 	@Nullable
 	private MergedAnnotation<?> findAutowiredAnnotation(AccessibleObject ao) {
+		/**
+		 * 创建MergedAnnotations，指定过滤包名AnnotationFilter.ALL
+		 */
 		MergedAnnotations annotations = MergedAnnotations.from(ao);
 		/**
 		 * autowiredAnnotationTypes:Autowired,Value,Inject注入类型集合
-		 * 从指定字段上查找是否存在autowiredAnnotationTypes中的任意一种注入类型
-		 * 存在就返回对应的Annotation，否则就返回null
+		 * 如果autowiredAnnotationTypes集合不为null那么通过AnnotationFilter.matches方法返回的就始终为非null，
+		 * 返回一个单例MissingMergedAnnotation对象
 		 */
 		for (Class<? extends Annotation> type : this.autowiredAnnotationTypes) {
+			/**
+			 * AnnotationFilter.matches始终返回true,那么此处的annotation始终存在
+			 */
 			MergedAnnotation<?> annotation = annotations.get(type);
+			/**
+			 * annotation结果为missing实体,则直接返回null
+			 */
 			if (annotation.isPresent()) {
 				return annotation;
 			}
@@ -577,6 +634,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 	}
 
 	/**
+	 *
+	 * 判断MergedAnnotation中是否存在required的key或者key值是否为true，required不存在或者值为true都返回true
+	 *
 	 * Determine if the annotated field or method requires its dependency.
 	 * <p>A 'required' dependency means that autowiring should fail when no beans
 	 * are found. Otherwise, the autowiring process will simply bypass the field
@@ -588,11 +648,18 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 	protected boolean determineRequiredStatus(MergedAnnotation<?> ann) {
 		System.out.println(ann);
 		// The following (AnnotationAttributes) cast is required on JDK 9+.
+		/**
+		 * 转换，先转换为map，再转换为AnnotationAttributes（AnnotationAttributes：LinkedHashMap子类），
+		 * 然后判断是否存在AnnotationAttributes是否存在required的key或者key值是否为true，required不存在或者值为true都返回true
+		 */
 		return determineRequiredStatus((AnnotationAttributes)
 				ann.asMap(mergedAnnotation -> new AnnotationAttributes(mergedAnnotation.getType())));
 	}
 
 	/**
+	 * required存在状态校验，required值校验
+	 * 判断注解字段是否不包含指定key(required)，不包含直接返回，包含则从map中获取key为required的值是否为true
+	 *
 	 * Determine if the annotated field or method requires its dependency.
 	 * <p>A 'required' dependency means that autowiring should fail when no beans
 	 * are found. Otherwise, the autowiring process will simply bypass the field

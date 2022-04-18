@@ -4,6 +4,7 @@ import com.xwj.dependencyinjection.TestService;
 import com.xwj.dependencyinjection.impl.TestServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Component;
 
 /**
  * @author buming
@@ -22,6 +23,15 @@ public class MainTest {
 
 	@Autowired
 	private TestService testServiceImpl2;
+
+/*	public MainTest(){
+		System.out.println("无参");
+	}*/
+
+	public MainTest(TestService testService){
+		this.testServiceImpl2=testService;
+		System.out.println("有参");
+	}
 
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();

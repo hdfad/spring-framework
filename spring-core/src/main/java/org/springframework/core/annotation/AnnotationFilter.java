@@ -35,6 +35,7 @@ import java.lang.annotation.Annotation;
 public interface AnnotationFilter {
 
 	/**
+	 * 过滤包名
 	 * {@link AnnotationFilter} that matches annotations in the
 	 * {@code java.lang} and {@code org.springframework.lang} packages
 	 * and their subpackages.

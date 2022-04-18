@@ -62,7 +62,7 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 	private final RepeatableContainers repeatableContainers;
 
 	/**
-	 * 被标识为
+	 * 注解过滤规则
 	 */
 	private final AnnotationFilter annotationFilter;
 
@@ -145,8 +145,10 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 	public <A extends Annotation> MergedAnnotation<A> get(Class<A> annotationType,
 			@Nullable Predicate<? super MergedAnnotation<A>> predicate,
 			@Nullable MergedAnnotationSelector<A> selector) {
-
-
+		/**
+		 * AnnotationFilter.matches->true,返回MergedAnnotation.missing()
+		 * 始终返回missing
+		 */
 		if (this.annotationFilter.matches(annotationType)) {
 			return MergedAnnotation.missing();
 		}
@@ -249,6 +251,14 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 	}
 
 
+	/**
+	 * 判断是否新创建一个TypeMappedAnnotations还是直接使用单例的MergedAnnotations
+	 * @param element
+	 * @param searchStrategy
+	 * @param repeatableContainers
+	 * @param annotationFilter
+	 * @return
+	 */
 	static MergedAnnotations from(AnnotatedElement element, SearchStrategy searchStrategy,
 			RepeatableContainers repeatableContainers, AnnotationFilter annotationFilter) {
 
