@@ -331,6 +331,12 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 					 * 默认的构造函数
 					 */
 					Constructor<?> defaultConstructor = null;
+
+					/**
+					 * 找到主要的构造方法（这里是通过kotlin找的）
+					 * 所以对于java的类我们是找不到主要的构造方法的
+					 * 这里必定是找不到的
+					 */
 					Constructor<?> primaryConstructor = BeanUtils.findPrimaryConstructor(beanClass);
 					/**
 					 * 用于统计非合成构造函数数量
@@ -416,18 +422,27 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 						candidateConstructors = new Constructor<?>[] {rawCandidates[0]};
 					}
 					/**
-					 * 如果有2个构造函数
+					 * 如果有2个构造函数,java的primaryConstructor必定为null，所以不会进来
 					 */
 					else if (nonSyntheticConstructors == 2 && primaryConstructor != null &&
 							defaultConstructor != null && !primaryConstructor.equals(defaultConstructor)) {
 						candidateConstructors = new Constructor<?>[] {primaryConstructor, defaultConstructor};
 					}
+					/**
+					 * 同上
+					 */
 					else if (nonSyntheticConstructors == 1 && primaryConstructor != null) {
 						candidateConstructors = new Constructor<?>[] {primaryConstructor};
 					}
+					/**
+					 * 都不满足的情况下选取第一个构造函数为对外提供的构造函数
+					 */
 					else {
 						candidateConstructors = new Constructor<?>[0];
 					}
+					/**
+					 * 将构造函数缓存到map容器中
+					 */
 					this.candidateConstructorsCache.put(beanClass, candidateConstructors);
 				}
 			}
