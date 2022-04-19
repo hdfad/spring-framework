@@ -133,6 +133,9 @@ class ConstructorResolver {
 	 * 通过权重计算选择权重小的构造函数通过反射BeanUtils.instantiateClass(ctor, args)生成一个实例对象封装成BeanWrapper
 	 * 如果权重相同且lenientConstructorResolution为非宽松的构造函数解析标识，则抛出异常
 	 * 最终将初始化完成的BeanWrapper包裹对象返回
+	 *
+	 *
+	 *
 	 */
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			@Nullable Constructor<?>[] chosenCtors, @Nullable Object[] explicitArgs) {
@@ -140,9 +143,17 @@ class ConstructorResolver {
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
-		Constructor<?> constructorToUse = null;//要使用的构造函数
+		/**
+		 * 使用的构造方法
+		 */
+		Constructor<?> constructorToUse = null;
+
 		ArgumentsHolder argsHolderToUse = null;
-		Object[] argsToUse = null; //constructorToUse 参数
+
+		/**
+		 * 使用的构造方法中的参数数组
+		 */
+		Object[] argsToUse = null;
 
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
