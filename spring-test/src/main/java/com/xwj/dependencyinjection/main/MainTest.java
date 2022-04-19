@@ -2,9 +2,11 @@ package com.xwj.dependencyinjection.main;
 
 import com.xwj.dependencyinjection.TestService;
 import com.xwj.dependencyinjection.impl.TestServiceImpl;
+import com.xwj.dependencyinjection.lookup.AA;
+import com.xwj.dependencyinjection.lookup.B;
+import com.xwj.dependencyinjection.lookup.LookUpTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.stereotype.Component;
 
 /**
  * @author buming
@@ -24,8 +26,16 @@ public class MainTest {
 	@Autowired
 	private TestService testServiceImpl2;
 
-/*	public MainTest(){
+	String parameter;
+
+/*	private MainTest(){
 		System.out.println("无参");
+	}
+
+	private MainTest(String parameter,TestService testService){
+		this.parameter=parameter;
+		this.testServiceImpl2=testService;
+		System.out.println("2个参数");
 	}*/
 
 	public MainTest(TestService testService){
@@ -36,8 +46,12 @@ public class MainTest {
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.register(MainTest.class, TestServiceImpl.class);
+//		context.register(LookUpTest.class, AA.class, B.class);
 		context.refresh();
 //		System.out.println(context.getBean(MainTest.class).bean_111.hashCode());
-		System.out.println(context.getBean(MainTest.class).testServiceImpl2.hashCode());
+//		System.out.println(context.getBean(MainTest.class).testServiceImpl2.hashCode());
+//		LookUpTest bean = context.getBean(LookUpTest.class);
+//		bean.aa();
+
 	}
 }

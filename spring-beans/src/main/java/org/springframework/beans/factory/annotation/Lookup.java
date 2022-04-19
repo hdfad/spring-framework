@@ -51,6 +51,12 @@ import java.lang.annotation.Target;
  * @since 4.1
  * @see org.springframework.beans.factory.BeanFactory#getBean(Class, Object...)
  * @see org.springframework.beans.factory.BeanFactory#getBean(String, Object...)
+ *
+ *
+ * 非单例对象引用，如果单例对象A需要引用非单例对象B，
+ * 每次使用时都想拿到一个新的B，而普通注入中，单例A只会被创建一次，注入一次属性，即使是原型模式的B，也只被注入一次
+ * 为了解决单例对象中注入了原型对象，可以通过Lookup进行解决
+ * 注：作用域方法
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

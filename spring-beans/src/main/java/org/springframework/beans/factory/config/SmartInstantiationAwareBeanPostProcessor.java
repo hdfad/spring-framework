@@ -87,22 +87,6 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	 * 整个bean创建的生命周期中只会创建一次，发生在createBeanInstance阶段，此时的bean处于未实例化阶段
 	 * 目的是获取所有注入的构造函数，返回构造函数的数组
 	 *
-	 * 示例：
-	 * @Component
-	 * public class A {
-	 *        @Autowired
-	 *    private B b;
-	 *
-	 *    @Autowired(required = false)
-	 * 	public A(B b) {
-	 * 		this.b = b;
-	 *    }
-	 *
-	 *    @Autowired(required = false)
-	 * 	public A() {
-	 *    }
-	 * }
-	 *
 	 * 调用链
 	 *  AbstractBeanFactory # doGetBean
 	 *  |____DefaultSingletonBeanRegistry # getSingleton

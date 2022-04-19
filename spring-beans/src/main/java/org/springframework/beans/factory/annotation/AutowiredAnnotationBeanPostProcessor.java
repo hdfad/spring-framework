@@ -253,6 +253,20 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 		this.injectionMetadataCache.remove(beanName);
 	}
 
+	/**
+	 * 返回合适的构造函数，
+	 * ①如果方法上面是通过look-up注入，那么将look-up的方法添加到添加到RootBeanDefinition中
+	 * ②从map中获取当前beanClass的缓存，如果不为null，直接返回
+	 * ③如果只有一个有参构造方法，那将构造方法添加到candidateConstructors数组中
+	 * 如果构造方法有2个及以上，那么构造一个长度为0的candidateConstructors数组
+	 * ④缓存到map容器中
+	 * ⑤最终如果candidateConstructors数组长度为0返回null，否则返回candidateConstructors数组
+	 *
+	 * @param beanClass the raw class of the bean (never {@code null})
+	 * @param beanName the name of the bean
+	 * @return
+	 * @throws BeanCreationException
+	 */
 	@Override
 	@Nullable
 	public Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, final String beanName)
@@ -263,13 +277,22 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 			if (AnnotationUtils.isCandidateClass(beanClass, Lookup.class)) {
 				try {
 					Class<?> targetClass = beanClass;
+					/**
+					 * do-while循环通过反射获取方法上的Lookup注解，如果存在父类那么继续查找父类的Lookup注解并添加到RootBeanDefinition中
+					 */
 					do {
 						ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 							Lookup lookup = method.getAnnotation(Lookup.class);
 							if (lookup != null) {
 								Assert.state(this.beanFactory != null, "No BeanFactory available");
+								/**
+								 * 方法上存在Lookup注解，就将方法和方法和lookupValue封装到LookupOverride中
+								 */
 								LookupOverride override = new LookupOverride(method, lookup.value());
 								try {
+									/**
+									 * 根据beanName获取BeanDefinition,将LookupOverride添加到BeanDefinition中
+									 */
 									RootBeanDefinition mbd = (RootBeanDefinition)
 											this.beanFactory.getMergedBeanDefinition(beanName);
 									mbd.getMethodOverrides().addOverride(override);
@@ -280,6 +303,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 								}
 							}
 						});
+						/**
+						 * 如果存在父类，继续查找父类的class
+						 */
 						targetClass = targetClass.getSuperclass();
 					}
 					while (targetClass != null && targetClass != Object.class);
@@ -294,7 +320,8 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 		// Quick check on the concurrent map first, with minimal locking.
 		/**
-		 * 对外提供的构造函数集合
+		 * 对外提供的合适构造函数集合
+		 * 当构造函数只有一个时，candidateConstructors存储的就是默认这一个，如果大于1个，则实例化一个长度为0的构造函数数组
 		 */
 		Constructor<?>[] candidateConstructors = this.candidateConstructorsCache.get(beanClass);
 		if (candidateConstructors == null) {
@@ -306,7 +333,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 				candidateConstructors = this.candidateConstructorsCache.get(beanClass);
 				if (candidateConstructors == null) {
 					/**
-					 * 构造函数集合
+					 * 所有的构造函数集合，包括私有的
 					 */
 					Constructor<?>[] rawCandidates;
 					try {
@@ -328,7 +355,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 					 */
 					Constructor<?> requiredConstructor = null;
 					/**
-					 * 默认的构造函数
+					 * 默认的构造函数，如果存在无参构造方法那么defaultConstructor值就是无参构造方法，否则为null
 					 */
 					Constructor<?> defaultConstructor = null;
 
@@ -391,7 +418,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 						}
 						/**
 						 * Constructor#getParameterCount:获取构造方法中的参数个数
-						 * 如果只有无参构造方法，则设置默认的构造方法defaultConstructor为无参构造方法
+						 * 如果包含无参构造方法，则设置默认的构造方法defaultConstructor为无参构造方法
 						 */
 						else if (candidate.getParameterCount() == 0) {
 							defaultConstructor = candidate;
@@ -435,7 +462,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 						candidateConstructors = new Constructor<?>[] {primaryConstructor};
 					}
 					/**
-					 * 都不满足的情况下选取第一个构造函数为对外提供的构造函数
+					 * 如果构造函数大于一个，那么返回一个长度为0的Constructor数组
 					 */
 					else {
 						candidateConstructors = new Constructor<?>[0];
@@ -447,6 +474,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 				}
 			}
 		}
+		/**
+		 * 0个返回null，否则返回candidateConstructors
+		 */
 		return (candidateConstructors.length > 0 ? candidateConstructors : null);
 	}
 

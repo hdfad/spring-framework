@@ -1277,6 +1277,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * 创建bean实例
+	 *
 	 * Create a new instance for the specified bean, using an appropriate instantiation strategy:
 	 * factory method, constructor autowiring, or simple instantiation.
 	 * @param beanName the name of the bean
@@ -1327,16 +1329,29 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Candidate constructors for autowiring?
-		//第三个次后置处理器调用,获取所有的@Autowired标识的构造器，如果不存在则返回null数组
+		/**
+		 * 通过后置处理器，解析LookUp，并且获取合适的构造函数,如果只有一个有参构造函数，则获取这个构造函数封装到Constructor数组中，如果大于一个就会返回null
+		 */
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		//当bean存在自动注入@Autowired标识的构造器||或者注入模型autowireMode=AUTOWIRE_CONSTRUCTOR:3 || 构造函数参数值存在 || constructor不为null满足其一
+
+		/**
+		 * todo 当构造函数数组不为null时 或者 注入模型是AUTOWIRE_CONSTRUCTOR（3） 或者
+		 * 
+		 * 执行注入
+		 */
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
+			/**
+			 * 根据构造函数注入
+			 */
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
 		// Preferred constructors for default construction?
-		//获取合适的构造函数
+		/**
+		 * 获取合适的构造函数，RootBeanDefinition的getPreferredConstructors返回null
+		 */
 		ctors = mbd.getPreferredConstructors();
 		if (ctors != null) {
 			return autowireConstructor(beanName, mbd, ctors, null);
@@ -1400,32 +1415,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * https://xie.infoq.cn/article/489dba335a4e99c53e25eebd3
-	 *    @Component
-	 *    public class X {
-	 *        @Autowired
-	 *        Y y;
-	 *
-	 *        @Autowired
-	 *        Z z;
-	 *
-	 *        @Autowired(required = false)
-	 * 		public X(Y y){
-	 * 			this.y=y;
-	 * 			System.out.println("X create");
-	 *        }
-	 *        @Autowired(required = false)
-	 * 		public X(){
-	 * 			System.out.println("X create2");
-	 *        }
-	 *        @Autowired(required = false)
-	 * 		public X(Y y,Z z){
-	 * 			this.y=y;
-	 * 			this.z=z;
-	 * 			System.out.println("X create2");
-	 *        }
-	 *    }
-	 *
 	 * Determine candidate constructors to use for the given bean, checking all registered
 	 * {@link SmartInstantiationAwareBeanPostProcessor SmartInstantiationAwareBeanPostProcessors}.
 	 * @param beanClass the raw class of the bean
@@ -1512,6 +1501,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected BeanWrapper autowireConstructor(
 			String beanName, RootBeanDefinition mbd, @Nullable Constructor<?>[] ctors, @Nullable Object[] explicitArgs) {
 
+		/**
+		 * 实例化一个ConstructorResolver，调用内部autowireConstructor
+		 */
 		return new ConstructorResolver(this).autowireConstructor(beanName, mbd, ctors, explicitArgs);
 	}
 
