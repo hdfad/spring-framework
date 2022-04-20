@@ -139,12 +139,13 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
 		/**
 		 * 调用当前无参构造方法，从父类开始的静态方法和静态代码块开始
+		 *
 		 */
 		this();
 		//使用reder构建BeanDefinition，根据类class，初始化容器，注册bean，构建BeanDefinition
 
-		/*
-		*
+		/**
+		 * 注册class到BeanDefinition
 		* 调用doRegister，根据beanClass构建AnnotatedGenericBeanDefinition，接下来会对AnnotatedGenericBeanDefinition进行赋值
 		* 首先会生成BeanName，使用BeanNameGenerator#generateBeanName；
 		* 再设置BeanDefinition的属性值，判断是否存在Lazy、Primary、DependsOn、Role、Description注解描述的beanDefinition
@@ -230,7 +231,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		Assert.notEmpty(componentClasses, "At least one component class must be specified");
 		StartupStep registerComponentClass = this.getApplicationStartup().start("spring.context.component-classes.register")
 				.tag("classes", () -> Arrays.toString(componentClasses));
-		/*
+		/**
 		* 对已经初始化完毕的AnnotatedBeanDefinitionReader开始注册bean
 		* reader在上一步初始化构建。
 		* 设置AnnotatedGenericBeanDefinition的作用域，Lazy、Primary、DependsOn、Role、Description注解的支持、别名，
