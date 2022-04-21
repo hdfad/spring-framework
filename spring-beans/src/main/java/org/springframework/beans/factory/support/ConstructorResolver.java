@@ -122,25 +122,20 @@ class ConstructorResolver {
 	 * @param chosenCtors chosen candidate constructors (or {@code null} if none)
 	 * @param explicitArgs argument values passed in programmatically via the getBean method,
 	 * or {@code null} if none (-> use constructor argument values from bean definition)
+	 *
+	 *                     通过 getBean 方法以编程方式传入的参数值
+	 *
 	 * @return a BeanWrapper for the new instance
-	 *
-	 *
-	 *
-	 * 选择构造函数，根据构造函数进行初始化对象，如果只有一个构造函数注入，则直接使用当前构造函数经过BeanUtils.instantiateClass(ctor, args)反射生成一个对象实例并封装成BeanWrapper
-	 * 如果存在多个构造函数注入的情况，首先使用AutowireUtils.sortConstructors对构造方法进行排序，public构造函数优先参数数量降序、非public构造函数参数数量降序
-	 * 然后根据AbstractBeanDefinition中的lenientConstructorResolution宽松构造函数解析标识进行判断，
-	 * 默认为true，使用getTypeDifferenceWeight宽松模式计算权重，若为false则使用getAssignabilityWeight非宽松模式计算权重
-	 * 通过权重计算选择权重小的构造函数通过反射BeanUtils.instantiateClass(ctor, args)生成一个实例对象封装成BeanWrapper
-	 * 如果权重相同且lenientConstructorResolution为非宽松的构造函数解析标识，则抛出异常
-	 * 最终将初始化完成的BeanWrapper包裹对象返回
-	 *
-	 *
-	 *
 	 */
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			@Nullable Constructor<?>[] chosenCtors, @Nullable Object[] explicitArgs) {
-		//构造BeanWrapperImpl
+		/**
+		 * 实例化构造BeanWrapperImpl
+		 */
 		BeanWrapperImpl bw = new BeanWrapperImpl();
+		/**
+		 * 初始化BeanWrapper
+		 */
 		this.beanFactory.initBeanWrapper(bw);
 
 		/**
@@ -177,6 +172,9 @@ class ConstructorResolver {
 
 		if (constructorToUse == null || argsToUse == null) {
 			// Take specified constructors, if any.
+			/**
+			 * 获取构造函数数组
+			 */
 			Constructor<?>[] candidates = chosenCtors;
 			if (candidates == null) {
 				Class<?> beanClass = mbd.getBeanClass();
@@ -190,10 +188,14 @@ class ConstructorResolver {
 							"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 				}
 			}
-			/*如果构造函数有多个的情况下需要选择合适的构造函数进行对象创建*/
-			//如果只有一个被注入的构造方法
+			/**
+			 * 1个无参构造函数
+			 */
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
+				/**
+				 * 构造函数参数为0个
+				 */
 				if (uniqueCandidate.getParameterCount() == 0) {
 					synchronized (mbd.constructorArgumentLock) {
 						mbd.resolvedConstructorOrFactoryMethod = uniqueCandidate;
@@ -207,15 +209,27 @@ class ConstructorResolver {
 
 			// Need to resolve the constructor.
 			/*如果有多个被注入的构造方法，需要进行选择*/
+			/**
+			 * 存在构造函数，注入模型为3，激活autowiring
+			 */
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
 			ConstructorArgumentValues resolvedValues = null;
 
+			/**
+			 * 最小数量参数
+			 */
 			int minNrOfArgs;
+			/**
+			 * 如果参数为getBean方式传入的参数，则最小数量值为参数个数
+			 */
 			if (explicitArgs != null) {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
+				/**
+				 * 构造一个构造函数值对象
+				 */
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
@@ -238,12 +252,12 @@ class ConstructorResolver {
 				if (parameterCount < minNrOfArgs) {
 					continue;
 				}
-
+				//根据构造方法参数创建一个Holder
 				ArgumentsHolder argsHolder;
 				Class<?>[] paramTypes = candidate.getParameterTypes();//获取构造函数中的形参类的class
 				if (resolvedValues != null) {
-					try {
-						String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, parameterCount);//形参名字集合
+					try {//获取有参构造方法中的参数
+						String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, parameterCount);//ConstructorProperties注解检查
 						if (paramNames == null) {
 							ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
 							if (pnd != null) {
@@ -703,6 +717,9 @@ class ConstructorResolver {
 	 * Resolve the constructor arguments for this bean into the resolvedValues object.
 	 * This may involve looking up other beans.
 	 * <p>This method is also used for handling invocations of static factory methods.
+	 * <p>
+	 *     解析构造函数参数
+	 * </p>
 	 */
 	private int resolveConstructorArguments(String beanName, RootBeanDefinition mbd, BeanWrapper bw,
 			ConstructorArgumentValues cargs, ConstructorArgumentValues resolvedValues) {
@@ -1036,6 +1053,7 @@ class ConstructorResolver {
 
 
 	/**
+	 * @ConstructorProperties注解支持
 	 * Delegate for checking Java 6's {@link ConstructorProperties} annotation.
 	 */
 	private static class ConstructorPropertiesChecker {

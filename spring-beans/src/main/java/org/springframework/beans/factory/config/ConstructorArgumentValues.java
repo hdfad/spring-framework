@@ -40,6 +40,12 @@ import org.springframework.util.ObjectUtils;
  * @author Juergen Hoeller
  * @since 09.11.2003
  * @see BeanDefinition#getConstructorArgumentValues
+ *
+ *
+ * <p>
+ *
+ *     构造函数值对象
+ * </p>
  */
 public class ConstructorArgumentValues {
 
