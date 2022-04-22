@@ -208,9 +208,8 @@ class ConstructorResolver {
 			}
 
 			// Need to resolve the constructor.
-			/*如果有多个被注入的构造方法，需要进行选择*/
 			/**
-			 * 存在构造函数，注入模型为3，激活autowiring
+			 * 存在构造函数 或者 注入模型为3，激活autowiring=true
 			 */
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
@@ -232,6 +231,7 @@ class ConstructorResolver {
 				 */
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
+
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 			//排序，public构造函数优先参数数量降序、非public构造函数参数数量降序
@@ -723,12 +723,20 @@ class ConstructorResolver {
 	 */
 	private int resolveConstructorArguments(String beanName, RootBeanDefinition mbd, BeanWrapper bw,
 			ConstructorArgumentValues cargs, ConstructorArgumentValues resolvedValues) {
-
+		/**
+		 * 获取类型转换器
+		 */
 		TypeConverter customConverter = this.beanFactory.getCustomTypeConverter();
 		TypeConverter converter = (customConverter != null ? customConverter : bw);
+
+		/**
+		 * BeanDefinition值解析器
+		 */
 		BeanDefinitionValueResolver valueResolver =
 				new BeanDefinitionValueResolver(this.beanFactory, beanName, mbd, converter);
-
+		/**
+		 * 最少的参数个数
+		 */
 		int minNrOfArgs = cargs.getArgumentCount();
 
 		for (Map.Entry<Integer, ConstructorArgumentValues.ValueHolder> entry : cargs.getIndexedArgumentValues().entrySet()) {
@@ -737,9 +745,15 @@ class ConstructorResolver {
 				throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 						"Invalid constructor argument index: " + index);
 			}
+			/**
+			 * 计算参数个数
+			 */
 			if (index + 1 > minNrOfArgs) {
 				minNrOfArgs = index + 1;
 			}
+			/**
+			 * 组装resolvedValues
+			 */
 			ConstructorArgumentValues.ValueHolder valueHolder = entry.getValue();
 			if (valueHolder.isConverted()) {
 				resolvedValues.addIndexedArgumentValue(index, valueHolder);

@@ -57,6 +57,10 @@ import org.springframework.util.StringUtils;
  * @author Juergen Hoeller
  * @since 1.2
  * @see AbstractAutowireCapableBeanFactory
+ *
+ * <p>
+ *     BeanDefinition值解析器
+ * </p>
  */
 class BeanDefinitionValueResolver {
 
