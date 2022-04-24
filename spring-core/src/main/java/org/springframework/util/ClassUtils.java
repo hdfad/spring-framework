@@ -542,17 +542,35 @@ public abstract class ClassUtils {
 	 * @param rhsType the value type that should be assigned to the target type
 	 * @return if the target type is assignable from the value type
 	 * @see TypeUtils#isAssignable(java.lang.reflect.Type, java.lang.reflect.Type)
+	 *
+	 * <p>
+	 *     左右两侧参数类型检查，
+	 *     	①如果存在父子关系返回true
+	 *     	②如果左侧是基本数据类型，则判断左右两侧class是否相等
+	 *     	③上述两者都不是，则判断右侧参数缓存是否为null且右侧是否为左侧的子类
+	 * </p>
 	 */
 	public static boolean isAssignable(Class<?> lhsType, Class<?> rhsType) {
 		Assert.notNull(lhsType, "Left-hand side type must not be null");
 		Assert.notNull(rhsType, "Right-hand side type must not be null");
+		/**
+		 * class 方法 ，判断rhsType是否是lhsType的子类，或者相同，或者否实现了接口
+		 */
 		if (lhsType.isAssignableFrom(rhsType)) {
 			return true;
 		}
+		/**
+		 * class 方法 ，判断lhsType是否是基本数据类型，
+		 * 是就从容器种获取rhsType-class，返回比较两者类型是否相等
+		 */
 		if (lhsType.isPrimitive()) {
 			Class<?> resolvedPrimitive = primitiveWrapperTypeMap.get(rhsType);
 			return (lhsType == resolvedPrimitive);
 		}
+		/**
+		 * 非子类，非基本数据类型，获取map容器中的rhsType-class
+		 * 判断当前rhsType是否为null && 右参数是否是 左参数的的子类或子接口或相同
+		 */
 		else {
 			Class<?> resolvedWrapper = primitiveTypeToWrapperMap.get(rhsType);
 			return (resolvedWrapper != null && lhsType.isAssignableFrom(resolvedWrapper));
@@ -566,6 +584,10 @@ public abstract class ClassUtils {
 	 * @param type the target type
 	 * @param value the value that should be assigned to the type
 	 * @return if the type is assignable from the value
+	 *
+	 * <p>
+	 *     根据value是否为null判断左右2侧参数是否存在父子关系、相等 或者 是否为为基本数据类型
+	 * </p>
 	 */
 	public static boolean isAssignableValue(Class<?> type, @Nullable Object value) {
 		Assert.notNull(type, "Type must not be null");

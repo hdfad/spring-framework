@@ -9,5 +9,5 @@ import org.springframework.stereotype.Service;
  * @Date: 2022/04/12 11:09
  */
 @Service("bean667")
-public class TestServiceImpl implements TestService {
+public class TestServiceImpl implements TestService  {
 }

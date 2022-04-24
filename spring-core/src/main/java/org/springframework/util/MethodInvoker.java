@@ -303,29 +303,76 @@ public class MethodInvoker {
 	 * @param paramTypes the parameter types to match
 	 * @param args the arguments to match
 	 * @return the accumulated weight for all arguments
+	 *
+	 * <p>
+	 *     获取类型差异权重
+	 *     	paramTypes：要匹配的参数类型
+	 *     	args：要匹配的参数
+	 *     规则：
+	 * 		①如果不存在父子关系，或者相等  并且   是基本数据类型，那么直接返回权重值为Integer.MAX_VALUE
+	 * 		②如果传入的参数、类型存在父子管子，或者是同一对象class，那就遍历父class，直到为同一对象class，每层父class存在权重值+2，
+	 * 		③最后如果参数类型是接口类型，那么权重值再+1
+	 * </p>
 	 */
 	public static int getTypeDifferenceWeight(Class<?>[] paramTypes, Object[] args) {
 		int result = 0;
+
+		/**
+		 * 遍历所有的参数，
+		 * 	①如果不存在父子关系，或者相等  并且   是基本数据类型，那么直接返回权重值为Integer.MAX_VALUE
+		 * 	②如果传入的参数、类型存在父子管子，或者是同一对象class，那就遍历父class，直到为同一对象class，每层父class存在权重值+2，
+		 * 	③最后如果参数类型是接口类型，那么权重值再+1
+		 */
 		for (int i = 0; i < paramTypes.length; i++) {
+			/**
+			 * 检查右侧是否存在父子、相等之一的关系，不存在或者基本数据类型就返回权重值Integer.MAX_VALUE
+			 * !type.isPrimitive()：false  基本数据类型直接返回
+			 */
 			if (!ClassUtils.isAssignableValue(paramTypes[i], args[i])) {
 				return Integer.MAX_VALUE;
 			}
+			/**
+			 * 传入参数不为null的情况下，获取到两者父子class
+			 * 遍历查找父class，存在父class权重+2，一直查找到同一class对象，然后判断参数类型是否是接口，如果是权重再+1
+			 */
 			if (args[i] != null) {
+				/**
+				 * 参数class和父class (extends、Object)
+				 */
 				Class<?> paramType = paramTypes[i];
 				Class<?> superClass = args[i].getClass().getSuperclass();
+
+				/**
+				 * 父class是否为null，不进除非args[i].getClass()是Object-class
+				 * 遍历查找存在多少层父类，存在父类权重就+2，一直找到同一对象class
+				 */
 				while (superClass != null) {
+					/**
+					 * 判断是否为同一class
+					 * 同一class则权重值+=2，父class置为null
+					 */
 					if (paramType.equals(superClass)) {
 						result = result + 2;
 						superClass = null;
 					}
+					/**
+					 * 检查左右2侧参数是否是同一个class或者存在实现、继承的父子关系
+					 * 非同一参数class存在父子关系（上if判断放过），则权重+=2，superClass=父class
+					 */
 					else if (ClassUtils.isAssignable(paramType, superClass)) {
 						result = result + 2;
 						superClass = superClass.getSuperclass();
 					}
+					/**
+					 * 第一步isAssignableValue就会判断到是存在父子关系，那这儿进不来呀！
+					 */
 					else {
 						superClass = null;
 					}
 				}
+				/**
+				 * 判断参数是否是接口,是就增加1
+				 */
 				if (paramType.isInterface()) {
 					result = result + 1;
 				}

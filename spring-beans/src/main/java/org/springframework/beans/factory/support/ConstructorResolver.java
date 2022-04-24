@@ -122,9 +122,7 @@ class ConstructorResolver {
 	 * @param chosenCtors chosen candidate constructors (or {@code null} if none)
 	 * @param explicitArgs argument values passed in programmatically via the getBean method,
 	 * or {@code null} if none (-> use constructor argument values from bean definition)
-	 *
-	 *                     通过 getBean 方法以编程方式传入的参数值
-	 *
+	 *     通过 getBean 方法以编程方式传入的参数值
 	 * @return a BeanWrapper for the new instance
 	 */
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
@@ -216,7 +214,7 @@ class ConstructorResolver {
 			ConstructorArgumentValues resolvedValues = null;
 
 			/**
-			 * 最小数量参数
+			 * 最小构造函数个数
 			 */
 			int minNrOfArgs;
 			/**
@@ -231,18 +229,30 @@ class ConstructorResolver {
 				 */
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
-
+				/**
+				 * 解析构造函数数量，如果indexedArgumentValues和genericArgumentValues不存在值，那么就是0
+				 */
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
-			//排序，public构造函数优先参数数量降序、非public构造函数参数数量降序
+			/**
+			 * sort排序，public构造函数优先参数数量降序、非public构造函数参数数量降序
+			 */
 			AutowireUtils.sortConstructors(candidates);
+			/**
+			 * 权重基数
+			 */
 			int minTypeDiffWeight = Integer.MAX_VALUE;
 			//存在相同权重的构造函数则添加到ambiguousConstructors中，最后根据lenientConstructorResolution判断，如果lenientConstructorResolution=false，则抛出异常
 			Set<Constructor<?>> ambiguousConstructors = null;
 			Deque<UnsatisfiedDependencyException> causes = null;
-			/*遍历注入的构造方法*/
+			/**
+			 * 遍历排序后的构造方法
+			 */
 			for (Constructor<?> candidate : candidates) {
-				int parameterCount = candidate.getParameterCount();//获取构造器中存在几个参数
+				/**
+				 * 构造方法参数个数
+				 */
+				int parameterCount = candidate.getParameterCount();
 
 				if (constructorToUse != null && argsToUse != null && argsToUse.length > parameterCount) {
 					// Already found greedy constructor that can be satisfied ->
@@ -254,16 +264,36 @@ class ConstructorResolver {
 				}
 				//根据构造方法参数创建一个Holder
 				ArgumentsHolder argsHolder;
-				Class<?>[] paramTypes = candidate.getParameterTypes();//获取构造函数中的形参类的class
+				/**
+				 * 获取参数类型
+				 */
+				Class<?>[] paramTypes = candidate.getParameterTypes();
+				/**
+				 * 根据构造函数值对象ConstructorArgumentValues是否为null判断ArgumentsHolder的构造方式，
+				 * 如果参数为getBean方式传入的参数，那么构造函数值对象为null，直接实例化一个ConstructorArgumentValues
+				 * 否则就根据createArgumentArray创建一个ConstructorArgumentValues
+				 */
 				if (resolvedValues != null) {
 					try {//获取有参构造方法中的参数
-						String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, parameterCount);//ConstructorProperties注解检查
+						/**
+						 * 获取@ConstructorProperties注解标识参数
+						 */
+						String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, parameterCount);
+						/**
+						 * 当没有被@ConstructorProperties标识的注解时，使用方法参数名解析器ParameterNameDiscoverer获取对应的参数
+						 */
 						if (paramNames == null) {
 							ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
+							/**
+							 * 方法参数名解析器不为null时才从解析器中获取对应的参数名字
+							 */
 							if (pnd != null) {
 								paramNames = pnd.getParameterNames(candidate);
 							}
 						}
+						/**
+						 * 创建参数数组
+						 */
 						argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
 								getUserDeclaredConstructor(candidate), autowiring, candidates.length == 1);//参数数组集
 					}
@@ -289,6 +319,12 @@ class ConstructorResolver {
 				//根据形参判断权重，默认lenientConstructorResolution=trrue，使用getTypeDifferenceWeight宽松模式获取权重
 				//非宽松模式权重计算:getAssignabilityWeight
 				//宽松模式权重计算:getTypeDifferenceWeight
+
+				/**
+				 * 根据RootBeanDefinition判断构造函数是是否使用宽松构造的方式,默认true
+				 * 候选方法类型匹配算法获取权重值
+				 * 	方式有2种，一种是getTypeDifferenceWeight，另一种是getAssignabilityWeight
+				 */
 				int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
 				// Choose this constructor if it represents the closest match.
@@ -718,7 +754,8 @@ class ConstructorResolver {
 	 * This may involve looking up other beans.
 	 * <p>This method is also used for handling invocations of static factory methods.
 	 * <p>
-	 *     解析构造函数参数
+	 *     解析构造函数参数个数
+	 *     如果indexedArgumentValues和genericArgumentValues不存在值，那么就是0
 	 * </p>
 	 */
 	private int resolveConstructorArguments(String beanName, RootBeanDefinition mbd, BeanWrapper bw,
@@ -731,14 +768,18 @@ class ConstructorResolver {
 
 		/**
 		 * BeanDefinition值解析器
+		 * 封装beanFactory、beanName、RootBeanDefinition、TypeConverter
 		 */
 		BeanDefinitionValueResolver valueResolver =
 				new BeanDefinitionValueResolver(this.beanFactory, beanName, mbd, converter);
 		/**
-		 * 最少的参数个数
+		 * 最少的参数个数，和indexedArgumentValues和genericArgumentValues容器相关
 		 */
 		int minNrOfArgs = cargs.getArgumentCount();
 
+		/**
+		 * 遍历ConstructorArgumentValues#indexedArgumentValues
+		 */
 		for (Map.Entry<Integer, ConstructorArgumentValues.ValueHolder> entry : cargs.getIndexedArgumentValues().entrySet()) {
 			int index = entry.getKey();
 			if (index < 0) {
@@ -1017,6 +1058,7 @@ class ConstructorResolver {
 
 		/**
 		 * 宽松模式计算权重
+		 * 类型权重与原始类型权重差异
 		 * xwj todo 待研究
 		 * @param paramTypes
 		 * @return

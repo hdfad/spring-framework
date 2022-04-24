@@ -32,6 +32,10 @@ import org.springframework.lang.Nullable;
  * @author Rod Johnson
  * @author Adrian Colyer
  * @since 2.0
+ *
+ * <p>
+ *     方法参数名解析器
+ * </p>
  */
 public interface ParameterNameDiscoverer {
 

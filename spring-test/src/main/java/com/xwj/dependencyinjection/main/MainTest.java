@@ -38,7 +38,7 @@ public class MainTest {
 		System.out.println("2个参数");
 	}*/
 
-	public MainTest(TestService testService){
+	public MainTest(TestServiceImpl testService){
 		this.testServiceImpl2=testService;
 		System.out.println("有参");
 	}

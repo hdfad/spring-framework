@@ -51,6 +51,11 @@ import org.springframework.util.ClassUtils;
  */
 abstract class AutowireUtils {
 
+	/**
+	 * 比较方法参数是否是否是public修饰
+	 * compare，比较给定的参数是否是public修饰,是：true，否：false
+	 * 如果修饰符相同，那么返回0，否则true(0) compare false(1) 规则返回
+	 */
 	public static final Comparator<Executable> EXECUTABLE_COMPARATOR = (e1, e2) -> {
 		int result = Boolean.compare(Modifier.isPublic(e2.getModifiers()), Modifier.isPublic(e1.getModifiers()));
 		return result != 0 ? result : Integer.compare(e2.getParameterCount(), e1.getParameterCount());
@@ -63,6 +68,11 @@ abstract class AutowireUtils {
 	 * with decreasing number of arguments, then non-public constructors, again with
 	 * decreasing number of arguments.
 	 * @param constructors the constructor array to sort
+	 *
+	 *  <p>
+	 *     对构造方法进行排序，
+	 *     根据构造方法中的参数修饰符是否以public修饰
+	 *  </p>
 	 */
 	public static void sortConstructors(Constructor<?>[] constructors) {
 		Arrays.sort(constructors, EXECUTABLE_COMPARATOR);
