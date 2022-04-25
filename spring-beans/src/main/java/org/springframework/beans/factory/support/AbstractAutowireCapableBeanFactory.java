@@ -1278,6 +1278,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 	/**
 	 * 创建bean实例
+	 * 首先会解析构造方法所有参数，如果只有一个**有参**构造函数，就使用这个有参构造函数创建一个bean实例封装到BeanWrapper
+	 * 存在多个构造函数，或者只有无参构造函数，那么就使用无参构造函数通过反射生成实例对象，如果不存在无参构造函数则抛出BeanInstantiationException异常
+	 * 如果bean是replaced-method或者lookup-method修饰的bean对象，就使用cglib创建bean实例，
+	 * 最终将bean实例封装到BeanWrapper返回
+	 * 中途有一个计算bean构造方法多个参数权重的方法autowireConstructor，但是多个参数时不会进入，流程可以见里注释
+	 * 		@see ConstructorResolver#autowireConstructor(java.lang.String, org.springframework.beans.factory.support.RootBeanDefinition, java.lang.reflect.Constructor[], java.lang.Object[])
 	 *
 	 * Create a new instance for the specified bean, using an appropriate instantiation strategy:
 	 * factory method, constructor autowiring, or simple instantiation.
@@ -1330,15 +1336,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Candidate constructors for autowiring?
 		/**
-		 * 通过后置处理器，解析LookUp，并且获取合适的构造函数,如果只有一个有参构造函数，则获取这个构造函数封装到Constructor数组中，如果大于一个就会返回null
+		 * 通过后置处理器，解析LookUp，并且获取合适的构造函数,如果只有一个有参构造函数  *有参*，则获取这个构造函数封装到Constructor数组中，如果大于一个就会返回null
 		 */
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		//当bean存在自动注入@Autowired标识的构造器||或者注入模型autowireMode=AUTOWIRE_CONSTRUCTOR:3 || 构造函数参数值存在 || constructor不为null满足其一
 
 		/**
-		 * todo 当构造函数数组不为null时 或者 注入模型是AUTOWIRE_CONSTRUCTOR（3） 或者
+		 *
 		 * 
-		 * 执行注入
+		 * 执行注入，条件是解析的构造函数不为null，或者注入模型是3，或者构造函数值对象不是null，或者构造函数形参不是null
+		 * 		ctors:适合注入的构造函数
+		 * 		AutowireMode：注入模型，默认0
+		 * 		ConstructorArgumentValues：构造参数值对象，正常流程过来是null
+		 *		args：构造函数参数，正常流程doGetBean时就会传入一个null
 		 * 根据构造函数注入，有无参，使用无参，没有就对构造方法排序，取权重最小的有参构造方法用于实例化对象，
 		 * 但是此步如果有多个构造函数时就不会进来
 		 *
@@ -1516,6 +1526,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @param explicitArgs argument values passed in programmatically via the getBean method,
 	 * or {@code null} if none (-> use constructor argument values from bean definition)
 	 * @return a BeanWrapper for the new instance
+	 *
+	 * <p>
+	 *     注入构造函数参数，如果存在无参构造方法，就是用无参构造方法创建bean实例，
+	 *     如果不存在就对构造函数进行排序，计算权重，通过最小权重的方法实例化一个bean
+	 *     最终封装到BeanWrapper中返回
+	 * </p>
 	 */
 	protected BeanWrapper autowireConstructor(
 			String beanName, RootBeanDefinition mbd, @Nullable Constructor<?>[] ctors, @Nullable Object[] explicitArgs) {

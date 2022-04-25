@@ -30,20 +30,20 @@ public class MainTest {
 
 
 
-	private MainTest(String parameter,TestService testService){
+/*	private MainTest(String parameter,TestService testService){
 		this.parameter=parameter;
 		this.testServiceImpl2=testService;
 		System.out.println("2个参数");
-	}
-
-	/*private MainTest(){
-		System.out.println("无参");
 	}*/
 
-	public MainTest(TestServiceImpl testService){
+	private MainTest(){
+		System.out.println("无参");
+	}
+
+	/*public MainTest(TestServiceImpl testService){
 		this.testServiceImpl2=testService;
 		System.out.println("有参");
-	}
+	}*/
 
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
