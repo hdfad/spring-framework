@@ -57,6 +57,21 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 	}
 
 
+	/**
+	 * @param bd the bean definition
+	 * @param beanName the name of the bean when it is created in this context.
+	 * The name can be {@code null} if we are autowiring a bean which doesn't
+	 * belong to the factory.
+	 * @param owner the owning BeanFactory
+	 * @return
+	 *
+	 * <p>
+	 *     如果bean被指定为lookup-method，那么hasMethodOverrides返回true，使用cglib动态创建一个动态子类型
+	 *	   反之
+	 *     实例化bean，获取到对象的无参构造方法，使用Constructor.newInstance反射生成对象实例，
+	 *     如果不存在那么会报BeanInstantiationException异常
+	 * </p>
+	 */
 	@Override
 	public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner) {
 		// Don't override the class with CGLIB if no overrides.
@@ -75,7 +90,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 									(PrivilegedExceptionAction<Constructor<?>>) clazz::getDeclaredConstructor);
 						}
 						else {
-							//获取无参构造函数
+							//获取无参构造函数,没有则抛异常
 							constructorToUse = clazz.getDeclaredConstructor();
 						}
 						bd.resolvedConstructorOrFactoryMethod = constructorToUse;
@@ -90,6 +105,9 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 		}
 		else {
 			// Must generate CGLIB subclass.
+			/**
+			 * lookup-method、replaced-method标识的bean需要使用cglib创建bean
+			 */
 			return instantiateWithMethodInjection(bd, beanName, owner);
 		}
 	}

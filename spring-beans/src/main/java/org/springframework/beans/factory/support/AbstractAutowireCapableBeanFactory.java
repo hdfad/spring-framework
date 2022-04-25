@@ -1339,11 +1339,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		 * todo 当构造函数数组不为null时 或者 注入模型是AUTOWIRE_CONSTRUCTOR（3） 或者
 		 * 
 		 * 执行注入
+		 * 根据构造函数注入，有无参，使用无参，没有就对构造方法排序，取权重最小的有参构造方法用于实例化对象，
+		 * 但是此步如果有多个构造函数时就不会进来
+		 *
 		 */
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
 			/**
-			 * 根据构造函数注入
+			 * 根据构造函数注入，有无参，使用无参，没有就对构造方法排序，取权重最小的有参构造方法用于实例化对象，
+			 * 但是此步如果存在无参就不会进来
 			 */
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
@@ -1359,6 +1363,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// No special handling: simply use no-arg constructor.
 		//无注入构造器则使用反射构造一个无参构造器后创建一个BeanWrapper
+		/**
+		 * 多个构造函数时，使用反射通过无参构造方法生成bean实例，但是不存在无参构造方法时，会报错
+		 * 如果Bean是replaced-method或者lookup-method bean ，那么会使用cglib动态创建bean
+		 *
+		 * 完成后再初始化BeanWrapper并返回
+		 */
 		return instantiateBean(beanName, mbd);
 	}
 
@@ -1443,6 +1453,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @param beanName the name of the bean
 	 * @param mbd the bean definition for the bean
 	 * @return a BeanWrapper for the new instance
+	 * <p>
+	 *     实例化bean
+	 *     如果bean是replaced-method或者lookup-method指定的bean，那么使用cglib创建一个beanInstance
+	 *     如果是普通bean，则获取无参构造方法，通过无参构造方法反射生成（私有的也可以）beanInstance，如果不存在无参构造方法则抛出异常
+	 *     最终将结果封装成一个BeanWrapper返回
+	 * </p>
 	 */
 	protected BeanWrapper instantiateBean(String beanName, RootBeanDefinition mbd) {
 		try {
@@ -1453,7 +1469,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						getAccessControlContext());
 			}
 			else {
-				//通过Constructor.newInstance反射生成对象
+				/**
+				 * 判断bean是否是replaced-method或者lookup-method的bean，是则使用cglib动态生成
+				 * 否则就获取无参构造方法通过Constructor.newInstance反射生成对象
+				 */
 				beanInstance = getInstantiationStrategy().instantiate(mbd, beanName, this);
 			}
 			//将对象封装成BeanWrapper并返回
@@ -1502,7 +1521,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			String beanName, RootBeanDefinition mbd, @Nullable Constructor<?>[] ctors, @Nullable Object[] explicitArgs) {
 
 		/**
-		 * 实例化一个ConstructorResolver，调用内部autowireConstructor
+		 * 实例化一个ConstructorResolver，调用内部autowireConstructor，
+		 * 如果存在无参构造方法就取无参构造方法，没有就对构造方法排序，取权重最小的有参构造方法用于实例化对象
 		 */
 		return new ConstructorResolver(this).autowireConstructor(beanName, mbd, ctors, explicitArgs);
 	}

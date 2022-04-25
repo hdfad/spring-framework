@@ -33,6 +33,11 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @since 1.1
  * @see MethodOverride
+ *
+ * <p>
+ *     lookup-method 和 replaced-method 标签需要使用这个接口进行处理
+ *     标签中的元素会被add到set容器中（overrides）
+ * </p>
  */
 public class MethodOverrides {
 

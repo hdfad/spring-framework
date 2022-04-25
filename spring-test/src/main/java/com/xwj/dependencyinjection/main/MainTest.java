@@ -28,14 +28,16 @@ public class MainTest {
 
 	String parameter;
 
-/*	private MainTest(){
-		System.out.println("无参");
-	}
+
 
 	private MainTest(String parameter,TestService testService){
 		this.parameter=parameter;
 		this.testServiceImpl2=testService;
 		System.out.println("2个参数");
+	}
+
+	/*private MainTest(){
+		System.out.println("无参");
 	}*/
 
 	public MainTest(TestServiceImpl testService){

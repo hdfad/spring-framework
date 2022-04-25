@@ -305,9 +305,14 @@ public class MethodInvoker {
 	 * @return the accumulated weight for all arguments
 	 *
 	 * <p>
-	 *     获取类型差异权重
+	 *     根据类型获取权重值
 	 *     	paramTypes：要匹配的参数类型
 	 *     	args：要匹配的参数
+	 *
+	 * 		根据类型获取权重值，如果传入的arguments和paramTypes是同一类型且存在父子关系，
+	 * 			那么遍历每一层父类，从paramType开始每层权重+2，如果paramType是接口，那么最终权重再+1
+	 * 			如果左右参数既不是同一对象类型，也不是父子关系，或者paramType存在基本数据类型，那么直接返回Integer.MAX_VALUE;
+	 *
 	 *     规则：
 	 * 		①如果不存在父子关系，或者相等  并且   是基本数据类型，那么直接返回权重值为Integer.MAX_VALUE
 	 * 		②如果传入的参数、类型存在父子管子，或者是同一对象class，那就遍历父class，直到为同一对象class，每层父class存在权重值+2，
@@ -325,7 +330,8 @@ public class MethodInvoker {
 		 */
 		for (int i = 0; i < paramTypes.length; i++) {
 			/**
-			 * 检查右侧是否存在父子、相等之一的关系，不存在或者基本数据类型就返回权重值Integer.MAX_VALUE
+			 * 根据value是否为null判断左右2侧参数是否存在父子关系、相等 或者 是否为为基本数据类型,不存在或者基本数据类型就返回权重值Integer.MAX_VALUE
+			 * args[i]:为null时判断是否是基本数据类型，不为null时判断参数类型和参数是否存在关系
 			 * !type.isPrimitive()：false  基本数据类型直接返回
 			 */
 			if (!ClassUtils.isAssignableValue(paramTypes[i], args[i])) {

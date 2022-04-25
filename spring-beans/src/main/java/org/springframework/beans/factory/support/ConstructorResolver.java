@@ -124,6 +124,20 @@ class ConstructorResolver {
 	 * or {@code null} if none (-> use constructor argument values from bean definition)
 	 *     通过 getBean 方法以编程方式传入的参数值
 	 * @return a BeanWrapper for the new instance
+	 *
+	 * <p>
+	 *     对构造方法排序，然后遍历构造方法，通过构造方法权重计算，获取到权重最小的的构造方法，
+	 *     	计算方式有2种：
+	 *     		一种是根据传入类型和参数比较计算
+	 *     		一种是根据对象关系计算
+	 *     			详见：
+	 *     				org.springframework.beans.factory.support.ConstructorResolver.ArgumentsHolder#getTypeDifferenceWeight
+	 *     				org.springframework.beans.factory.support.ConstructorResolver.ArgumentsHolder#getAssignabilityWeight
+	 *     				默认情况下lenientConstructorResolution为true，使用getTypeDifferenceWeight
+	 *     	使用权重最小的构造方法实例化对象，并封装到BeanWrapper中
+	 *     	当不存在有参构造方法时，使用无参构造方法实例化对象添加到BeanWrapper中
+	 *
+	 * </p>
 	 */
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			@Nullable Constructor<?>[] chosenCtors, @Nullable Object[] explicitArgs) {
@@ -192,7 +206,7 @@ class ConstructorResolver {
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
 				/**
-				 * 构造函数参数为0个
+				 * 构造函数参数为0个，则直接使用无参构造方法实例化对象并添加到BeanWrapper
 				 */
 				if (uniqueCandidate.getParameterCount() == 0) {
 					synchronized (mbd.constructorArgumentLock) {
@@ -239,14 +253,14 @@ class ConstructorResolver {
 			 */
 			AutowireUtils.sortConstructors(candidates);
 			/**
-			 * 权重基数
+			 * 权重基数，默认Integer.MAX_VALUE
 			 */
 			int minTypeDiffWeight = Integer.MAX_VALUE;
 			//存在相同权重的构造函数则添加到ambiguousConstructors中，最后根据lenientConstructorResolution判断，如果lenientConstructorResolution=false，则抛出异常
 			Set<Constructor<?>> ambiguousConstructors = null;
 			Deque<UnsatisfiedDependencyException> causes = null;
 			/**
-			 * 遍历排序后的构造方法
+			 * 遍历排序后的构造方法，获取到最小权重值的构造方法
 			 */
 			for (Constructor<?> candidate : candidates) {
 				/**
@@ -316,19 +330,32 @@ class ConstructorResolver {
 					}
 					argsHolder = new ArgumentsHolder(explicitArgs);
 				}
-				//根据形参判断权重，默认lenientConstructorResolution=trrue，使用getTypeDifferenceWeight宽松模式获取权重
-				//非宽松模式权重计算:getAssignabilityWeight
-				//宽松模式权重计算:getTypeDifferenceWeight
 
 				/**
-				 * 根据RootBeanDefinition判断构造函数是是否使用宽松构造的方式,默认true
-				 * 候选方法类型匹配算法获取权重值
-				 * 	方式有2种，一种是getTypeDifferenceWeight，另一种是getAssignabilityWeight
+				 *
+				 * 	根据RootBeanDefinition的lenientConstructorResolution判断使用何种方式获取到构造方法的权重，
+				 * 	权重获取有2种方式，一种是getTypeDifferenceWeight，另一种是getAssignabilityWeight，
+				 * 	lenientConstructorResolution默认为true，使用getTypeDifferenceWeight
+				 * 		getTypeDifferenceWeight：根据传入参数类型和参数（参数和原始参数）比较确定最小权重值
+				 * 		getAssignabilityWeight：根据对象关系确定权重值
 				 */
 				int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
 				// Choose this constructor if it represents the closest match.
 				//选取权重最小的设置给minTypeDiffWeight，并使用此构造函数使用
+				/**
+				 * 通过遍历，获取到最小的权重值
+				 * 将获取到的权重与权重的基数minTypeDiffWeight比较
+				 * 如果计算得到的权重数<默认基数，
+				 * 		将当前构造函数的参数赋值给constructorToUse，
+				 * 		参数Holder赋值给argsHolderToUse
+				 * 		计算得到的权重数赋值给minTypeDiffWeight
+				 * 		最小相同权重集合置为null
+				 *
+				 * 如果计算得到的权重数=默认基数，
+				 * 		将元素添加到最小权重集合种
+				 *
+				 */
 				if (typeDiffWeight < minTypeDiffWeight) {
 					constructorToUse = candidate;//使用当前权重小的构造函数
 					argsHolderToUse = argsHolder;//
@@ -373,6 +400,9 @@ class ConstructorResolver {
 		Assert.state(argsToUse != null, "Unresolved constructor arguments");
 		//bw.setBeanInstance：将实例封装成BeanWrapperImpl对象
 		//instantiate：根据合适的构造函数初始化对象，底层使用BeanUtils.instantiateClass(ctor, args)反射生成一个对象实例
+		/**
+		 * 根据参数权重最小的构造方法生成bean实例并封装到BeanWrapper中
+		 */
 		bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse));
 		return bw;
 	}
@@ -1036,8 +1066,14 @@ class ConstructorResolver {
 	 */
 	private static class ArgumentsHolder {
 
+		/**
+		 * 用于存储构造方法中的原始参数
+		 */
 		public final Object[] rawArguments;
 
+		/**
+		 * 用于存储构造方法中最新参数
+		 */
 		public final Object[] arguments;
 
 		public final Object[] preparedArguments;
@@ -1057,9 +1093,11 @@ class ConstructorResolver {
 		}
 
 		/**
-		 * 宽松模式计算权重
-		 * 类型权重与原始类型权重差异
-		 * xwj todo 待研究
+		 * 根据参数类型获取最小权重
+		 * 传入参数类型，根据类型获取权重最小值，分别传入最新的参数获取权重、原始的参数权重值-1024的值取最小，作为权重值
+		 * arguments：最新参数对象
+		 * rawArguments：原始参数对象
+		 *
 		 * @param paramTypes
 		 * @return
 		 */
@@ -1068,23 +1106,53 @@ class ConstructorResolver {
 			// Try type difference weight on both the converted arguments and
 			// the raw arguments. If the raw weight is better, use it.
 			// Decrease raw weight by 1024 to prefer it over equal converted weight.
+			/**
+			 * 根据类型获取权重值，如果传入的arguments和paramTypes是同一类型且存在父子关系，
+			 * 那么遍历每一层父类，从paramType开始每层权重+2，如果paramType是接口，那么最终权重再+1
+			 * 如果左右参数既不是同一对象类型，也不是父子关系，或者paramType存在基本数据类型，那么直接返回Integer.MAX_VALUE;
+			 */
 			int typeDiffWeight = MethodInvoker.getTypeDifferenceWeight(paramTypes, this.arguments);
+
+			/**
+			 * 同上，传入的是原始的构造函数参数，并将结果值-1024
+			 */
 			int rawTypeDiffWeight = MethodInvoker.getTypeDifferenceWeight(paramTypes, this.rawArguments) - 1024;
+
+			/**
+			 * 最终两者取最小的权重值
+			 */
 			return Math.min(rawTypeDiffWeight, typeDiffWeight);
 		}
 
 		/**
-		 * 非宽松模式计算权重
-		 * xwj todo 待研究
+		 * 根据对象关系计算权重
+		 * 对参数类型和argument进行判断
+		 * 		如果参数为null，判断是否为基本数据类型，否就返回Integer.MAX_VALUE;
+		 * 	    不为null，对传入的两个对象类型关系进行比较，false情况下返回Integer.MAX_VALUE;
+		 * 如果参数类型和argument-isAssignableValue返回true,则对参数类型和rawArgument进行比较
+		 * 		参数为null，判断是否为基本数据类型，否就返回Integer.MAX_VALUE;
+		 * 	    不为null，对传入的两个对象类型关系进行比较，false情况下返回Integer.MAX_VALUE-512;
+		 * 两者都返回true，则返回Integer.MAX_VALUE - 1024
 		 * @param paramTypes
 		 * @return
 		 */
 		public int getAssignabilityWeight(Class<?>[] paramTypes) {
 			for (int i = 0; i < paramTypes.length; i++) {
+				/**
+				 * 参数类型判断比较，
+				 * 		如果argument为null，则判断类型是否为基本数据类型，是：false，
+				 * 		如果不为null，则对类型和参数进行判断是否是同一类型或者说是具有父子关系
+				 * 整体返回false，则直接返回Integer.MAX_VALUE;
+				 */
 				if (!ClassUtils.isAssignableValue(paramTypes[i], this.arguments[i])) {
 					return Integer.MAX_VALUE;
 				}
 			}
+			/**
+			 * 同上，通过原始参数类型比较，返回false时，权重值为Integer.MAX_VALUE - 512;
+			 * 都为true，则权重结果为Integer.MAX_VALUE - 1024
+			 *
+			 */
 			for (int i = 0; i < paramTypes.length; i++) {
 				if (!ClassUtils.isAssignableValue(paramTypes[i], this.rawArguments[i])) {
 					return Integer.MAX_VALUE - 512;

@@ -545,7 +545,7 @@ public abstract class ClassUtils {
 	 *
 	 * <p>
 	 *     左右两侧参数类型检查，
-	 *     	①如果存在父子关系返回true
+	 *     	①如果存在父子关系返回true，即：右侧是否为左侧的子类、子接口或者同一对象
 	 *     	②如果左侧是基本数据类型，则判断左右两侧class是否相等
 	 *     	③上述两者都不是，则判断右侧参数缓存是否为null且右侧是否为左侧的子类
 	 * </p>
@@ -587,6 +587,9 @@ public abstract class ClassUtils {
 	 *
 	 * <p>
 	 *     根据value是否为null判断左右2侧参数是否存在父子关系、相等 或者 是否为为基本数据类型
+	 *     isAssignable(type, value.getClass())：左右两侧参数类型检查，是否存在父子关系，左侧是否为右侧的父类、父接口或者同一对象
+	 *     type.isPrimitive()：type是否为基本数据类型
+	 *     如果value不为null 比较参数，为null判断是否为基本数据类型
 	 * </p>
 	 */
 	public static boolean isAssignableValue(Class<?> type, @Nullable Object value) {

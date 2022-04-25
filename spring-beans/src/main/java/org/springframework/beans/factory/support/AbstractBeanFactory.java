@@ -1294,6 +1294,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * <p>The default implementation delegates to {@link #registerCustomEditors}.
 	 * Can be overridden in subclasses.
 	 * @param bw the BeanWrapper to initialize
+	 *
+	 *
+	 *
+	 *
+	 *  <p>
+	 *     todo
+	 *     设置beanInstance后初始化BeanWrapper
+	 *		...
+	 *  </p>
 	 */
 	protected void initBeanWrapper(BeanWrapper bw) {
 		bw.setConversionService(getConversionService());
