@@ -97,6 +97,10 @@ public final class SpringProperties {
 	 * properties first and falling back to JVM-level system properties.
 	 * @param key the property key
 	 * @return the associated property value, or {@code null} if none found
+	 *
+	 * <p>
+	 *     根据key获取值，如果不存在，那就从系统中获取
+	 * </p>
 	 */
 	@Nullable
 	public static String getProperty(String key) {

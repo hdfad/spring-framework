@@ -221,8 +221,11 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 			// Resource pattern matching available.
 			try {
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
-				int count = loadBeanDefinitions(resources);
+				int count = loadBeanDefinitions(resources);//递归调用
 				if (actualResources != null) {
+					/**
+					 * 将解析的resources添加到actualResources
+					 */
 					Collections.addAll(actualResources, resources);
 				}
 				if (logger.isTraceEnabled()) {
@@ -249,9 +252,19 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		}
 	}
 
+	/**
+	 * 计算需要解析的xml数量
+	 * @param locations the resource locations, to be loaded with the ResourceLoader
+	 * (or ResourcePatternResolver) of this bean definition reader
+	 * @return
+	 * @throws BeanDefinitionStoreException
+	 */
 	@Override
 	public int loadBeanDefinitions(String... locations) throws BeanDefinitionStoreException {
 		Assert.notNull(locations, "Location array must not be null");
+		/**
+		 * 解析的文件xml数量
+		 */
 		int count = 0;
 		for (String location : locations) {
 			count += loadBeanDefinitions(location);

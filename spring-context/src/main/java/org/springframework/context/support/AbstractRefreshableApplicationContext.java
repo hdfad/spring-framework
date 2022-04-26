@@ -117,9 +117,13 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * bean factory, shutting down the previous bean factory (if any) and
 	 * initializing a fresh bean factory for the next phase of the context's lifecycle.
 	 *
+	 * <p>
+	 * 刷新bean工厂
 	 * 1：创建bean工厂 DefaultListableBeanFactory
-	 * 2：自定义bean工厂设置值，针对于lookup-method、replaced-method标签
-	 * 3：通过loadBeanDefinitions加载bean配置文件信息
+	 * 2：设置工厂id
+	 * 3：定义lookup-method、replaced-method bean的支持
+	 * 4：通过BeanDefinitionReader读取bean信息到BeanDefinition
+	 * </p>
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
@@ -133,6 +137,9 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
 			beanFactory.setSerializationId(getId());
 			//自定义bean工厂，设置allowBeanDefinitionOverriding、allowCircularReferences针对于lookup-method、replaced-method标签
+			/**
+			 * 指定对lookup-method、replaced-method标签标识bean的支持，
+			 */
 			customizeBeanFactory(beanFactory);
 			//通过BeanDefinitionReader读取配置信息（xml，注解等）
 			loadBeanDefinitions(beanFactory);
@@ -219,8 +226,11 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * @see DefaultListableBeanFactory#setAllowRawInjectionDespiteWrapping
 	 * @see DefaultListableBeanFactory#setAllowEagerClassLoading
 	 *
-	 * 设置allowBeanDefinitionOverriding、allowCircularReferences，
-	 * 针对于lookup-method、replaced-method标签
+	 * <p>
+	*  设置allowBeanDefinitionOverriding、allowCircularReferences，
+	 * 针对于lookup-method、replaced-method bean的支持,默认为true，
+	 * 如果为false，则在createBeanInstance时不会对lookup-method、replaced-method的bean进行实例化
+	 * </p>
 	 */
 	protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
 		if (this.allowBeanDefinitionOverriding != null) {
@@ -242,6 +252,11 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 *
 	 * 内部会调用getConfigLocations()，在项目启动时会通过setConfigLocations()进行设置
 	 * @see ClassPathXmlApplicationContext#ClassPathXmlApplicationContext(java.lang.String[], boolean, org.springframework.context.ApplicationContext)
+	 *
+	 *
+	 * <p>
+	 *     加载bean定义信息，不同的bean工厂ApplicationContext调用的loadBeanDefinitions实现不同
+	 * </p>
 	 */
 	protected abstract void loadBeanDefinitions(DefaultListableBeanFactory beanFactory)
 			throws BeansException, IOException;

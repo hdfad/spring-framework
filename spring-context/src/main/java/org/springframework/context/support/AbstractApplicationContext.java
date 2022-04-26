@@ -592,6 +592,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			// Prepare this context for refreshing.
 			/**
+			 * 预刷新
 			 * 1：设置容器启动时间
 			 * 2：设置活跃状态为true
 			 * 3：设置关闭状态为false
@@ -609,13 +610,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			* 对于存在旧DefaultListableBeanFactory工厂则会先销毁再新建DefaultListableBeanFactory工厂
 			* */
 			/**
-			 *
+			 * 创建一个BeanFactory，针对于不同的ApplicationContext调用不同的实现类
+			 * 注解上下文指会创建往bean工厂中设置一个id，
+			 * xml上下文除id外，还要处理对lookup-method、replaced-method标签的支持，需要解析xml文件数量
 			 */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
 			//应用bean工厂属性，包括类加载器，增加AspectJ的支持、
 			//依赖查找，内建bean对象、依赖、非bean对象
+			/**
+			 * 预处理bean工厂
+			 *
+			 */
 			prepareBeanFactory(beanFactory);
 
 			try {
@@ -785,7 +792,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		//设置类加载器：存在则直接设置/不存在则新建一个默认类加载器：
 		// 首先获取当前线程的类加载器，如果当前当前线程的加载器不存在就获取当前类的加载器，
 		// 如果类加载器不存在就使用bootstrap ClassLoader类加载器
+		/**
+		 * 设置类加载器
+		 */
 		beanFactory.setBeanClassLoader(getClassLoader());
+
 		if (!shouldIgnoreSpel) {
 			//设置EL表达式解析器（Bean初始化完成后填充属性时会用到）
 			beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
@@ -1614,6 +1625,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @throws BeansException if initialization of the bean factory failed
 	 * @throws IllegalStateException if already initialized and multiple refresh
 	 * attempts are not supported
+	 *
+	 * <p>
+	 *     刷新bean工厂
+	 * </p>
 	 */
 	protected abstract void refreshBeanFactory() throws BeansException, IllegalStateException;
 
