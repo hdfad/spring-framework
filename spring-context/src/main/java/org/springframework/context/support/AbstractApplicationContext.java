@@ -592,27 +592,21 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			// Prepare this context for refreshing.
 			/**
-			 * 预刷新
+			 * 预刷新容器
 			 * 1：设置容器启动时间
 			 * 2：设置活跃状态为true
 			 * 3：设置关闭状态为false
-			 * 4：构建Environment缓存并校验
+			 * 4：构建环境Environment缓存并校验
 			 * 5：准备监听器和事件的集合对象，默认为空集合
 			 */
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			/*
-			* 此处就是就是ioc流程工厂的创建流程
-			* 注解的bean在AnnotationConfigApplicationContext#register时就会初始化BeanDefinition，
-			* 对于xml的bean则是通过obtainFreshBeanFactory时才会初始化BeanDefinition，2个的BeanDefinition初始化地方不一样
-			* 初始化通过BeanDefinitionReader装载在BeanDefinition容器中
-			* 对于存在旧DefaultListableBeanFactory工厂则会先销毁再新建DefaultListableBeanFactory工厂
-			* */
 			/**
-			 * 创建一个BeanFactory，针对于不同的ApplicationContext调用不同的实现类
+			 * 创建bean工厂
+			 * 针对于不同的ApplicationContext调用不同的实现类
 			 * 注解上下文指会创建往bean工厂中设置一个id，
-			 * xml上下文除id外，还要处理对lookup-method、replaced-method标签的支持，需要解析xml文件数量
+			 * xml上下文除id外，还要处理对xml标签lookup-method、replaced-method bean的支持，需要计算xml文件数量
 			 */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
@@ -620,8 +614,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			//应用bean工厂属性，包括类加载器，增加AspectJ的支持、
 			//依赖查找，内建bean对象、依赖、非bean对象
 			/**
-			 * 预处理bean工厂
-			 *
+			 *	预初始化bean工厂
+			 *	1.设置类加载器
+			 *  2.添加对spel表达式解析器
+			 *  3.添加属性编辑器
+			 *  4.添加ApplicationContextAwareProcessor处理器
+			 *  5.忽略依赖注入部分Aware接口
+			 *  6.注册部分依赖
+			 *  7.提供对LTW的支持
+			 *  8.注册系统环境
 			 */
 			prepareBeanFactory(beanFactory);
 
@@ -640,6 +641,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 对实现BeanDefinitionRegistry、BeanFactoryPostProcessor的类进行处理
 				 * 除此之外部分注解入口也作用于此，@Import
 				 * */
+				/**
+				 * 调用bean工厂后置处理器
+				 * 作为spring bean在初始化前的一个扩展点，
+				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
@@ -783,6 +788,17 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
+	 * <p>
+	 *	预初始化bean工厂
+	 *	设置类加载器
+	 *  添加对spel表达式解析器
+	 *  添加属性编辑器
+	 *  添加ApplicationContextAwareProcessor处理器
+	 *  忽略依赖注入部分Aware接口
+	 *  注册部分依赖
+	 *  提供对LTW的支持
+	 *  注册系统环境
+	 * </p>
 	 * Configure the factory's standard context characteristics,
 	 * such as the context's ClassLoader and post-processors.
 	 * @param beanFactory the BeanFactory to configure
@@ -794,21 +810,31 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// 如果类加载器不存在就使用bootstrap ClassLoader类加载器
 		/**
 		 * 设置类加载器
+		 * 类加载起优先获取当前线程类加载器，没有再获取ClassUtils ClassLoader，没有再获取bootstrap ClassLoader
 		 */
 		beanFactory.setBeanClassLoader(getClassLoader());
 
+		/**
+		 * 是否忽略对spel表达式的支持，默认不忽略
+		 * 不忽略则将el表达式解析器添加到beanFactory中
+		 */
 		if (!shouldIgnoreSpel) {
 			//设置EL表达式解析器（Bean初始化完成后填充属性时会用到）
 			beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
 		}
+		/**
+		 * 添加属性编辑器，用于类型字符之间的转换
+		 */
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
-		//往后置处理器中添加ApplicationContextAwareProcessor完成对部分Aware接口实现类的设值，
-		// 在bean生命周期的第七个后置处理器applyBeanPostProcessorsBeforeInitialization中会通过postProcessBeforeInitialization进行调用处理支持
-		//实例化ApplicationContextAwareProcessor，注入当前ApplicationContext,将当前的ApplicationContextAwareProcessor添加到后置处理器中
+		/**
+		 * 添加后置处理器ApplicationContextAwareProcessor，postProcessBeforeInitialization时会处理
+		 */
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
-		//忽略部分Awar接口
+		/**
+		 * 添加部分Awar接口的忽略
+		 */
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
 		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
@@ -820,6 +846,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// BeanFactory interface not registered as resolvable type in a plain factory.
 		// MessageSource registered (and found for autowiring) as a bean.
 		//注册自动装配的类
+		/**
+		 * 将指定对象注册成beanFactory默认依赖
+		 */
 		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
 		beanFactory.registerResolvableDependency(ResourceLoader.class, this);
 		beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
@@ -827,20 +856,26 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Register early post-processor for detecting inner beans as ApplicationListeners.
 		//添加ApplicationListenerDetector到bean工厂中，ApplicationListenerDetector主要用于@PostConstruct,@PreDestroy,@Resource进行扫描注册、销毁，在Bean完成之后、销毁之前做部分处理
+		/**
+		 * 将监听器添加到后置处理器中，完成beanFactory对监听器的支持
+		 */
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found.
 		//如果当前BeanFactory包含loadTimeWeaver Bean，说明存在类加载期织入AspectJ，则把当前BeanFactory交给类加载期BeanPostProcessor实现类LoadTimeWeaverAwareProcessor来处理，从而实现类加载期织入AspectJ的目的
-		//LOAD_TIME_WEAVER_BEAN_NAME：运行期间织入
+		//LOAD_TIME_WEAVER_BEAN_NAME：运行期间织入  todo LTW
 		if (!NativeDetector.inNativeImage() && beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
 			//将LoadTimeWeaverAwareProcessor添加到BeanPostProcessor，LoadTimeWeaverAwareProcessor主要用于AspectJ，在initializeBean时通过后置处理器循环所有的BeanPostProcessor进行属性的填充
+			/**
+			 * 提供对LTW的支持，使得AOP能在类加载时期织入
+			 */
 			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
 			// Set a temporary ClassLoader for type matching.
 			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
 		}
 
 		// Register default environment beans.
-		// 根据名称注册单例bean到beanFactory中
+		// 注册系统环境
 		if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
 			beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment());
 		}
@@ -871,7 +906,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 *
 	 * invokeBeanFactoryPostProcessors处理的是BeanDefinition，同样可以通过这个方法获取到BeanFactory并且对bean实例化但是官网很不建议这样使用。
-	 *
+	 * <p>
+	 *     调用bean工厂后置处理器
+	 * </p>
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		// 对bean工厂后置处理器扩展点调用

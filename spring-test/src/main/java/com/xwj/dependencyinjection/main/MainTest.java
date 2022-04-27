@@ -2,9 +2,6 @@ package com.xwj.dependencyinjection.main;
 
 import com.xwj.dependencyinjection.TestService;
 import com.xwj.dependencyinjection.impl.TestServiceImpl;
-import com.xwj.dependencyinjection.lookup.AA;
-import com.xwj.dependencyinjection.lookup.B;
-import com.xwj.dependencyinjection.lookup.LookUpTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 

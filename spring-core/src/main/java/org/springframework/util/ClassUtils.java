@@ -186,6 +186,10 @@ public abstract class ClassUtils {
 	 * ClassLoader isn't accessible)
 	 * @see Thread#getContextClassLoader()
 	 * @see ClassLoader#getSystemClassLoader()
+	 *
+	 * <p>
+	 *     首先获取当前线程类加载器，没有就获取ClassUtils的类加载器，还没有就选择BootstrapClassLoader
+	 * </p>
 	 */
 	@Nullable
 	public static ClassLoader getDefaultClassLoader() {
@@ -199,7 +203,7 @@ public abstract class ClassUtils {
 		}
 		if (cl == null) {
 			// No thread context class loader -> use class loader of this class.
-			//当前类的 classloader
+			//当前ClassUtils类的 classloader
 			cl = ClassUtils.class.getClassLoader();
 			if (cl == null) {
 				// getClassLoader() returning null indicates the bootstrap ClassLoader
