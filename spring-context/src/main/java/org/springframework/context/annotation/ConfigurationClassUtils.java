@@ -55,6 +55,10 @@ abstract class ConfigurationClassUtils {
 
 	public static final String CONFIGURATION_CLASS_LITE = "lite";
 
+	/**
+	 * 拼接完全限定名
+	 * org.springframework.context.annotation.ConfigurationClassPostProcessor.configurationClass
+	 */
 	public static final String CONFIGURATION_CLASS_ATTRIBUTE =
 			Conventions.getQualifiedAttributeName(ConfigurationClassPostProcessor.class, "configurationClass");
 
@@ -96,6 +100,10 @@ abstract class ConfigurationClassUtils {
 		}
 
 		AnnotationMetadata metadata;
+
+		/**
+		 * 获取注解元数据metadata
+		 */
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
@@ -128,6 +136,11 @@ abstract class ConfigurationClassUtils {
 		}
 
 		/*获取@Configuration的注解标识的非空类*/
+		/**
+		 * 判断元数据是否为@Configuration配置类，
+		 * 且是否是被代理方法，是就设置bd  CONFIGURATION_CLASS_ATTRIBUTE属性值为full
+		 * 非代理bean方法，
+		 */
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);

@@ -1,5 +1,6 @@
 package com.xwj.dependencyinjection.main;
 
+import com.xwj.dependencyinjection.BeanNameAnalysisConfig;
 import com.xwj.dependencyinjection.TestService;
 import com.xwj.dependencyinjection.impl.TestServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class MainTest {
 
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		context.register(MainTest.class, TestServiceImpl.class);
+		context.register(BeanNameAnalysisConfig.class,MainTest.class, TestServiceImpl.class);
 //		context.register(LookUpTest.class, AA.class, B.class);
 		context.refresh();
 //		System.out.println(context.getBean(MainTest.class).bean_111.hashCode());

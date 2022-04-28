@@ -93,7 +93,7 @@ final class PostProcessorRegistrationDelegate {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 			//BeanFactoryPostProcessor--非BeanDefinitionRegistryPostProcessor类型则
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
-			//BeanDefinitionRegistryPostProcessor
+			//BeanDefinitionRegistryPostProcessor 已注册的处理器
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
 			//遍历所有的beanFactory，如果是BeanDefinitionRegistryPostProcessor类型，则属于需要注册后置处理器，否则添加到BeanFactoryPostProcessor中

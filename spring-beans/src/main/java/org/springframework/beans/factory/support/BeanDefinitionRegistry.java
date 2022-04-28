@@ -45,10 +45,11 @@ import org.springframework.core.AliasRegistry;
  * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
  * @see PropertiesBeanDefinitionReader
  *
- *
+ * <p>
+ * 负责bean定义信息的注册，提供bean定义信息在bean工厂容器（beanDefinitionMap）中的管理 / 管理BeanDefinition
  * 装载BeanDefinition，通过BeanDefinitionReaderUtils.registerBeanDefinition()注册
  * @see BeanDefinitionReaderUtils#registerBeanDefinition(org.springframework.beans.factory.config.BeanDefinitionHolder, org.springframework.beans.factory.support.BeanDefinitionRegistry)
- *
+ * </p>
  */
 public interface BeanDefinitionRegistry extends AliasRegistry {
 
