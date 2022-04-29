@@ -169,6 +169,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 *
 	 * 默认返回null
 	 *
+	 * <p>
+	 *     对象属性后处理器
+	 * </p>
 	 */
 	@Nullable
 	default PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)

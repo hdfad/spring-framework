@@ -2147,15 +2147,29 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * Internal cache of pre-filtered post-processors.
 	 *
 	 * @since 5.3
+	 *
+	 * Bean后置处理器缓存
 	 */
 	static class BeanPostProcessorCache {
 
+		/**
+		 * 对于InstantiationAware后置处理器的缓存
+		 */
 		final List<InstantiationAwareBeanPostProcessor> instantiationAware = new ArrayList<>();
 
+		/**
+		 * 对于SmartInstantiationAware后处理器缓存
+		 */
 		final List<SmartInstantiationAwareBeanPostProcessor> smartInstantiationAware = new ArrayList<>();
 
+		/**
+		 * 对于DestructionAware后处理器缓存
+		 */
 		final List<DestructionAwareBeanPostProcessor> destructionAware = new ArrayList<>();
 
+		/**
+		 * 对MergedBeanDefinition后处理器进行缓存
+		 */
 		final List<MergedBeanDefinitionPostProcessor> mergedDefinition = new ArrayList<>();
 	}
 

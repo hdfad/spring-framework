@@ -191,6 +191,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @return the registered singleton object, or {@code null} if none found
 	 *
 	 * 快速检测在一二三级缓存中是否有单列bean存在，从一级开始找到二级，存在就直接返回，不存在再再三级中查找，获取到就将三级移除并添加到二级缓存中并返回，获取不到返回null
+	 *
+	 * <p>
+	 *     通过三级缓存解决依赖循环的问题，
+	 *     按照顺序从一二级缓存中获取对象，有一个dcl锁保证线程安全，没有就在三级缓存中获取移除，然后添加到二级缓存中
+	 * </p>
+	 *
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
@@ -199,7 +205,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			singletonObject = this.earlySingletonObjects.get(beanName);//二级
 			if (singletonObject == null && allowEarlyReference) {
-				synchronized (this.singletonObjects) {//加锁
+				synchronized (this.singletonObjects) {//加锁  dcl
 					// Consistent creation of early reference within full singleton lock
 					singletonObject = this.singletonObjects.get(beanName);
 					if (singletonObject == null) {

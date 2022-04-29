@@ -269,6 +269,10 @@ public class DependencyDescriptor extends InjectionPoint implements Serializable
 	 * @throws BeansException if the bean could not be obtained
 	 * @since 4.3.2
 	 * @see BeanFactory#getBean(String)
+	 *
+	 * <p>
+	 *     解析依赖字段，内部又会调用doCreateBean
+	 * </p>
 	 */
 	public Object resolveCandidate(String beanName, Class<?> requiredType, BeanFactory beanFactory)
 			throws BeansException {
