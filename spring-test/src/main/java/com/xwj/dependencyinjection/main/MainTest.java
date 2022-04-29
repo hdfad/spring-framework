@@ -45,7 +45,7 @@ public class MainTest {
 
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		context.register(BeanNameAnalysisConfig.class,MainTest.class, TestServiceImpl.class);
+		context.register(BeanNameAnalysisConfig.class);
 //		context.register(LookUpTest.class, AA.class, B.class);
 		context.refresh();
 //		System.out.println(context.getBean(MainTest.class).bean_111.hashCode());

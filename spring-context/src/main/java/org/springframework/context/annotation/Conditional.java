@@ -55,6 +55,10 @@ import java.lang.annotation.Target;
  * @author Sam Brannen
  * @since 4.0
  * @see Condition
+ *
+ * <p>
+ *     根据指定条件进行判断是否给容器注册bean
+ * </p>
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

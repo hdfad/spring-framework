@@ -57,6 +57,9 @@ final class PostProcessorRegistrationDelegate {
 
 
 	/**
+	 *
+	 * 调用beanFactory后置处理器，首先处理BeanDefinitionRegistryPostProcessors
+	 *
 	 * 处理2部分：
 	 * 			BeanDefinitionRegistryPostProcessor
 	 * 			BeanFactoryPostProcessor
@@ -80,23 +83,21 @@ final class PostProcessorRegistrationDelegate {
 		// https://github.com/spring-projects/spring-framework/issues?q=PostProcessorRegistrationDelegate+is%3Aclosed+label%3A%22status%3A+declined%22
 
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
+
+
 		//已经被处理过的bean
 		Set<String> processedBeans = new HashSet<>();
 
-		/**
-		 * beanFactory->ConfigurableListableBeanFactory,
-		 * DefaultListableBeanFactory是ConfigurableListableBeanFactory子类，整个生命周期中默认bean工厂就是DefaultListableBeanFactory
-		 * DefaultListableBeanFactory实现BeanDefinitionRegistry
-		 * 所以这个instanceof是能匹配到类型的
-		 */
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-			//BeanFactoryPostProcessor--非BeanDefinitionRegistryPostProcessor类型则
+
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
-			//BeanDefinitionRegistryPostProcessor 已注册的处理器
+
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
-			//遍历所有的beanFactory，如果是BeanDefinitionRegistryPostProcessor类型，则属于需要注册后置处理器，否则添加到BeanFactoryPostProcessor中
+			/**
+			 * 遍历所有BeanFactoryPostProcessor，处理bdrpp和非bdrpp类型的后置处理器
+			 */
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =(BeanDefinitionRegistryPostProcessor) postProcessor;
@@ -105,6 +106,11 @@ final class PostProcessorRegistrationDelegate {
 					 * 对配置bean进行装载，解析配置bean中的@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean
 					 * 如何解决@Bean中的别名映射呢？
 					 * 		使用容器ConcurrentHashMap对别名存储，key为上一个别名，value为当前别名
+					 */
+
+
+					/**
+					 *
 					 */
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);
 					//  添加到registryProcessors(用于最后执行postProcessBeanFactory方法)

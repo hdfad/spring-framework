@@ -68,6 +68,9 @@ abstract class ConfigurationClassUtils {
 
 	private static final Log logger = LogFactory.getLog(ConfigurationClassUtils.class);
 
+	/**
+	 * 通过下面static静态代码块存储Component、ComponentScan、Import、ImportResource
+	 */
 	private static final Set<String> candidateIndicators = new HashSet<>(8);
 
 	static {
@@ -86,10 +89,9 @@ abstract class ConfigurationClassUtils {
 	 * @param metadataReaderFactory the current factory in use by the caller
 	 * @return whether the candidate qualifies as (any kind of) configuration class
 	 *
-	 *
-	 * 检查是否为配置类
-	 * 	被@Configuration注解标识的非空类
-	 *
+	 * todo
+	 * 检查对象是否是配置类，并填充bd信息
+	 * 针对于@Component、@ComponentScan、@Import、@ImportResource、@Configuration或者@Bean注解
 	 */
 	public static boolean checkConfigurationClassCandidate(
 			BeanDefinition beanDef, MetadataReaderFactory metadataReaderFactory) {
@@ -135,11 +137,9 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
-		/*获取@Configuration的注解标识的非空类*/
 		/**
-		 * 判断元数据是否为@Configuration配置类，
-		 * 且是否是被代理方法，是就设置bd  CONFIGURATION_CLASS_ATTRIBUTE属性值为full
-		 * 非代理bean方法，
+		 * 判断元数据是否为@Configuration配置类，且是否是被代理方法，是就设置bd  CONFIGURATION_CLASS_ATTRIBUTE属性值为full
+		 * 检查类元注解信息是否为配置类，如包含@Component、@ComponentScan、@Import、@ImportResource或者@Bean
 		 */
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
@@ -153,6 +153,9 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
+		/**
+		 * 获取@Order排序值，如果存在则添加到bd中
+		 */
 		Integer order = getOrder(metadata);
 		if (order != null) {
 			beanDef.setAttribute(ORDER_ATTRIBUTE, order);
@@ -167,14 +170,26 @@ abstract class ConfigurationClassUtils {
 	 * @param metadata the metadata of the annotated class
 	 * @return {@code true} if the given class is to be registered for
 	 * configuration class processing; {@code false} otherwise
+	 *
+	 * <p>
+	 *     检查类元注解信息是否为配置类，如果包含@Component、@ComponentScan、@Import、@ImportResource或者@Bean就返回true
+	 *     如果是接口返回false，其他情况也返回false
+	 * </p>
 	 */
 	public static boolean isConfigurationCandidate(AnnotationMetadata metadata) {
 		// Do not consider an interface or an annotation...
+		/**
+		 * 注解元数据是接口直接返回false
+		 */
 		if (metadata.isInterface()) {
 			return false;
 		}
 
 		// Any of the typical annotations found?
+		/**
+		 * 注解是否是candidateIndicators注解集合中标注的类
+		 * Component、ComponentScan、Import、ImportResource
+		 */
 		for (String indicator : candidateIndicators) {
 			if (metadata.isAnnotated(indicator)) {
 				return true;
@@ -182,9 +197,17 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// Finally, let's look for @Bean methods...
+		/**
+		 * 查找bean注解
+		 */
 		return hasBeanMethods(metadata);
 	}
 
+	/**
+	 * 查找bean注解
+	 * @param metadata
+	 * @return
+	 */
 	static boolean hasBeanMethods(AnnotationMetadata metadata) {
 		try {
 			return metadata.hasAnnotatedMethods(Bean.class.getName());

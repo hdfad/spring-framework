@@ -642,7 +642,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 除此之外部分注解入口也作用于此，@Import
 				 * */
 				/**
-				 * 调用bean工厂后置处理器
+				 * 调用bean工厂后置处理器  todo
 				 * 作为spring bean在初始化前的一个扩展点，
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
@@ -651,13 +651,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				//注册bean后置处理器,将BeanPostProcessors根据实现的接口是PriorityOrdered、Ordered还是其他的按顺序加载到容器中，首先注册实现PriorityOrdered的类，再注册实现了Ordered的类，最后再注册其他的类
 
 				/**
+				 * 注册后置处理器
 				 * 对bean后置处理器组件进行注册，后续在后createBean时需要调用多个后置处理器完成对容器属性的注入和依赖，如@PostConstruct注册、@Resource注册等
 				 */
 				registerBeanPostProcessors(beanFactory);
 				beanPostProcess.end();
 
 				// Initialize message source for this context.
-				// 消息源初始化-国际化
+				// 消息源初始化-处理国际化
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
