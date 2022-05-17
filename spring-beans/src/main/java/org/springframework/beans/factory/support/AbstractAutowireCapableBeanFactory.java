@@ -554,6 +554,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			//对于jdk还是cglib代理会根据DefaultAopProxyFactory下的createAopProxy创建指定的AopProxy实现类（jdk或cglib）
 			//第一、二次调用后置处理器
 			//如果BeanDefinition的beforeInstantiationResolved标识为true、synthetic标识也为true且包含InstantiationAwareBeanPostProcessor的子类则会调用2个后置处理器
+			/**
+			 * 实例化bean前调用后置处理器完善bean信息
+			 */
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			//如果在经历到后置处理器的处理后的bean对象不为null，则直接对外提供bean对象
 			if (bean != null) {

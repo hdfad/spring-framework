@@ -60,8 +60,12 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 	@Nullable
 	private AnnotatedElement qualifiedElement;
 
-	/** Determines if the definition needs to be re-merged. */
-	//是否需要重新合并定义
+	/**
+	 * Determines if the definition needs to be re-merged.
+	 * 是否需要重新合并BeanDefinition状态标识，
+	 * 调用clearMergedBeanDefinition(String)或者clearMetadataCache()后会被设置为true
+	 * 当为true时标识需要重新合并BeanDefinition
+	 */
 	volatile boolean stale;
 
 	boolean allowCaching = true;
