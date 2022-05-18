@@ -55,6 +55,11 @@ import org.springframework.lang.Nullable;
  * @see ConfigurableBeanFactory#addBeanPostProcessor
  * @see BeanFactoryPostProcessor
  *
+ * <p>
+ * 		负责对象在初始化前后的处理流程
+ * 		(InstantiationAwareBeanPostProcessor负责对象在实例化过程中的处理流程)
+ * </p>
+ *
  * bean后置处理器顶层接口，spring生命周期中的后置处理器扩展点都是BeanPostProcessor的子类，用于在bean的**初始化前**和**初始化后**的各种扩展
  * 在BeanPostProcessor接口中有2个Nullable注解标注得Initialization方法：
  * 		postProcessBeforeInitialization：bean初始化之前执行

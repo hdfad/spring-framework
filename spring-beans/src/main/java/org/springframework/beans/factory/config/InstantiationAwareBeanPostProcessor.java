@@ -126,8 +126,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * |____AbstractAutowireCapableBeanFactory # doCreateBean
 	 * 		|____AbstractAutowireCapableBeanFactory # populateBean
 	 *
-	 * 	返回值默认是true，
-	 * 	当返回false时不会对bean进行属性填充,直接结束populateBean
+	 *
+	 * 	返回值默认是true，自定义对bean的实例化后操作
+	 * 	当返回false后不会对bean进行属性填充populateBean,直接结束populateBean
 	 *
 	 */
 	default boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {

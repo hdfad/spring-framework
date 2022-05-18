@@ -210,12 +210,18 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	/**
 	 * Create a new AbstractBeanDefinition with default settings.
+	 *
+	 * <P>
+	 *     创建对象时默认的BeanDefinition的cargs和pvs都是传入null
+	 *		@see AbstractBeanDefinition#AbstractBeanDefinition(org.springframework.beans.factory.config.ConstructorArgumentValues, org.springframework.beans.MutablePropertyValues)
+	 * </P>
 	 */
 	protected AbstractBeanDefinition() {
 		this(null, null);
 	}
 
 	/**
+	 *
 	 * Create a new AbstractBeanDefinition with the given
 	 * constructor argument values and property values.
 	 */
@@ -605,6 +611,23 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	}
 
 	/**
+	 * <p>
+	 *     获取注入模型，在bean实例属性注入过程中，
+	 *     对没有实现@Autowired、 @Resource注解的情况下，对Bean实例进行注入的集中方式
+	 *
+	 *     对没有使用没有实现@Autowired、 @Resource、@Inject 注解的情况下对bean进行注入见spring官网
+	 *     1.4.5. Autowiring Collaborators
+	 *     When using XML-based configuration metadata (see Dependency Injection),
+	 *     you can specify the autowire mode for a bean definition with the autowire attribute of the element.
+	 *     The autowiring functionality has four modes. You specify autowiring per bean and can thus choose which ones to autowire.
+	 *
+	 *     使用基于XML的配置元数据时（请参阅“依赖注入”），可以使用元素的autowire属性为bean定义指定自动装配模式。
+	 *     自动装配功能具有四种模式。您可以为每个bean指定自动装配，因此可以选择要自动装配的装配。
+	 *
+	 *     参考文章：https://blog.csdn.net/z69183787/article/details/104545466
+	 *     案例见: com.xwj.autowiremode包
+	 * </p>
+	 *
 	 * Return the resolved autowire code,
 	 * (resolving AUTOWIRE_AUTODETECT to AUTOWIRE_CONSTRUCTOR or AUTOWIRE_BY_TYPE).
 	 * @see #AUTOWIRE_AUTODETECT
@@ -1021,6 +1044,10 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	}
 
 	/**
+	 * <p>
+	 *     返回此 bean 定义是否是“合成的”，即不是由应用程序本身定义的。
+	 *     默认false
+	 * </p>
 	 * Return whether this bean definition is 'synthetic', that is,
 	 * not defined by the application itself.
 	 */

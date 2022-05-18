@@ -555,10 +555,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			//第一、二次调用后置处理器
 			//如果BeanDefinition的beforeInstantiationResolved标识为true、synthetic标识也为true且包含InstantiationAwareBeanPostProcessor的子类则会调用2个后置处理器
 			/**
-			 * 实例化bean前调用后置处理器完善bean信息
+			 * 实例化bean前调用后置处理器处理bean信息
+			 * 如非spring管理的bean的创建过程交给spring的InstantiationAwareBeanPostProcessor实例化创建和BeanPostProcessor初始化
+			 * 返回的bean的非null对象，不再进行doCreateBean操作，
+			 *
+			 * 为什么spring是在初始化之后proxy而不是resolveBeforeInstantiation？？？
+			 *
 			 */
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
-			//如果在经历到后置处理器的处理后的bean对象不为null，则直接对外提供bean对象
 			if (bean != null) {
 				return bean;
 			}
@@ -569,7 +573,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
-			//开始创建bean，同时提供后置处理器对bean进行扩展
+			/**
+			 * spring管理bean创建
+			 */
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -665,7 +671,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
-		//** 是否允许循环依赖
+		/**
+		 * 是否允许循环依赖条件判断，
+		 * 如果允许则将对象添加到三级缓存中，添加过程保证线程安全
+		 */
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -1210,11 +1219,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @param mbd the bean definition for the bean
 	 * @return the shortcut-determined bean instance, or {@code null} if none
 	 *
+	 * 非spring管理的bean的创建过程交给spring管理
 	 * #1、
-	 * 首先调用InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation，此时的bean还未进行实例化，在实例化之前对bean进行操作，
-	 * 如果返回bean对象，不再进行doCreateBean流程,比如对对象创建代理
+	 * 首先调用InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation，实例化bean操作或者在bean实例化前对bean进行操作
 	 *
-	 * #2、BeanPostProcessor#postProcessAfterInitialization
+	 * #2、
+	 * BeanPostProcessor#postProcessAfterInitialization，实例化后对bean进行操纵，有#1才有#2
+	 *
+	 * #3、
+	 * 当bean返回非null时，bean不会再经历createBean创建过程
+	 *
+	 * todo 但是此处有个代理类何时进入，proxy再进行研究
+	 * 为什么spring是在初始化之后proxy而不是resolveBeforeInstantiation?
+	 *
 	 *
 	 * 当第一次调用的**InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation
 	 * 返回的bean不为null时，会调用**BeanPostProcessor#postProcessAfterInitialization，
@@ -1224,8 +1241,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	@Nullable
 	protected Object resolveBeforeInstantiation(String beanName, RootBeanDefinition mbd) {
 		Object bean = null;
+		/**
+		 *
+		 * 非spring管理的bean的创建过程由InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation完成，
+		 * 完成后交给BeanPostProcessor#postProcessAfterInitialization完成bean的填充初始化
+		 */
 		if (!Boolean.FALSE.equals(mbd.beforeInstantiationResolved)) {
 			// Make sure bean class is actually resolved at this point.
+			//hasInstantiationAwareBeanPostProcessors:具有InstantiationAwareBeanPostProcessors后置处理器
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
@@ -1598,20 +1621,29 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Give any InstantiationAwareBeanPostProcessors the opportunity to modify the
 		// state of the bean before properties are set. This can be used, for example,
 		// to support styles of field injection.
+		/**
+		 * 判断是否有自定义的bean属性填充，有就按照自己的逻辑来;
+		 *
+		 * 处理InstantiationAwareBeanPostProcessor接口实现类，
+		 * 在需要对bean自定义属性填充时可在此处完善bean填充信息然后返回false或者添加bean的支持后继续进行属性填充
+		 * 如果postProcessAfterInstantiation返回false则不会对bean进行属性填充，直接进行bean初始化
+		 */
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (InstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().instantiationAware) {
 				//boolean postProcessAfterInstantiation:第五次后置处理器调用:用于判断当前实例化完成的bean需不需要进行属性填充
 				//对于已经加上@Autowired注解的bean，但是不想使用spring的自动注入，对于特殊的bean则可以注册一个beanPostProcessor使其不进行注入，使用自己的方式进行注入
 				//	如果我们不希望一个bean参与到属性注入, 自动装配的流程中, 那么就可以创建一个InstantiationAwareBeanPostProcessor后置处理器的实现类, 重写其
 				//  postProcessAfterInstantiation方法, 如果该方法返回false, 那么continueWithPropertyPopulation
-				//  这个变量会被置为false, 而这个变量被置为false, 在下面我们可以看到直接就return了, 从而Spring就不
-				//  会对属性进行注入
+				//  这个变量会被置为false, 而这个变量被置为false, 在下面我们可以看到直接就return了, 从而Spring就不会对属性进行注入
 				if (!bp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
 					return;
 				}
 			}
 		}
 		//从AbstractBeanDefinition中获取bean的属性值
+		/**
+		 * 构造BeanDefinition时会通过AbstractBeanDefinition构造默认为null的propertyValues
+		 */
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
 		//autowireMode注入模型有5种：
@@ -1620,6 +1652,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// 2：AUTOWIRE_BY_TYPE;
 		// 3：AUTOWIRE_CONSTRUCTOR
 		// 4：AUTOWIRE_AUTODETECT(已启用)
+		/**
+		 * 注入模型：对没有实现@Autowired、 @Resource注解的情况下，对Bean实例进行注入的几种方式
+		 */
 		int resolvedAutowireMode = mbd.getResolvedAutowireMode();
 		/*
 		 * 判断注入类型resolvedAutowireMode
@@ -1732,6 +1767,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 *
+	 * 对BeanDefinition中标注了注入模型通过AUTOWIRE_BY_TYPE的方式注入时调用autowireByType
+	 *
+	 *
 	 * Abstract method defining "autowire by type" (bean properties by type) behavior.
 	 * <p>This is like PicoContainer default, in which there must be exactly one bean
 	 * of the property type in the bean factory. This makes bean factories simple to
