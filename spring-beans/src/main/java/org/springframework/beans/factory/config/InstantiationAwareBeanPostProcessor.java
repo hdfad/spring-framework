@@ -118,6 +118,8 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see #postProcessBeforeInstantiation
 	 *
+	 * 实例化bean后对bean进行属性填充进行判断，处理实例化bean信息
+	 *
 	 * 整个bean生命周期中会被调用一次，在实例化后调用，发生在populateBean阶段，此时的bean已经被实例化完成，
 	 * 不同于父接口BeanPostProcessor的postProcessAfterInitialization在初始化后对bean进行操作，
 	 * postProcessBeforeInstantiation在实例化bean对象后对bean进行操作
