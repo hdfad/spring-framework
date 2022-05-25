@@ -367,7 +367,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 
 				/**
-				 * 初始化bean
+				 * 实例化bean
 				 * 判断对象是单例还是原型
 				 */
 				// Create bean instance.
@@ -1956,8 +1956,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @param mbd the merged bean definition
 	 * @return the object to expose for the bean
 	 *
-	 * 调用此方法时，此beanInstance必须为FactoryBean，否则就抛异常：BeanIsNotAFactoryException
-	 * 如果是一个"null"直接返回，否则判断是否为FactoryBean并修改RootBeanDefinition信息
 	 */
 	protected Object getObjectForBeanInstance(
 			Object beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) {
@@ -1968,6 +1966,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			if (beanInstance instanceof NullBean) {
 				return beanInstance;
 			}
+			/**
+			 * beanInstance是FactoryBean，否则就抛异常：BeanIsNotAFactoryException
+			 */
 			if (!(beanInstance instanceof FactoryBean)) {
 				throw new BeanIsNotAFactoryException(beanName, beanInstance.getClass());
 			}

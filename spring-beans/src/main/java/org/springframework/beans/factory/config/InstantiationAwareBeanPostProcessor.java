@@ -156,6 +156,8 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @see #postProcessPropertyValues
 	 *
 	 *
+	 * 对实例化后的bean处理bean的依赖
+	 *
 	 * 整个bean生命周期中，会被调用一次，发生在populateBean阶段，bean被实例化之后，applyPropertyValues属性注入之前，此时bean已经被实例化完成，
 	 * 结合实现类调用实现类覆写了postProcessProperties的方法，对注解属性进行扫描注入
 	 * 实现类：

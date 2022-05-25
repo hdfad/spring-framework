@@ -555,7 +555,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			//第一、二次调用后置处理器
 			//如果BeanDefinition的beforeInstantiationResolved标识为true、synthetic标识也为true且包含InstantiationAwareBeanPostProcessor的子类则会调用2个后置处理器
 			/**
-			 * 实例化bean前调用后置处理器处理bean信息
+			 * 实例化bean前调用后置处理器处理bean信息,包括实例化和初始化过程
 			 * 如非spring管理的bean的创建过程交给spring的InstantiationAwareBeanPostProcessor实例化创建和BeanPostProcessor初始化
 			 * 返回的bean的非null对象，不再进行doCreateBean操作，
 			 *
@@ -1654,6 +1654,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// 4：AUTOWIRE_AUTODETECT(已启用)
 		/**
 		 * 注入模型：对没有实现@Autowired、 @Resource注解的情况下，对Bean实例进行注入的几种方式
+		 * 通过在invokeBeanFactoryPostProcessors阶段，获取指定bean的abd，操作abd注入模型
 		 */
 		int resolvedAutowireMode = mbd.getResolvedAutowireMode();
 		/*
@@ -1677,7 +1678,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 			pvs = newPvs;
 		}
-		//如果有InstantiationAwareBeanPostProcessor的子类
+		/**
+		 * spring容器中存在InstantiationAwareBeanPostProcessor实现类，在对象实例化后处理对象的依赖，操作实例对象
+		 */
 		boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();
 		//true：需要检查依赖
 		boolean needsDepCheck = (mbd.getDependencyCheck() != AbstractBeanDefinition.DEPENDENCY_CHECK_NONE);
@@ -1695,7 +1698,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				//Spring的@Autowire注入,JSR330的@Inject以及JSR250的@Resource等注入操作都是通过这个方法完成 ，使用反射将注入的bean实例赋值给属性。
 				//对于自动注入的对象，spring调用InjectedElement.inject对对象进行注入
 				/**
-				 * 对象属性注入，循环依赖解决入口
+				 * 对象属性注入，循环依赖解决入口？
 				 * 传入了一个BeanWrapper对象,底层会根据注入的属性调用createBean方法，传入对应的属性
 				 * 如果是Resource，则调用CommonAnnotationBeanPostProcessor#postProcessProperties
 				 * 如果是Autowired，则调用AutowiredAnnotationBeanPostProcessor#postProcessProperties
