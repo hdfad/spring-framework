@@ -76,7 +76,10 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 	}
 
 	/**
-	 * 完成对部分Aware类的支持
+	 * <p>
+	 *     调用Aware接口，通过setXXX方法获取容器中的资源
+	 * </p>
+	 *
 	 * 	invokeAwareInterfaces(bean)
 	 * @param bean the new bean instance
 	 * @param beanName the name of the bean
