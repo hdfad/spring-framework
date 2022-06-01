@@ -496,7 +496,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
 			/**
-			 * 注入
+			 * 注入,当存在循环依赖时，注入时解决循环依赖的问题
 			 */
 			metadata.inject(bean, beanName, pvs);
 		}

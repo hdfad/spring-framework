@@ -971,9 +971,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 			//对非抽象、单例、非懒加载的bean进行初始化
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
-				/*
-				* 对于是FactoryBean还是普通bean的bean初始化不一样
-				* */
+				/**
+				 * FactoryBean获取时beanName会添加一个&，而普通的bean直接通过beanName获取
+				 */
 				if (isFactoryBean(beanName)) {
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
 					if (bean instanceof FactoryBean) {
@@ -988,7 +988,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							isEagerInit = (factory instanceof SmartFactoryBean &&
 									((SmartFactoryBean<?>) factory).isEagerInit());
 						}
-						//必然SmartFactoryBean类型
+						//SmartFactoryBean类型
 						if (isEagerInit) {
 							getBean(beanName);
 						}
@@ -1333,7 +1333,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		return new NamedBeanHolder<T>(beanName, adaptBeanInstance(beanName, bean, requiredType.toClass()));
 	}
-	//解析依赖
+
+	/**
+	 * 解析依赖
+	 * @param descriptor the descriptor for the dependency (field/method/constructor)
+	 * @param requestingBeanName the name of the bean which declares the given dependency
+	 * @param autowiredBeanNames a Set that all names of autowired beans (used for
+	 * resolving the given dependency) are supposed to be added to
+	 * @param typeConverter the TypeConverter to use for populating arrays and collections
+	 * @return
+	 * @throws BeansException
+	 */
 	@Override
 	@Nullable
 	public Object resolveDependency(DependencyDescriptor descriptor, @Nullable String requestingBeanName,
