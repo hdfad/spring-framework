@@ -89,6 +89,10 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 	}
 
 	/**
+	 *
+	 * <p>
+	 *     通过FactoryBean的getObject获取bean实例，如果存在就返回，不存在就返回一个nullBean
+	 * </p>
 	 * Obtain an object to expose from the given FactoryBean.
 	 * @param factory the FactoryBean instance
 	 * @param beanName the name of the bean

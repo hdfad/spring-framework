@@ -22,4 +22,7 @@ public class StudentFactoryBeans implements FactoryBean<Student> {
 	public Class<?> getObjectType() {
 		return Student.class;
 	}
+
+	public StudentFactoryBeans() {
+	}
 }

@@ -949,8 +949,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	}
 
 	/**
-	 *
-	 *
+	 * 通过2个for循环处理bean对象，一个是创建并缓存bean，另一个对bean设置回调
 	 * @throws BeansException
 	 */
 	@Override

@@ -1951,7 +1951,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	}
 
 	/**
-	 * 处理FactoryBean类型的bean，
+	 * 处理FactoryBean类型的bean，将rbd的isFactoryBean标识修改为true
+	 * 缓存beanFactory的容器：factoryBeanObjectCache
 	 *
 	 * Get the object for the given bean instance, either the bean
 	 * instance itself or its created object in case of a FactoryBean.
@@ -2011,6 +2012,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				mbd = getMergedLocalBeanDefinition(beanName);
 			}
 			boolean synthetic = (mbd != null && mbd.isSynthetic());
+			/**
+			 * 通过FactoryBean的getObject获取bean实例，如果存在就添加到缓存factoryBeanObjectCache中 并返回，不存在就返回一个nullBean
+			 */
 			object = getObjectFromFactoryBean(factory, beanName, !synthetic);
 		}
 		return object;

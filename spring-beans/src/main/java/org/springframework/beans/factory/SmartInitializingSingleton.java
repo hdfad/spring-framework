@@ -17,6 +17,7 @@
 package org.springframework.beans.factory;
 
 /**
+ *
  * Callback interface triggered at the end of the singleton pre-instantiation phase
  * during {@link BeanFactory} bootstrap. This interface can be implemented by
  * singleton beans in order to perform some initialization after the regular
@@ -40,6 +41,9 @@ package org.springframework.beans.factory;
  * @author Juergen Hoeller
  * @since 4.1
  * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory#preInstantiateSingletons()
+ *
+ *
+ * 单例bean初始化之后回调
  */
 public interface SmartInitializingSingleton {
 
