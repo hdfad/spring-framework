@@ -292,8 +292,14 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @see #getAdvicesAndAdvisorsForBean
 	 *
 	 * 创建bean代理
-	 * bean为啥会进入这个方法？
+	 * 在doCreateBean阶段，将初始化后的bean通过getEarlyBeanReference将bean添加到earlyProxyReferences缓存中
+	 * 在remove时，移除并返回缓存中的bean对象，判断bean对象是否需要进行代理创建
 	 *
+	 * bean为啥会进入这个方法？
+	 * 在initializeBean阶段，通过applyBeanPostProcessorsAfterInitialization
+	 * 调用BeanPostProcessor#postProcessAfterInitialization后置处理器进入到这一步
+	 *
+	 * @See org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator#getEarlyBeanReference(java.lang.Object, java.lang.String)
 	 */
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
@@ -353,10 +359,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		}
 
 		/**
-		 * 根据Advisor创建代理对象，并缓存
+		 * 根据Advisor创建代理对象，并缓存  根据bean获取对象是否需要进行代理
 		 */
 		// Create proxy if we have advice.
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
+		/**
+		 * 如果对对象需要进行代理，首先缓存到advisedBeans中，对象值设置为true
+		 */
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
 			Object proxy = createProxy(
@@ -364,7 +373,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			this.proxyTypes.put(cacheKey, proxy.getClass());
 			return proxy;
 		}
-
+		/**
+		 * 缓存对象不需要进行代理
+		 */
 		this.advisedBeans.put(cacheKey, Boolean.FALSE);
 		return bean;
 	}
@@ -456,7 +467,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			@Nullable Object[] specificInterceptors, TargetSource targetSource) {
 		if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
 			/**
-			 * 设置代理得原始对象
+			 * 在rbd中设置代理类的原始对象class
 			 */
 			AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
 		}
@@ -476,7 +487,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 				proxyFactory.setProxyTargetClass(true);
 			}
 			else {
-				//interface
+				/**
+				 * 如果是interface，判断接口是否满足非内部接口，非回调接口，非空方法接口，
+				 * 如果是其一那么依然会使用基于类的代理模式
+				 */
 				evaluateProxyInterfaces(beanClass, proxyFactory);
 			}
 		}

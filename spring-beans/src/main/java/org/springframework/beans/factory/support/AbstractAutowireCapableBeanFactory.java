@@ -705,6 +705,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 		BeanPostProcessor
 			 * 		InitializingBean
 			 * 		initMethod
+			 * 代理对象在创建时，在getEarlyBeanReference将属性填充后的bean添加到earlyProxyReferences中，
+			 * 在创建代理时从earlyProxyReferences缓存的bean对象去创建代理对象
 			 * */
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
@@ -1068,13 +1070,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @return the object to expose as bean reference
 	 */
 	protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
-		System.out.println(beanName+": 入第四个");
+		System.out.println(beanName+": 通过SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference处理");
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
 				//第四个后置处理器
 				exposedObject = bp.getEarlyBeanReference(exposedObject, beanName);
-				System.out.println(beanName+": 第四个后置处理器");
+				System.out.println(beanName+": 通过SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference处理");
 			}
 		}
 		return exposedObject;

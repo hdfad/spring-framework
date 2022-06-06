@@ -94,6 +94,10 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 
 
 	/**
+	 *
+	 * 获取目标类的接口，如果接口是非内部、非回调，且包含方法的接口，就将接口添加到ProxyFactory中
+	 * 否则就将指定代理模式为基于类的代理模式
+	 *
 	 * Check the interfaces on the given bean class and apply them to the {@link ProxyFactory},
 	 * if appropriate.
 	 * <p>Calls {@link #isConfigurationCallbackInterface} and {@link #isInternalLanguageInterface}
@@ -102,8 +106,14 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 	 * @param proxyFactory the ProxyFactory for the bean
 	 */
 	protected void evaluateProxyInterfaces(Class<?> beanClass, ProxyFactory proxyFactory) {
+		/**
+		 * 获取目标接口
+		 */
 		Class<?>[] targetInterfaces = ClassUtils.getAllInterfacesForClass(beanClass, getProxyClassLoader());
 		boolean hasReasonableProxyInterface = false;
+		/**
+		 * 非内部,非回调接口,且是非空接口
+		 */
 		for (Class<?> ifc : targetInterfaces) {
 			if (!isConfigurationCallbackInterface(ifc) && !isInternalLanguageInterface(ifc) &&
 					ifc.getMethods().length > 0) {
@@ -111,6 +121,9 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 				break;
 			}
 		}
+		/**
+		 * 将接口添加到ProxyFactory中
+		 */
 		if (hasReasonableProxyInterface) {
 			// Must allow for introductions; can't just set interfaces to the target's interfaces only.
 			for (Class<?> ifc : targetInterfaces) {
@@ -118,6 +131,9 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 			}
 		}
 		else {
+			/**
+			 * 当接口不满足时，就使用代理类的方式
+			 */
 			proxyFactory.setProxyTargetClass(true);
 		}
 	}

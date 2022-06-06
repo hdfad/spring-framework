@@ -116,7 +116,8 @@ public abstract class AutoProxyUtils {
 
 	/**
 	 *
-	 * 设置Bean工厂中的原始目标类到MergedBeanDefinition中,在determineTargetClass中会使用ORIGINAL_TARGET_CLASS_ATTRIBUTE来获取bean真实类型
+	 * 获取rbd信息，在rbd中的attributes设置原始目标对象，
+	 * “org.springframework.aop.framework.autoproxy.AutoProxyUtils.originalTargetClass”为当前目标对象class
 	 *
 	 * Expose the given target class for the specified bean, if possible.
 	 * @param beanFactory the containing ConfigurableListableBeanFactory

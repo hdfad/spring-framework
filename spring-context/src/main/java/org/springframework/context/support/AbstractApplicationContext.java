@@ -642,10 +642,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 除此之外部分注解入口也作用于此，@Import
 				 * */
 				/**
-				 * 调用bean工厂后置处理器,
-				 * 在实例化bean时通过BeanFactoryPostProcessor#postProcessBeanFactory对ConfigurableListableBeanFactory中的信息进行处理更改
-				 * 主要是对bean定义信息更改
-				 * 作为spring bean在初始化前的一个扩展点，
+				 * 调用bean工厂后置处理器,加载并注册BeanDefinition信息
+				 * 作为spring bean在初始化前的一个扩展点
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
@@ -910,12 +908,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 *
 	 * invokeBeanFactoryPostProcessors处理的是BeanDefinition，同样可以通过这个方法获取到BeanFactory并且对bean实例化但是官网很不建议这样使用。
 	 * <p>
-	 *     调用bean工厂后置处理器
+	 *     调用bean工厂后置处理器,注册BeanDefinition
 	 * </p>
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		// 对bean工厂后置处理器扩展点调用
 		//getBeanFactoryPostProcessors():获取spring 容器中的Bean工厂后置处理器
+		/**
+		 * 调用 Bean Factory 后处理器，加载并注册BeanDefinition
+		 */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
