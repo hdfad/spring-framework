@@ -291,7 +291,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * identified as one to proxy by the subclass.
 	 * @see #getAdvicesAndAdvisorsForBean
 	 *
-	 * 创建bean代理
+	 * 初始化后创建bean代理，在applyBeanPostProcessorsAfterInitialization阶段处调用
 	 * 在doCreateBean阶段，将初始化后的bean通过getEarlyBeanReference将bean添加到earlyProxyReferences缓存中
 	 * 在remove时，移除并返回缓存中的bean对象，判断bean对象是否需要进行代理创建
 	 *
@@ -304,7 +304,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
 		if (bean != null) {
+			/**
+			 * 根据名称获取缓存的key，区别普通bean和FactoryBean
+			 */
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
+			/**
+			 * 此处为啥
+			 */
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}
@@ -314,6 +320,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 
 	/**
+	 *
+	 * 根据名称获取缓存的key，区别普通bean和FactoryBean
+	 * 对FactoryBean进行判断，如果bean是FactoryBean类型，那么bean class对象前缀需要加“&”，否则直接返回beanName
+	 *
 	 * Build a cache key for the given bean class and bean name.
 	 * <p>Note: As of 4.2.3, this implementation does not return a concatenated
 	 * class/name String anymore but rather the most efficient cache key possible:
@@ -326,6 +336,12 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 */
 	protected Object getCacheKey(Class<?> beanClass, @Nullable String beanName) {
 		if (StringUtils.hasLength(beanName)) {
+			/**
+			 * 对FactoryBean进行判断，如果bean是FactoryBean类型，那么bean class对象前缀需要加“&”，否则直接返回beanName
+			 *
+			 * isAssignableFrom:判断一个接口或类是否实现或继承另一个类
+			 * 如：Object.class.isAssignableFrom(AbstractAutoProxyCreator.class)=>true
+			 */
 			return (FactoryBean.class.isAssignableFrom(beanClass) ?
 					BeanFactory.FACTORY_BEAN_PREFIX + beanName : beanName);
 		}
@@ -500,10 +516,24 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		 */
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
 
+		/**
+		 * advisors
+		 */
 		proxyFactory.addAdvisors(advisors);
+
+		/**
+		 * targetSource
+		 */
 		proxyFactory.setTargetSource(targetSource);
+
+		/**
+		 * 扩展点，对proxyFactory进行扩展
+		 */
 		customizeProxyFactory(proxyFactory);
 
+		/**
+		 * @See
+		 */
 		proxyFactory.setFrozen(this.freezeProxy);
 
 		if (advisorsPreFiltered()) {
