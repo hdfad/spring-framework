@@ -664,7 +664,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Initialize event multicaster for this context.
 				/**
 				 * 初始化事件多播器
-				 * 构建事件监听多路广播器SimpleApplicationEventMulticaster
+				 * 构建事件监听多路广播器ApplicationEventMulticaster(SimpleApplicationEventMulticaster)
 				 * 事件的执行主要是在Bean初始化之后通过上下文调用publishEvent方法执行
 				 */
 				initApplicationEventMulticaster();
@@ -1051,7 +1051,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Add beans that implement ApplicationListener as listeners.
 	 * Doesn't affect other listeners, which can be added without being beans.
 	 *
-	 * 注册监听器接口
+	 * 注册监听器接口，从applicationListeners容器中获取，addApplicationListener添加到容器中
 	 */
 	protected void registerListeners() {
 		// Register statically specified listeners first.

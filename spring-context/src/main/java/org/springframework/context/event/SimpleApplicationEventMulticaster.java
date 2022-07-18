@@ -131,6 +131,11 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		multicastEvent(event, resolveDefaultEventType(event));
 	}
 
+	/**
+	 * 事件多播，获取所有的监听器，根据Executor判断同步还是异步调用监听器
+	 * @param event the event to multicast
+	 * @param eventType the type of event (can be {@code null})
+	 */
 	@Override
 	public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
 		ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
