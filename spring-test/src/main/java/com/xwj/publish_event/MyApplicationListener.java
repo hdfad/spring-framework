@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
  * Email buming@uoko.com
  * @Date: 2022/02/15 10:24
  */
+@Deprecated
 @Component
 public class MyApplicationListener implements ApplicationListener<MyApplicationEvent> {
 

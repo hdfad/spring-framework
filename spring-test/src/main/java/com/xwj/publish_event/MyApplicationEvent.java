@@ -10,6 +10,7 @@ import java.time.Clock;
  * Email buming@uoko.com
  * @Date: 2022/02/15 10:24
  */
+@Deprecated
 public class MyApplicationEvent extends ApplicationEvent{
 
 	private static final long serialVersionUID =1;

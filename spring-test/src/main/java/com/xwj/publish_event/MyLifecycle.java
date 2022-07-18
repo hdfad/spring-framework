@@ -2,7 +2,7 @@ package com.xwj.publish_event;
 
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
-
+@Deprecated
 public class MyLifecycle implements LifecycleProcessor {
 
 	@Override

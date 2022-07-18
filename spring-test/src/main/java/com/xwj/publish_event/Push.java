@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
  * @Date: 2022/02/15 10:46
  */
 //@Component
+@Deprecated
 public class Push implements ApplicationContextAware {
     ApplicationContext applicationContext;
     @Override
