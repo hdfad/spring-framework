@@ -50,6 +50,9 @@ import org.springframework.util.ErrorHandler;
  */
 public class SimpleApplicationEventMulticaster extends AbstractApplicationEventMulticaster {
 
+	/**
+	 * 线程执行器，提供了对事件的同步或异步处理的功能
+	 */
 	@Nullable
 	private Executor taskExecutor;
 

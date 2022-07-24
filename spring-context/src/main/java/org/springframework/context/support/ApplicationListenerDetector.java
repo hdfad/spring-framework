@@ -44,7 +44,10 @@ import org.springframework.util.ObjectUtils;
  * @since 4.3.4
  *
  * <p>
- *     监听器支持
+ *     监听器支持，
+ *     为啥在后置处理器中会调用这个处理器，因为在refresh阶段prepareBeanFactory注册后置处理器时注册了了ApplicationListenerDetector
+ *
+ * @see AbstractApplicationContext#prepareBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
  * </p>
  */
 class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor {
@@ -73,6 +76,12 @@ class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, 
 		return bean;
 	}
 
+	/**
+	 * init-method 后调用后处理器 将单例的bean添加监听器到Retriever中
+	 * @param bean the new bean instance
+	 * @param beanName the name of the bean
+	 * @return
+	 */
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) {
 		if (bean instanceof ApplicationListener) {

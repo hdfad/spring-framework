@@ -674,13 +674,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				onRefresh();
 
 				// Check for listener beans and register them.
-				//注册所有监听器 监听器需要实现 ApplicationListener 接口。
+				/**
+				 * 获取所有的监听类beanName添加到事件多播器ApplicationEventMulticaster中
+				 */
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
-				//加载非懒加载的bean,ioc
-				//通过obtainFreshBeanFactory创建beanFactory，finishBeanFactoryInitialization通过beanFactory加载非懒加载的bean对象
-				//循环依赖，aop，ioc，事件回调、注解驱动等都通过此处产生并解决
+				/**
+				 * 加载非懒加载的bean，完成对bean的初始化、属性填充、实例化，过程中包含对bean增强的后置处理器、aop代理、循环依赖、注解驱动等
+				 */
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
@@ -1051,12 +1053,18 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Add beans that implement ApplicationListener as listeners.
 	 * Doesn't affect other listeners, which can be added without being beans.
 	 *
-	 * 注册监听器接口，从applicationListeners容器中获取，addApplicationListener添加到容器中
+	 * 往多播器中添加监听的ApplicationListener-BeanName
+	 * 添加所有ApplicationListener的beanName到ApplicationEventMulticaster中
+	 * 注意：此处只是简单将ApplicationListener的子类名称添加到了applicationEventMulticaster中，
+	 * 		初始化监听器的操作在prepareBeanFactory方法下面的ApplicationListenerDetector中
 	 */
 	protected void registerListeners() {
 		// Register statically specified listeners first.
 		//先添加静态监听器
 		//根据getApplicationListeners()获取静态监听器集合，遍历添加到ApplicationEventMulticaster中
+		/**
+		 * 获取系统中的监听器，添加到事件多播器中
+		 */
 		for (ApplicationListener<?> listener : getApplicationListeners()) {
 			getApplicationEventMulticaster().addApplicationListener(listener);
 		}
@@ -1064,7 +1072,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let post-processors apply to them!
 		/**
-		 * 获取ApplicationListener的子类
+		 * 根据类型获取ApplicationListener的子类beanName
 		 * 并通过addApplicationListenerBean将子类监听器添加/注册到事件多播器中
 		 */
 		String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);

@@ -99,16 +99,22 @@ public abstract class AbstractApplicationEventMulticaster
 		return this.beanFactory;
 	}
 
-
+	/**
+	 * 添加监听器，
+	 * 如果监听器被代理且添加到了applicationListeners容器中则删除代理的监听器，避免重复调用同一侦听器
+	 * @param listener the listener to add
+	 */
 	@Override
 	public void addApplicationListener(ApplicationListener<?> listener) {
 		synchronized (this.defaultRetriever) {
 			// Explicitly remove target for a proxy, if registered already,
 			// in order to avoid double invocations of the same listener.
+			//如果容器中已经添加listener的代理目标则删除代理的目标，以避免重复调用同一侦听器。
 			Object singletonTarget = AopProxyUtils.getSingletonTarget(listener);
 			if (singletonTarget instanceof ApplicationListener) {
 				this.defaultRetriever.applicationListeners.remove(singletonTarget);
 			}
+			//添加监听器到Retriever中
 			this.defaultRetriever.applicationListeners.add(listener);
 			this.retrieverCache.clear();
 		}
@@ -482,11 +488,18 @@ public abstract class AbstractApplicationEventMulticaster
 
 	/**
 	 * Helper class that encapsulates a general set of target listeners.
+	 * 默认监听器检索器，用于存储监听器和监听器的beanName
 	 */
 	private class DefaultListenerRetriever {
 
+		/**
+		 * 监听器
+		 */
 		public final Set<ApplicationListener<?>> applicationListeners = new LinkedHashSet<>();
 
+		/**
+		 * 监听器的beanName
+		 */
 		public final Set<String> applicationListenerBeans = new LinkedHashSet<>();
 
 		public Collection<ApplicationListener<?>> getApplicationListeners() {
@@ -513,5 +526,4 @@ public abstract class AbstractApplicationEventMulticaster
 			return allListeners;
 		}
 	}
-
 }
