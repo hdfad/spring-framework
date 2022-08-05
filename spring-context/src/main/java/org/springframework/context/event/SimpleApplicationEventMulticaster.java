@@ -142,6 +142,9 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	@Override
 	public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
 		ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
+		/**
+		 * 获取Executor,如果存在Executor则通过多线程异步处理,如果不存在Executor则同步进行
+		 */
 		Executor executor = getTaskExecutor();
 		for (ApplicationListener<?> listener : getApplicationListeners(event, type)) {
 			if (executor != null) {
@@ -158,6 +161,7 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	}
 
 	/**
+	 * 监听器调用,通过doInvokeListener
 	 * Invoke the given listener with the given event.
 	 * @param listener the ApplicationListener to invoke
 	 * @param event the current event to propagate
@@ -178,12 +182,18 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		}
 	}
 
+	/**
+	 * 事件广播,通过onApplicationEvent
+	 * @param listener
+	 * @param event
+	 */
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private void doInvokeListener(ApplicationListener listener, ApplicationEvent event) {
 		try {
 			listener.onApplicationEvent(event);
 		}
 		catch (ClassCastException ex) {
+			//如果出现异常,异常内容为null 或者 是指定类型的异常 或者
 			String msg = ex.getMessage();
 			if (msg == null || matchesClassCastMessage(msg, event.getClass()) ||
 					(event instanceof PayloadApplicationEvent &&
@@ -205,6 +215,18 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		}
 	}
 
+	/**
+	 * 类异常信息判断,根据不同的jdk判断,
+	 * 在jdk8中,如果是以"java.lang.String cannot be cast..."开头
+	 * 或者
+	 * 在jdk9中,以"java.base/java.lang.String cannot be cast..."开头
+	 * 或者
+	 * 在jdk11中,以"class ..."开头
+	 * 都会返回true
+	 * @param classCastMessage
+	 * @param eventClass
+	 * @return
+	 */
 	private boolean matchesClassCastMessage(String classCastMessage, Class<?> eventClass) {
 		// On Java 8, the message starts with the class name: "java.lang.String cannot be cast..."
 		if (classCastMessage.startsWith(eventClass.getName())) {

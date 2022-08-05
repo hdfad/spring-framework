@@ -242,7 +242,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Nullable
 	private MessageSource messageSource;
 
-	/** Helper class used in event publishing. */
+	/**
+	 * Helper class used in event publishing.
+	 * 事件多播器
+	 *  */
 	@Nullable
 	private ApplicationEventMulticaster applicationEventMulticaster;
 
@@ -256,7 +259,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Nullable
 	private Set<ApplicationListener<?>> earlyApplicationListeners;
 
-	/** ApplicationEvents published before the multicaster setup. */
+	/**
+	 *  ApplicationEvents published before the multicaster setup.
+	 *  已发布的事件监听器,在refresh时第一步prepareRefresh就会初始化一个earlyApplicationEvents,
+	 *  但是在注册监听器时,会将earlyApplicationEvents中存在的事件进行广播后设置成null
+	 * */
 	@Nullable
 	private Set<ApplicationEvent> earlyApplicationEvents;
 
@@ -421,6 +428,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
+	 * 
+	 * 发布事件给监听器
 	 * Publish the given event to all listeners.
 	 * @param event the event to publish (may be an {@link ApplicationEvent}
 	 * or a payload object to be turned into a {@link PayloadApplicationEvent})
@@ -438,15 +447,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		else {
 			applicationEvent = new PayloadApplicationEvent<>(this, event);
 			if (eventType == null) {
+				//泛型解析
 				eventType = ((PayloadApplicationEvent<?>) applicationEvent).getResolvableType();
 			}
 		}
 
 		// Multicast right now if possible - or lazily once the multicaster is initialized
+		/**
+		 * 开始多播
+		 */
 		if (this.earlyApplicationEvents != null) {
 			this.earlyApplicationEvents.add(applicationEvent);
 		}
 		else {
+			//多播给监听器
 			getApplicationEventMulticaster().multicastEvent(applicationEvent, eventType);
 		}
 
@@ -1081,7 +1095,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Publish early application events now that we finally have a multicaster...
-		//添加已经暴露到earlyApplicationEvents的监听器
+		//添加已经暴露到earlyApplicationEvents的监听器,同时会将earlyApplicationEvents设置为null
 		Set<ApplicationEvent> earlyEventsToProcess = this.earlyApplicationEvents;
 		this.earlyApplicationEvents = null;
 		if (!CollectionUtils.isEmpty(earlyEventsToProcess)) {
