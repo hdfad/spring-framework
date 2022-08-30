@@ -22,6 +22,10 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.lang.Nullable;
 
 /**
+ *
+ * 用于加载beanDefinition信息，加载资源方法或者和字符串参数
+ * 加载过程中可以为beanDefinition添加注册方法或定义信息
+ *
  * Simple interface for bean definition readers.
  * Specifies load methods with Resource and String location parameters.
  *
