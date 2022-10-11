@@ -683,7 +683,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						"' to allow for resolving potential circular references");
 			}
 			//
-			// :获取提前被引用的对象
+			// 获取提前被引用的对象，添加到三级缓存中
 			//addSingletonFactory:将当前beanName对应的bean添加到bean工厂中，提前暴露，通过synchronized保证只添加一次
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
@@ -1700,7 +1700,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				//Spring的@Autowire注入,JSR330的@Inject以及JSR250的@Resource等注入操作都是通过这个方法完成 ，使用反射将注入的bean实例赋值给属性。
 				//对于自动注入的对象，spring调用InjectedElement.inject对对象进行注入
 				/**
-				 * 对象属性注入，循环依赖解决入口？
+				 * 对象属性注入，循环依赖解决入口
 				 * 传入了一个BeanWrapper对象,底层会根据注入的属性调用createBean方法，传入对应的属性
 				 * 如果是Resource，则调用CommonAnnotationBeanPostProcessor#postProcessProperties
 				 * 如果是Autowired，则调用AutowiredAnnotationBeanPostProcessor#postProcessProperties

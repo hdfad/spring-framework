@@ -258,10 +258,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		// Eagerly check singleton cache for manually registered singletons.
 		/**
-		 * 传入beanName从一级级缓存中获取bean对象，没有时会判断bean是否在创建中，
-		 * 创建中的bean才会从二级、一级缓存中获取bean对象，
-		 * 此处只传入了beanname且bean还未开始创建
-		 * 创建中的bean会被装入一个set容器中(singletonsCurrentlyInCreation)
+		 * 从一级二级三级缓存中根据beanName获取bean对象，当对象存在三级缓存中时，从三级缓存中取出放到二级缓存
+		 * 当sharedInstance不为null时直接返回
 		 */
 		Object sharedInstance = getSingleton(beanName);
 		/*一二三级缓存中存在beanInstance*/

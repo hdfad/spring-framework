@@ -133,7 +133,7 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	 *  	 	  |____AbstractAutowireCapableBeanFactory # doCreateBean
 	 *  	 	  	   |____AbstractAutowireCapableBeanFactory # getEarlyBeanReference
 	 *
-	 * 默认返回传入的bean
+	 * 获取bean引用 默认返回传入的bean
 	 */
 	default Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
 		return bean;
