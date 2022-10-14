@@ -682,9 +682,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
-			//
-			// 获取提前被引用的对象，添加到三级缓存中
-			//addSingletonFactory:将当前beanName对应的bean添加到bean工厂中，提前暴露，通过synchronized保证只添加一次
+			/**
+			 * 添加到三级缓存中，
+			 * 如果bean是需要被代理对象，在getEarlyBeanReference时会创建代理对象后再addSingletonFactory到singletonFactories中
+			 * 非代理对象则直接将bean  addSingletonFactory到三级缓存中
+			 */
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -1073,8 +1075,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		System.out.println(beanName+": 通过SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference处理");
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+			/**
+			 * 有代理对象的情况下，有两个个InstantiationAwareBeanPostProcessor，
+			 * 一个是AutowiredAnnotationBeanPostProcessor,另一个是代理AbstractAutoProxyCreator
+			 */
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
-				//第四个后置处理器
+				/**
+				 * SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference
+				 * 通过后置处理器，判断对象是否需要进行代理对象创建
+				 */
 				exposedObject = bp.getEarlyBeanReference(exposedObject, beanName);
 				System.out.println(beanName+": 通过SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference处理");
 			}
@@ -2158,6 +2167,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			/**
 			 * init-method执行之后，对bean进行扩展，如果需要代理对象，那么则在此流程生成代理
 			 * 到这步的bean是初始化完成后对bean进行扩展
+			 * 如果bean是代理对象，则创建代理对象
 			 */
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}

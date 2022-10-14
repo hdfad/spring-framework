@@ -308,9 +308,6 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			 * 根据名称获取缓存的key，区别普通bean和FactoryBean
 			 */
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
-			/**
-			 * 此处为啥
-			 */
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}

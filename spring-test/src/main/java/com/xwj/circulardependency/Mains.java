@@ -2,6 +2,7 @@ package com.xwj.circulardependency;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * @author buming
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
  * @Date: 2022/04/29 16:21
  */
 @ComponentScan("com.xwj.circulardependency")
+@EnableTransactionManagement
 public class Mains {
 
 	public static void main(String[] args) {
