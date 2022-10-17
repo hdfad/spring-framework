@@ -268,7 +268,7 @@ class ConfigurationClassParser {
 	 * @return the superclass, or {@code null} if none found or previously processed
 	 *
 	 * 读取注解配置：
-	 * 		装载含有@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean的方法
+	 * 		装载含有@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean、 @Import的方法
 	 */
 	@Nullable
 	protected final SourceClass doProcessConfigurationClass(
@@ -586,6 +586,9 @@ class ConfigurationClassParser {
 							this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
 						}
 						else {
+							/**
+							 * 递归处理@Import中的导入的类对象，调用selectImports
+							 */
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames, exclusionFilter);
 							processImports(configClass, currentSourceClass, importSourceClasses, exclusionFilter, false);

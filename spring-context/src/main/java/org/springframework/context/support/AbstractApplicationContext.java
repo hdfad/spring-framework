@@ -649,15 +649,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
 				// Invoke factory processors registered as beans in the context.
 
-				/*
-				 * 是Spring在初始化前一个扩展点，通过BeanFactoryPostProcessors对BeanDefinition进行扩展
-				 * 作用在BeanDefinition 加载完成之后，Bean实例化之前利用BeanDefinition填充BeanFactory，常见的配置类信息加载就是通过ConfigurationClassPostProcessor来完成
-				 * 对实现BeanDefinitionRegistry、BeanFactoryPostProcessor的类进行处理
-				 * 除此之外部分注解入口也作用于此，@Import
-				 * */
 				/**
+				 * 初始化前一个扩展点，通过BeanFactoryPostProcessors对BeanDefinition进行扩展，填充BeanFactory
 				 * 调用bean工厂后置处理器,加载并注册BeanDefinition信息
-				 * 作为spring bean在初始化前的一个扩展点
+				 * 1:加载注解类
+				 * @see org.springframework.context.annotation.ConfigurationClassParser#doProcessConfigurationClass(org.springframework.context.annotation.ConfigurationClass, org.springframework.context.annotation.ConfigurationClassParser.SourceClass, java.util.function.Predicate)
+				 * 	1.1:@PropertySource,加载*.properties文件
+				 * 		@see org.springframework.context.annotation.ConfigurationClassParser#processPropertySource(org.springframework.core.annotation.AnnotationAttributes)
+				 * 	1.2:@ComponentScan,加载配置扫描路劲
+				 * 		@see org.springframework.context.annotation.ComponentScanAnnotationParser#parse(org.springframework.core.annotation.AnnotationAttributes, java.lang.String)
+				 * 	1.3:@Import,注解类解析到容器中
+				 * 		@see org.springframework.context.annotation.ConfigurationClassParser.ImportStack#registerImport(org.springframework.core.type.AnnotationMetadata, java.lang.String)
+				 * 	1.4:@ImportResource,引入spring-xml配置到容器中
+				 *
+				 * 	1.5:@Bean对象注入
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
@@ -931,7 +936,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// 对bean工厂后置处理器扩展点调用
 		//getBeanFactoryPostProcessors():获取spring 容器中的Bean工厂后置处理器
 		/**
-		 * 调用 Bean Factory 后处理器，加载并注册BeanDefinition
+		 * 调用 Bean Factory 后处理器，加载并注册BeanDefinition，解析配置
 		 */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
