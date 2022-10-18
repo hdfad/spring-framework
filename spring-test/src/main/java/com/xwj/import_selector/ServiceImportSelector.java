@@ -14,11 +14,11 @@ public class ServiceImportSelector implements ImportSelector {
 	@Override
 	public String[] selectImports(AnnotationMetadata importingClassMetadata) {
 		Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes(SelectData.class.getName());
-		if("A".equals(String.valueOf(annotationAttributes.get("dataSources")))){
+		if("a".equals(String.valueOf(annotationAttributes.get("dataSources")))){
 			return new String[]{
 					AService.class.getName()
 			};
-		}else if ("B".equals(String.valueOf(annotationAttributes.get("dataSources")))){
+		}else if ("b".equals(String.valueOf(annotationAttributes.get("dataSources")))){
 			return new String[]{
 					BService.class.getName()
 			};
