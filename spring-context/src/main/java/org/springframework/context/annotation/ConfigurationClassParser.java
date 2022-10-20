@@ -165,6 +165,9 @@ class ConfigurationClassParser {
 				 * 根据类型解析BeanDefinition
 				 */
 				if (bd instanceof AnnotatedBeanDefinition) {
+					/**
+					 * 注解配置类信息
+					 */
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
 				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
@@ -230,6 +233,9 @@ class ConfigurationClassParser {
 			return;
 		}
 
+		/**
+		 * 合并importedBy中的对象
+		 */
 		ConfigurationClass existingClass = this.configurationClasses.get(configClass);
 		if (existingClass != null) {
 			if (configClass.isImported()) {
@@ -256,7 +262,7 @@ class ConfigurationClassParser {
 		while (sourceClass != null);
 
 		this.configurationClasses.put(configClass, configClass);
-		System.out.println("解析的配置文件有======================>："+configurationClasses.get(configClass));
+		System.out.println("processConfigurationClass:======================>"+configurationClasses.get(configClass));
 	}
 
 	/**
@@ -267,7 +273,7 @@ class ConfigurationClassParser {
 	 * @param sourceClass a source class
 	 * @return the superclass, or {@code null} if none found or previously processed
 	 *
-	 * 读取注解配置：
+	 * 执行bean的配置过程，读取注解配置：
 	 * 		装载含有@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean、 @Import的方法
 	 */
 	@Nullable
@@ -522,6 +528,7 @@ class ConfigurationClassParser {
 
 
 	/**
+	 * 查询所有的@Import类
 	 * Returns {@code @Import} class, considering all meta-annotations.
 	 */
 	private Set<SourceClass> getImports(SourceClass sourceClass) throws IOException {
@@ -560,6 +567,19 @@ class ConfigurationClassParser {
 		}
 	}
 
+	/**
+	 * 处理import数据，
+	 * 从4个方面进行判断
+	 * 	如果实现了ImportSelector
+	 * 	如果实现了ImportBeanDefinitionRegistrar
+	 * 	都没实现的普通类导入
+	 * 		普通class当作@Configuration类处理
+	 * @param configClass
+	 * @param currentSourceClass
+	 * @param importCandidates
+	 * @param exclusionFilter
+	 * @param checkForCircularImports
+	 */
 	private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass,
 			Collection<SourceClass> importCandidates, Predicate<String> exclusionFilter,
 			boolean checkForCircularImports) {
@@ -616,6 +636,10 @@ class ConfigurationClassParser {
 						// process it as an @Configuration class
 						this.importStack.registerImport(
 								currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
+						/**
+						 * 如上述注释，类不是ImportSelector或者ImportBeanDefinitionRegistrar实现类，就把当前类当作@Configuration类处理
+						 * @see SourceClass#asConfigClass(org.springframework.context.annotation.ConfigurationClass)
+						 */
 						processConfigurationClass(candidate.asConfigClass(configClass), exclusionFilter);
 					}
 				}
@@ -977,6 +1001,12 @@ class ConfigurationClassParser {
 			return new AssignableTypeFilter(clazz).match((MetadataReader) this.source, metadataReaderFactory);
 		}
 
+		/**
+		 * 将@import的类作为配置类处理，
+		 * 通过ConfigurationClass构造方法添加到importedBy容器中
+		 * @param importedBy
+		 * @return
+		 */
 		public ConfigurationClass asConfigClass(ConfigurationClass importedBy) {
 			if (this.source instanceof Class) {
 				return new ConfigurationClass((Class<?>) this.source, importedBy);

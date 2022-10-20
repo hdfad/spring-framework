@@ -148,6 +148,10 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		/**
+		 * 判断是否包含@Import导入的普通类，
+		 * 将包含的类注册到BeanDefinition中
+		 */
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}

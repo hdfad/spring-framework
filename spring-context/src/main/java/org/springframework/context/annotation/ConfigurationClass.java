@@ -158,6 +158,9 @@ final class ConfigurationClass {
 	}
 
 	/**
+	 * importedBy中包含@Import注入的非ImportSelector实现类、ImportBeanDefinitionRegistrar实现类的类，
+	 * 将其作为@Configuration类处理，添加到importedBy中
+	 *
 	 * Return whether this configuration class was registered via @{@link Import} or
 	 * automatically registered due to being nested within another configuration class.
 	 * @since 3.1.1

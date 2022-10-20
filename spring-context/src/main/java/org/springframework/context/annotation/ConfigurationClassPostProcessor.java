@@ -386,7 +386,12 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
 			StartupStep processConfig = this.applicationStartup.start("spring.context.config-classes.parse");
-			//解析所有的配置类包括@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean的方法，并添加到配置类容器Map中
+			/**
+			 * 解析注解配置，包含@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean、 @Import类
+			 *
+			 * 真正执行逻辑：
+			 * @see org.springframework.context.annotation.ConfigurationClassParser#doProcessConfigurationClass(org.springframework.context.annotation.ConfigurationClass, org.springframework.context.annotation.ConfigurationClassParser.SourceClass, java.util.function.Predicate)
+			 */
 			parser.parse(candidates);
 			//验证
 			parser.validate();

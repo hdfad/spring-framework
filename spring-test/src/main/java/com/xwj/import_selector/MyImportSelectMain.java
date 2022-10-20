@@ -14,7 +14,10 @@ import org.springframework.context.annotation.Import;
 public class MyImportSelectMain {
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext annotationConfigApplicationContext=new AnnotationConfigApplicationContext(MyImportSelectMain.class);
-		Services bean = annotationConfigApplicationContext.getBean(Services.class);
-		bean.setData("---------------");
+	/*	Services bean = annotationConfigApplicationContext.getBean(Services.class);
+		bean.setData("---------------");*/
+
+		/*ImportOrdinaryClass bean1 = annotationConfigApplicationContext.getBean(ImportOrdinaryClass.class);
+		bean1.print();*/
 	}
 }
