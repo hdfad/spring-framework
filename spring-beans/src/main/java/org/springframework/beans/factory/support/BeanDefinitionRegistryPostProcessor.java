@@ -46,8 +46,8 @@ public interface BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProc
 	 *                 默认的beanFactory是BeanDefinitionRegistry的实现类，registry就是beanFactory
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 *
-	 * 解析@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean
-	 * 注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
+	 * 解析@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean、@Order
+	 * 对于存在实现类回调的class，回调对应方法，将完成后的属性添加到BeanDefinition中
 	 */
 	void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException;
 

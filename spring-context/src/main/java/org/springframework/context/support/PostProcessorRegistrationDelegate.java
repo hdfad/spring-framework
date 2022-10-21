@@ -122,10 +122,6 @@ final class PostProcessorRegistrationDelegate {
 				}
 			}
 
-			//=====================================================
-			//上面执行的是 BeanDefinitionRegistryPostProcessor
-			//下面开始执行 BeanFactoryPostProcessor
-			//=====================================================
 			System.out.println("============================================================");
 			System.out.println("=====    执行结束BeanDefinitionRegistryPostProcessor     =====");
 			System.out.println("-------------------------------------------------------------");
@@ -432,7 +428,9 @@ final class PostProcessorRegistrationDelegate {
 		for (BeanDefinitionRegistryPostProcessor postProcessor : postProcessors) {
 			StartupStep postProcessBeanDefRegistry = applicationStartup.start("spring.context.beandef-registry.post-process")
 					.tag("postProcessor", postProcessor::toString);
-			//注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
+			/**
+			 * 处理注解导入对象包含@Component、@ComponentScan、@Import、@ImportResource、@Configuration或者@Bean
+			 */
 			postProcessor.postProcessBeanDefinitionRegistry(registry);
 			postProcessBeanDefRegistry.end();
 		}

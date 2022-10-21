@@ -262,11 +262,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		 */
 		this.registriesPostProcessed.add(registryId);
 
-		/*
-		* 注册配置类，对配置类中的注解进行装载，处理@Bean别名信息
-		* */
 		/**
-		 * 从bean定义注册信息中获取到bean相关信息
+		 * 从bean定义注册信息中获取bean注解配置，添加到容器中
 		 */
 		processConfigBeanDefinitions(registry);
 	}
@@ -296,10 +293,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	/**
 	 * Build and validate a configuration model based on the registry of
 	 * {@link Configuration} classes.
-	 *
-	 * <p>
-	 *     检查BeanDefinitionRegistry中是否存在配置类
-	 * </p>
+	 * // TODO: 2022/10/21
+	 * 解析registry获取BeanDefinition信息,将bean中注入的注解对象添加到BeanDefinition中,然后将BeanDefinition封成BeanDefinitionHolder
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
 
@@ -309,17 +304,19 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 
 		/**
-		 * 从bean容器中获取已注册的bean名称，
+		 * 从BeanDefinitionRegistry中获取所有的BeanDefinitionNames
 		 */
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
 		for (String beanName : candidateNames) {
+			System.out.println("===========processConfigBeanDefinitions处理bean注解===========>"+beanName);
 			/**
 			 * 根据candidateNames从beanDefinitionMap中获取对应的bd对象
 			 */
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
 			/**
 			 * 获取属性值
+			 * org.springframework.context.annotation.ConfigurationClassPostProcessor.configurationClass
 			 */
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
 				if (logger.isDebugEnabled()) {
@@ -327,8 +324,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				}
 			}
 			/**
-			 * todo
-			 * 检查是否存在配置类注解 @Component、@ComponentScan、@Import、@ImportResource、@Configuration或者@Bean注解，存在则添加到configCandidates
+			 * 检查是否存在配置类注解 @Component、@ComponentScan、@Import、@ImportResource、@Configuration或者@Order、@Bean注解，
+			 * 存在则将BeanDefinition的org.springframework.context.annotation.ConfigurationClassPostProcessor.configurationClass设置成lite
+			 * 存在@Order则将BeanDefinition 的 order 设置成 设置的order值
+			 * 完成后添加到BeanDefinitionHolder容器中
 			 */
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
@@ -337,17 +336,15 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		// Return immediately if no @Configuration classes were found
 		/**
-		 * 如果不存在配置的类注解则不再进行下一步
+		 * 如果不存在BeanDefinitionHolder配置的类注解则不再进行下一步
 		 */
 		if (configCandidates.isEmpty()) {
 			return;
 		}
 
-		//======在经历到此步时，所有的类都是被包含@Component、@ComponentScan、@Import、@ImportResource、@Configuration或者@Bean注解标识的类=========
-
 		// Sort by previously determined @Order value, if applicable
 		/**
-		 * configCandidates排序order
+		 * BeanDefinition排序
 		 */
 		configCandidates.sort((bd1, bd2) -> {
 			int i1 = ConfigurationClassUtils.getOrder(bd1.getBeanDefinition());
@@ -375,7 +372,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		// Parse each @Configuration class
 		/**
-		 * 解析每个配置类
+		 * 解析每个 @Configuration类
 		 */
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,

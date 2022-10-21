@@ -933,6 +933,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * </p>
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+		System.out.println("============调用bean工厂后置处理器============");
 		// 对bean工厂后置处理器扩展点调用
 		//getBeanFactoryPostProcessors():获取spring 容器中的Bean工厂后置处理器
 		/**

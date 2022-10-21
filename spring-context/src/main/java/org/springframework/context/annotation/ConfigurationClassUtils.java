@@ -69,7 +69,8 @@ abstract class ConfigurationClassUtils {
 	private static final Log logger = LogFactory.getLog(ConfigurationClassUtils.class);
 
 	/**
-	 * 通过下面static静态代码块存储Component、ComponentScan、Import、ImportResource
+	 * 扫描配置类，包含的需要被注入的注解元素合集
+	 * Component、ComponentScan、Import、ImportResource
 	 */
 	private static final Set<String> candidateIndicators = new HashSet<>(8);
 
@@ -89,9 +90,9 @@ abstract class ConfigurationClassUtils {
 	 * @param metadataReaderFactory the current factory in use by the caller
 	 * @return whether the candidate qualifies as (any kind of) configuration class
 	 *
-	 * todo
-	 * 检查对象是否是配置类，并填充bd信息
-	 * 针对于@Component、@ComponentScan、@Import、@ImportResource、@Configuration或者@Bean注解
+	 * 检查对象是否是包含配置注解，
+	 * 填充bd Attribute信息
+	 * 注解包含 @Configuration、@Component、@ComponentScan、@Import、@ImportResource、@Order、@Bean
 	 */
 	public static boolean checkConfigurationClassCandidate(
 			BeanDefinition beanDef, MetadataReaderFactory metadataReaderFactory) {
@@ -138,13 +139,20 @@ abstract class ConfigurationClassUtils {
 		}
 
 		/**
-		 * 判断元数据是否为@Configuration配置类，且是否是被代理方法，是就设置bd  CONFIGURATION_CLASS_ATTRIBUTE属性值为full
-		 * 检查类元注解信息是否为配置类，如包含@Component、@ComponentScan、@Import、@ImportResource或者@Bean
+		 * 获取@Configuration类
 		 */
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
+
+		/**
+		 * 是@Configuration类,类方法非代理方法
+		 */
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
+		/**
+		 * @Configuration类 或者 注解扫描注入容器
+		 * 包含被@Component、@ComponentScan、@Import、@ImportResource、@Bean标识的注解
+		 */
 		else if (config != null || isConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
