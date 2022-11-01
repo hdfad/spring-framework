@@ -631,6 +631,9 @@ class ConfigurationClassParser {
 						ImportBeanDefinitionRegistrar registrar =
 								ParserStrategyUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class,
 										this.environment, this.resourceLoader, this.registry);
+						/**
+						 * 添加到importBeanDefinitionRegistrars，在后续loadBeanDefinitionsFromRegistrars时会回调registerBeanDefinitions方法
+						 */
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
 					else {
