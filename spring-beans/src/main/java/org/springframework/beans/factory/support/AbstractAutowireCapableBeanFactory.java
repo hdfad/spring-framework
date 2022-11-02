@@ -48,18 +48,7 @@ import org.springframework.beans.PropertyAccessorUtils;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.TypeConverter;
-import org.springframework.beans.factory.Aware;
-import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.BeanCurrentlyInCreationException;
-import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.InjectionPoint;
-import org.springframework.beans.factory.UnsatisfiedDependencyException;
+import org.springframework.beans.factory.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.AutowiredPropertyMarker;
@@ -131,7 +120,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	@Nullable
 	private ParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
 
-	/** Whether to automatically try to resolve circular references between beans. */
+	/**
+	 * Whether to automatically try to resolve circular references between beans.
+	 * 允许循环依赖
+	 *  */
 	private boolean allowCircularReferences = true;
 
 	/**
@@ -611,6 +603,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * 执行流程上：
 	 * 		创建bean实例=>createBeanInstance
 	 * 		合并BeanDefinition=>applyMergedBeanDefinitionPostProcessors
+	 * 		是否允许循环依赖判断	=> 单例 & allowCircularReferences（解析bean的循环依赖标识true） & beanName在正在创建中的容器中（bean在被创建中）
+	 * 		添加到三级缓存中 ，对象是一个ObjectFactory => addSingletonFactory
 	 * 		填充bean属性=>populateBean
 	 * 		初始化bean=>initializeBean
 	 * 		返回bean对象
@@ -625,22 +619,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
-			//第三次后置处理器调用入口，获取bean包装器BeanWrapper，首先会获取所有被@Autowired标记的构造器，然后根据合适的构造器进行对象的创建，并返回对象包装器BeanWrapper
-			//此时已经实例化出对象了
-			/*
-			使用createBeanInstance创建对象时当bean存在自动注入@Autowired标识的构造器
-			（是通过SmartInstantiationAwareBeanPostProcessor的determineCandidateConstructors方法来获取所有的注入构造器），
-			则使用@Autowired标识的构造器来进行bean的创建，如果不存在则使用getDeclaredConstructor()获取无参构造方法，
-			再以Constructor.newInstance反射生成对象包装成BeanWrapper，使用@Autowired时如果存在多个构造函数注入的情况，
-			spring会调用autowireConstructor方法选择权重低的构造函数，根据构造函数使用反射初始化对象，
-			但是如果只有一个构造函数注入，则直接使用当前构造函数经过BeanUtils.instantiateClass反射生成一个对象实例并封装成BeanWrapper，
-			如果存在多个构造函数注入的情况，首先使用AutowireUtils.sortConstructors对构造方法进行排序，
-			对public构造函数优先参数数量降序、非public构造函数参数数量降序，
-			然后根据AbstractBeanDefinition中的lenientConstructorResolution宽松构造函数解析标识进行判断，默认为true，
-			使用getTypeDifferenceWeight宽松模式计算权重，若为false则使用getAssignabilityWeight非宽松模式计算权重，
-			最终通过权重计算选择权重小的构造函数使用反射BeanUtils.instantiateClass生成一个实例对象封装成BeanWrapper。
-			如果权重相同且lenientConstructorResolution为非宽松的构造函数解析标识，则抛出异常
-			*/
 
 			/**
 			 * 创建bean实例对象,通过反射
@@ -683,11 +661,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						"' to allow for resolving potential circular references");
 			}
 			/**
-			 * 添加到三级缓存中，
+			 * 构造一个ObjectFactory添加到三级缓存中，key是beanName,value为ObjectFactory对象，此对象覆写了getObject方法 调用 getEarlyBeanReference
+			 * 注：对象不回调getObject不会触发代理对象判断
+			 * getEarlyBeanReference：
 			 * 如果bean是需要被代理对象，在getEarlyBeanReference时会创建代理对象后再addSingletonFactory到singletonFactories中
 			 * 非代理对象则直接将bean  addSingletonFactory到三级缓存中
 			 */
-			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+//			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+			addSingletonFactory(beanName, new ObjectFactory<Object>() {
+				@Override
+				public Object getObject() throws BeansException {
+					return  getEarlyBeanReference(beanName, mbd, bean);
+				}
+			});
 		}
 
 		// Initialize the bean instance.
@@ -699,14 +685,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			populateBean(beanName, mbd, instanceWrapper);
 			//第八，九次后置处理器入口，初始化bean
 			/**
-			 *
+			 * // TODO: 2022/11/2
 			 * 调用initializeBean时的bean已经完成实例化，属性填充的BeanWrapper了
 			 * 此步完成对Aware接口的扩展、BeanPostProcessor的扩展、InitializingBean的扩展,代理对象也是通过此步的applyBeanPostProcessorsAfterInitialization完成
 			 * 所以执行流程
 			 * 		Aware
-			 * 		BeanPostProcessor
-			 * 		InitializingBean
-			 * 		initMethod
+			 * 		BeanPostProcessor # before
+			 * 		InitializingBean # after/init-method
+			 * 		initMethod # after
+			 * 如果对象需要创建代理对象，那么此步会对代理对象进行创建返回
 			 * 代理对象在创建时，在getEarlyBeanReference将属性填充后的bean添加到earlyProxyReferences中，
 			 * 在创建代理时从earlyProxyReferences缓存的bean对象去创建代理对象
 			 * */
@@ -1072,6 +1059,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @return the object to expose as bean reference
 	 */
 	protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
+		int i = 1 / 0;
 		System.out.println(beanName+": 通过SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference处理");
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {

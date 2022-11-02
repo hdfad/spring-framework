@@ -259,12 +259,15 @@ class ConfigurationClassParser {
 			/**
 			 * 递归调用处理@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean、@Import的方法
 			 */
+			System.out.println("递归调用处理@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean、@Import的方法");
+			System.out.println("bean：===========>"+configClass.getBeanName());
+			System.out.println("注解：===========>"+sourceClass.getMetadata().getAnnotationTypes());
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass, filter);
 		}
 		while (sourceClass != null);
 
 		this.configurationClasses.put(configClass, configClass);
-		System.out.println("processConfigurationClass:======================>"+configurationClasses.get(configClass));
+		System.out.println("org.springframework.context.annotation.ConfigurationClassParser.processConfigurationClass:======================>"+configurationClasses.get(configClass));
 	}
 
 	/**

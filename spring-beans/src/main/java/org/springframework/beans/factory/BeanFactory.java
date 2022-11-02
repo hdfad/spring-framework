@@ -118,6 +118,7 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.beans.factory.support.RootBeanDefinition#getDestroyMethodName
  *
  * bean容器根接口，使用工厂模式，根据bean定义信息创建独立bean对象（原型或单例模式），DefaultListableBeanFactory贯穿的整个容器的基本工厂类，也是spring 默认创建的bean工厂
+ * Bean工厂实现应支持标准Bean生命周期接口
  * 完整的初始化方法集及其标准顺序：
  * 		后置处理器回调：
  * 		BeanNameAware的setBeanName
