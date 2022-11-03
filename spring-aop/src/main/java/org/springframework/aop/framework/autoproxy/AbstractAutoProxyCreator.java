@@ -243,6 +243,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	public Object getEarlyBeanReference(Object bean, String beanName) {
 		Object cacheKey = getCacheKey(bean.getClass(), beanName);
 		/**
+		 * todo 2022-11-03
 		 * 判断是否允许循环引用，如果允许，则在实例化完成后将提前暴露的bean缓存到earlyProxyReferences中
  		 */
 		this.earlyProxyReferences.put(cacheKey, bean);

@@ -662,8 +662,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 			/**
 			 * 构造一个ObjectFactory添加到三级缓存中，key是beanName,value为ObjectFactory对象，此对象覆写了getObject方法 调用 getEarlyBeanReference
-			 * 注：对象不回调getObject不会触发代理对象判断
-			 * getEarlyBeanReference：
+			 * 注：当存在循环依赖时，被依赖的对象才会调用getEarlyBeanReference去从三级缓存中获取bean对象，通过doGetBean#getSingleton获取并调用ObjectFactory#getObject到达此步
+			 * getEarlyBeanReference：会判断被获取的对象是否是代理对象
 			 * 如果bean是需要被代理对象，在getEarlyBeanReference时会创建代理对象后再addSingletonFactory到singletonFactories中
 			 * 非代理对象则直接将bean  addSingletonFactory到三级缓存中
 			 */
@@ -1059,7 +1059,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @return the object to expose as bean reference
 	 */
 	protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
-		int i = 1 / 0;
 		System.out.println(beanName+": 通过SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference处理");
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
