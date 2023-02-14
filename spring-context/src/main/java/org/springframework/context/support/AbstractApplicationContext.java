@@ -617,7 +617,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			// Tell the subclass to refresh the internal bean factory.
 			/**
-			 * 创建bean工厂
+			 * 创建bean工厂、设置循环依赖状态
 			 * 针对于不同的ApplicationContext调用不同的实现类
 			 * 注解上下文指会创建往bean工厂中设置一个id，
 			 * xml上下文除id外，还要处理对xml标签lookup-method、replaced-method bean的支持，需要计算xml文件数量

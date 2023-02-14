@@ -9,4 +9,6 @@
 
 	<bean class="com.xwj.ioc.DemoController" init-method="init" destroy-method="cleanUp"></bean>
 
+	<bean class="com.xwj.ioc.A" name="a"></bean>
+
 </beans>

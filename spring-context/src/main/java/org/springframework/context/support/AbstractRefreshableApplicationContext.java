@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
@@ -132,13 +133,19 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			closeBeanFactory();
 		}
 		try {
-			//创建bean工厂，通过new 的方式产生，根据ConfigurableApplicationContext获取
-			//DefaultListableBeanFactory implements ConfigurableListableBeanFactory
+			/**
+			 * 创建bean工厂，通过new 的方式产生，根据ConfigurableApplicationContext获取
+			 * 允许循环依赖的bean工厂
+			 * @see AbstractAutowireCapableBeanFactory#allowCircularReferences
+			 * DefaultListableBeanFactory implements ConfigurableListableBeanFactory
+			 */
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
+			//className@ObjectHashCodeToHex==Object.toString()
 			beanFactory.setSerializationId(getId());
 			//自定义bean工厂，设置allowBeanDefinitionOverriding、allowCircularReferences针对于lookup-method、replaced-method标签
 			/**
 			 * 指定对lookup-method、replaced-method标签标识bean的支持，
+			 * 循环引用支持
 			 */
 			customizeBeanFactory(beanFactory);
 			//通过BeanDefinitionReader读取配置信息（xml，注解等）
@@ -235,9 +242,11 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * </p>
 	 */
 	protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
+		//更改beandefinition命名覆盖,允许相同的beanName
 		if (this.allowBeanDefinitionOverriding != null) {
 			beanFactory.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
 		}
+		//更改循环依赖设置点之一
 		if (this.allowCircularReferences != null) {
 			beanFactory.setAllowCircularReferences(this.allowCircularReferences);
 		}
