@@ -119,6 +119,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * initializing a fresh bean factory for the next phase of the context's lifecycle.
 	 *
 	 * <p>
+	 * xml
 	 * 刷新bean工厂
 	 * 1：创建bean工厂 DefaultListableBeanFactory
 	 * 2：设置工厂id
@@ -148,7 +149,10 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			 * 循环引用支持
 			 */
 			customizeBeanFactory(beanFactory);
-			//通过BeanDefinitionReader读取配置信息（xml，注解等）
+			/**
+			 * 读取xml文件，解析bean信息存储到DefaultListableBeanFactory
+			 * 		xml文件path->InputSource->Document->doRegisterBeanDefinitions<存储到DefaultListableBeanFactory#beanDefinitionMap>
+			 */
 			loadBeanDefinitions(beanFactory);
 			this.beanFactory = beanFactory;
 		}
