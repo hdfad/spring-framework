@@ -769,8 +769,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		//构建Environment缓存并校验
 		getEnvironment().validateRequiredProperties();
 
-		//初始化earlyApplicationListeners监听器-LinkedHashSet结构
+
 		// Store pre-refresh ApplicationListeners...
+		/**
+		 * 同步earlyApplicationListeners和applicationListeners
+		 */
 		if (this.earlyApplicationListeners == null) {
 			this.earlyApplicationListeners = new LinkedHashSet<>(this.applicationListeners);
 		}
@@ -782,7 +785,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Allow for the collection of early ApplicationEvents,
 		// to be published once the multicaster is available...
-		// 创建事件容器earlyApplicationEvents Set 集合
+		/**
+		 * 初始化，早期监听器
+		 */
 		this.earlyApplicationEvents = new LinkedHashSet<>();
 	}
 
