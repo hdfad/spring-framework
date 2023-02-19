@@ -8,6 +8,8 @@ public class A {
 	@Autowired
 	private B b;
 
+	private C c;
+
 	@Autowired(required = false)
 	public A(B b) {
 		this.b = b;
@@ -15,5 +17,9 @@ public class A {
 
 	@Autowired(required = false)
 	public A() {
+	}
+
+	public void InstantiationC(){
+		c=new C();
 	}
 }

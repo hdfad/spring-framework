@@ -82,6 +82,9 @@ public interface ImportBeanDefinitionRegistrar {
 	 * @since 5.2
 	 * @see ConfigurationClassPostProcessor#IMPORT_BEAN_NAME_GENERATOR
 	 * @see ConfigurationClassPostProcessor#setBeanNameGenerator
+	 *
+	 * 注册bean定义信息
+	 *
 	 */
 	default void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry,
 			BeanNameGenerator importBeanNameGenerator) {

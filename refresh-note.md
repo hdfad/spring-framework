@@ -88,13 +88,21 @@ registerBeanPostProcessors(beanFactory);
 initApplicationEventMulticaster();
 ```
 
-- 注册监听器
+- 往多播器中注册监听器
 ```java
 /**
  * 1:启动容器时加载的监听器applicationListeners
  * 2:ApplicationListener实现类
  */
 registerListeners()
+```
+
+- refresh完成
+```java
+/**
+ * 事件发布
+ */
+finishRefresh()
 ```
 
 - bean工厂初始化完成操作 todo
