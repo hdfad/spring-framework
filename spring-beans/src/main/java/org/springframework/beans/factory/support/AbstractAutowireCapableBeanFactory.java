@@ -667,13 +667,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 如果bean是需要被代理对象，在getEarlyBeanReference时会创建代理对象后再addSingletonFactory到singletonFactories中
 			 * 非代理对象则直接将bean  addSingletonFactory到三级缓存中
 			 */
-//			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
-			addSingletonFactory(beanName, new ObjectFactory<Object>() {
+			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+			/*addSingletonFactory(beanName, new ObjectFactory<Object>() {
 				@Override
 				public Object getObject() throws BeansException {
 					return  getEarlyBeanReference(beanName, mbd, bean);
 				}
-			});
+			});*/
 		}
 
 		// Initialize the bean instance.
@@ -1250,7 +1250,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
-					//第一次调用后置处理器,此时的bean还未实例化
+					/**
+					 * 实例化之前调用bean后置处理器，
+					 * bean对象代理
+					 */
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {//如果返回的bean不为null, 还需要执行实例化之后的处理器, 来保证流程的完整性
 						//第二次调用后置处理器
@@ -1291,7 +1294,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		//AbstractAutoProxyCreator 继承 SmartInstantiationAwareBeanPostProcessor
 		//InstantiationAwareBeanPostProcessor是AbstractAutoProxyCreator的父接口所以此处能够调用AbstractAutoProxyCreator对目标对象创建代理
 		for (InstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().instantiationAware) {
-			//实例化之前调用后置处理器，根据目标对象生成代理对象，第一个后置处理器
+			/**
+			 * 实例化之前调用bean后置处理器，
+			 * bean对象代理
+			 */
 			Object result = bp.postProcessBeforeInstantiation(beanClass, beanName);
 			if (result != null) {
 				return result;

@@ -133,6 +133,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 注入类型
+	 */
 	private final Set<Class<? extends Annotation>> autowiredAnnotationTypes = new LinkedHashSet<>(4);
 
 	private String requiredParameterName = "required";
@@ -148,6 +151,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 	private final Map<Class<?>, Constructor<?>[]> candidateConstructorsCache = new ConcurrentHashMap<>(256);
 
+	/**
+	 * 缓存需要注入的对象
+	 */
 	private final Map<String, InjectionMetadata> injectionMetadataCache = new ConcurrentHashMap<>(256);
 
 
@@ -592,10 +598,13 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 		do {
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
-
+			/**
+			 * 检查本地字段是否是需要注入类型
+			 * ReflectionUtils.doWithLocalFields:获取类中所有字段，并回调FieldCallback
+			 */
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 				/**
-				 * 查找autowiredAnnotationTypes容器中的注入类型
+				 * 查找autowiredAnnotationTypes容器中的注入类型：@Autowired、@Inject、@Value
 				 */
 				MergedAnnotation<?> ann = findAutowiredAnnotation(field);
 				if (ann != null) {
@@ -613,6 +622,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 				}
 			});
 
+			/**
+			 * 检查注入方法，是否有@Autowired、@Inject、@Value注入
+			 */
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {

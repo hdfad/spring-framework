@@ -9,11 +9,6 @@ public class MyInstantiationAwareBeanPostProcessor implements InstantiationAware
 	@Override
 	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
 		System.out.println("MyInstantiationAwareBeanPostProcessor");
-		if(beanName.equals("c")){
-			C c=new C();
-			System.out.println("c:"+c);
-			return c;
-		}
-		return InstantiationAwareBeanPostProcessor.super.postProcessBeforeInstantiation(beanClass, beanName);
+		return null;
 	}
 }

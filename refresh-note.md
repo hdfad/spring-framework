@@ -26,17 +26,17 @@ prepareRefresh()
  * 读取解析文件(xml<dtd\xsd>，注解...)：BeanDefinitionReader
  */
 obtainFreshBeanFactory()
-        
-↓
-        
-/**
- * 解析xml
- * new XmlBeanDefinitionReader()
- * 配置dtd、xsd解析器
- * 加载解析配置xml
- *  xml文件path->InputSource(InputStream)->Document->doRegisterBeanDefinitions<存储到DefaultListableBeanFactory#beanDefinitionMap>
- */
-loadBeanDefinitions(beanDefinitionReader);
+
+        ↓
+
+        /**
+         * 解析xml
+         * new XmlBeanDefinitionReader()
+         * 配置dtd、xsd解析器
+         * 加载解析配置xml
+         *  xml文件path->InputSource(InputStream)->Document->doRegisterBeanDefinitions<存储到DefaultListableBeanFactory#beanDefinitionMap>
+         */
+        loadBeanDefinitions(beanDefinitionReader);
 
 ```
 
@@ -66,10 +66,10 @@ invokeBeanFactoryPostProcessors(beanFactory)
 ### ↑完成bean工厂从容器启动到bean工厂初始化
 
 
-- 初始化并添加bean后置处理器(BeanPostProcessor)
+- 初始化并添加bean后置处理器(BeanPostProcessor)  todo
 ```java
 /**
- * 获取BeanPostProcessor实现类beanName<beanDefinitionNames>并初始化
+ * getBeanNamesForType获取BeanPostProcessor实现类beanName<beanDefinitionNames>并初始化
  * 顺序初始化：PriorityOrdered → Ordered → other
  * registerBeanPostProcessors→beanPostProcessors.add(beanPostProcessor)<List<BeanPostProcessor>>
  *      1:internalAutowiredAnnotationProcessor(@Autowired,@Value,@Inject,@Lookup)
@@ -100,7 +100,9 @@ registerListeners()
 - refresh完成
 ```java
 /**
- * 事件发布
+ * publishEvent:事件发布
+ * 
+ * 
  */
 finishRefresh()
 ```
@@ -122,17 +124,63 @@ finishBeanFactoryInitialization(beanFactory)
  * beanDefinitionNames
  * FactoryBean:&beanName
  * 普通bean:beanName
+ * 
  *  getBean(beanName);
  *  ↓
  *  getSingleton(beanName); → 三级缓存 → 循环依赖 / 存在 → getObjectForBeanInstance
  *  ↓
- *  getMergedLocalBeanDefinition(String beanName); → 合并BeanDefinition
- *  ↓
- *  解析@DependsOn、<depends-on> 依赖 注入
+ *  dependsOn:解析@DependsOn、<depends-on> 依赖 注入 → getBean(beanName);
  *  ↓
  *  创建并实例化对象 createBean
- *
+ *      ↓
+ *      bean提前初始化 resolveBeforeInstantiation(beanName, mbdToUse); 实例化前创建bean<InstantiationAwareBeanPostProcessor>，如：bean扩展代理
+ *  ↓
+ *  doCreateBean(beanName, mbdToUse, args)
  */
 preInstantiateSingletons()
 ```
 
+## doCreateBean
+
+- 实例化bean
+```java
+/**
+ * bean创建流程
+ * createBeanInstance
+ *      ↓
+ *      determineConstructorsFromBeanPostProcessors;解析lookUp注解,返回实例化构造函数(=1)
+ * ↓
+ * instantiateBean:默认根据无参构造方法反射生成实例对象
+ * ↓
+ * BeanWrapper
+ * 
+ */
+createBeanInstance(beanName, mbdToUse, args)
+```
+
+- 实例化后bean扩展
+```java
+/**
+ *  1、获取注解注入属性(InjectionMetadata.InjectedElement)=>@Resource,@Autowired、@Value,@PostConstruct,@PreDestroy......
+ *  2、缓存到injectionMetadataCache
+ *  MergedBeanDefinitionPostProcessor#postProcessMergedBeanDefinition
+ */
+applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
+```
+
+- singletonFactories中缓存允许循环依赖的bean
+```java
+/**
+ * earlySingletonExposure=>true=>addSingletonFactory
+ */
+addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+```
+- bean属性填充
+```java
+/**
+ * 1、属性填充扩展：是否进行容器属性填充：postProcessAfterInstantiation=>false:不进行属性填充
+ * 2、
+ * 
+ */
+populateBean(beanName, mbd, instanceWrapper);
+```
