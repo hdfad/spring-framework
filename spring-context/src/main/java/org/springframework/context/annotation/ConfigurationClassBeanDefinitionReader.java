@@ -133,6 +133,7 @@ class ConfigurationClassBeanDefinitionReader {
 	}
 
 	/**
+	 * 注册import导入的类,回调registerBeanDefinitions
 	 * Read a particular {@link ConfigurationClass}, registering bean definitions
 	 * for the class itself and all of its {@link Bean} methods.
 	 */
@@ -161,6 +162,10 @@ class ConfigurationClassBeanDefinitionReader {
 		}
 
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+
+		/**
+		 * 提供bean定义信息扩展registerBeanDefinitions
+		 */
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 

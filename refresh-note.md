@@ -23,18 +23,18 @@ prepareRefresh()
  * 创建一个新的bean工厂设置id：new
  * xml：
  * beanFactory扩展：是否允许同名bean覆盖、循环依赖
- * 读取解析文件(xml<dtd\xsd>，注解...)：BeanDefinitionReader
+ * 读取解析文件到BeanDefinition(xml<dtd\xsd>，注解...)：BeanDefinitionReader
  */
 obtainFreshBeanFactory()
 
         ↓
 
         /**
-         * 解析xml
+         * 解析xml，读取bean信息到BeanDefinition
          * new XmlBeanDefinitionReader()
          * 配置dtd、xsd解析器
          * 加载解析配置xml
-         *  xml文件path->InputSource(InputStream)->Document->doRegisterBeanDefinitions<存储到DefaultListableBeanFactory#beanDefinitionMap>
+         *  xml文件path->InputSource(InputStream)->Document->doRegisterBeanDefinitions<存储到DefaultListableBeanFactory# beanDefinitionMap beanDefinitionNames>
          */
         loadBeanDefinitions(beanDefinitionReader);
 
@@ -54,10 +54,14 @@ prepareBeanFactory(beanFactory);
 - 扩展BeanFactory(bean对象注入)
 ```java
 /**
- * BeanFactoryPostProcessor扩展
+ * BeanFactoryPostProcessor扩展:PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
+ * 
  * 1:解析注解配置类注解：ConfigurationClassParser#doProcessConfigurationClass → (beanDefinitionNames、beanDefinitionMap)
  * @Component、@ComponentScan、@Import、@ImportResource、@Configuration、@Bean...→（postProcessor.postProcessBeanDefinitionRegistry）
  *  invokeBeanDefinitionRegistryPostProcessors()
+ *      ↓
+ *      通过BeanDefinitionReader读取配置信息，同时提供对BeanDefinition的扩展
+ *      this.reader.loadBeanDefinitions(configClasses);
  * 2:调用bean工厂后置处理器：
  *  invokeBeanFactoryPostProcessors()
  */
@@ -179,8 +183,21 @@ addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 ```java
 /**
  * 1、属性填充扩展：是否进行容器属性填充：postProcessAfterInstantiation=>false:不进行属性填充
- * 2、
+ * 2、注入模型注入，0, @Bean(autowire=Autowire.BY_TYPE)=>autowireByName、autowireByType
+ * 3、bean后置处理器：InstantiationAwareBeanPostProcessor
+ *      #1、解析对象依赖属性，实例化注入属性对象：bp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
+ *          Resource:CommonAnnotationBeanPostProcessor#postProcessProperties
+ *          Autowired:AutowiredAnnotationBeanPostProcessor#postProcessProperties
+ *          Inject:AutowiredAnnotationBeanPostProcessor#postProcessProperties
+ *      #2、pvsToUse = bp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
+ * 4、：applyPropertyValues
  * 
  */
 populateBean(beanName, mbd, instanceWrapper);
+```
+
+- bean初始化
+```java
+
+initializeBean(beanName, exposedObject, mbd);
 ```

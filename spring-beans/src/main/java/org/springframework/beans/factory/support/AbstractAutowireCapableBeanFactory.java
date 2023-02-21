@@ -1657,7 +1657,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// 3：AUTOWIRE_CONSTRUCTOR
 		// 4：AUTOWIRE_AUTODETECT(已启用)
 		/**
-		 * 注入模型：对没有实现@Autowired、 @Resource注解的情况下，对Bean实例进行注入的几种方式
+		 * 注入模型：@Bean(autowire=Autowire.BY_TYPE)
 		 * 通过在invokeBeanFactoryPostProcessors阶段，获取指定bean的abd，操作abd注入模型
 		 */
 		int resolvedAutowireMode = mbd.getResolvedAutowireMode();

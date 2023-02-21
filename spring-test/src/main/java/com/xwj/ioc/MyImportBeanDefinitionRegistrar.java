@@ -11,10 +11,10 @@ import org.springframework.core.type.AnnotationMetadata;
 
 public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
 
-	@Override
+/*	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		AbstractBeanDefinition beanDefinition = (AbstractBeanDefinition)registry.getBeanDefinition("a");
 		beanDefinition.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME);
-	}
+	}*/
 
 }
