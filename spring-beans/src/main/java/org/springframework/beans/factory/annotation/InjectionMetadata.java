@@ -107,6 +107,7 @@ public class InjectionMetadata {
 				checkedElements.add(element);
 			}
 		}
+		//将注入元注解放入checkedElements，等待inject
 		this.checkedElements = checkedElements;
 	}
 

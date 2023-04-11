@@ -1059,7 +1059,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @return the object to expose as bean reference
 	 */
 	protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
-		System.out.println(beanName+": 通过SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference处理");
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			/**
@@ -1067,6 +1066,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 一个是AutowiredAnnotationBeanPostProcessor,另一个是代理AbstractAutoProxyCreator
 			 */
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
+				System.out.println("SmartInstantiationAwareBeanPostProcessor===>"+bp.getClass().getName());
 				/**
 				 * SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference
 				 * 通过后置处理器，判断对象是否需要进行代理对象创建
@@ -1713,7 +1713,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					if (filteredPds == null) {
 						filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 					}
-					//第七次调用后置处理器，在配置的BeanDefinition的propertyValues被设置到bean实例中之前，我们有机会拦截属性，并更改属性
+					//调用后置处理器，在配置的BeanDefinition的propertyValues被设置到bean实例中之前，我们有机会拦截属性，并更改属性
 					pvsToUse = bp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
 						return;
@@ -1808,6 +1808,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					// Do not allow eager init for type matching in case of a prioritized post-processor.
 					boolean eager = !(bw.getWrappedInstance() instanceof PriorityOrdered);
 					DependencyDescriptor desc = new AutowireByTypeDependencyDescriptor(methodParam, eager);
+					/**
+					 * 解析依赖，与其他注入一样
+					 * 最终都处理成根据名字来获取bean对象
+					 * 通过resolveDependency ⇒ doResolveDependency
+					 */
 					Object autowiredArgument = resolveDependency(desc, beanName, autowiredBeanNames, converter);
 					if (autowiredArgument != null) {
 						pvs.add(propertyName, autowiredArgument);
@@ -1941,6 +1946,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 *
+	 * 解析BeanDefinition中的属性信息到PropertyValues，然后填充到BeanWrapper中
+	 *
 	 * Apply the given property values, resolving any runtime references
 	 * to other beans in this bean factory. Must use deep copy, so we
 	 * don't permanently modify this property.
@@ -2122,6 +2130,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 *
 	 */
 	protected Object initializeBean(String beanName, Object bean, @Nullable RootBeanDefinition mbd) {
+		//设置回调其Aware的set方法
 		if (System.getSecurityManager() != null) {
 			AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
 				invokeAwareMethods(beanName, bean);
@@ -2136,7 +2145,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
 
-			//第八次后置处理器调用口，在init-method方法之前，回调部分Aware接口
+			//在init-method方法之前，回调部分Aware接口
 			/**
 			 * BeanPostProcessor后置处理器的调用,调用postProcessBeforeInitialization,在bean属性填充之后通过BeanWrapper进行操作
 			 * 对于jdk的扩展注解:@PostConstruct的入口(InitDestroyAnnotationBeanPostProcessor#postProcessBeforeInitialization)

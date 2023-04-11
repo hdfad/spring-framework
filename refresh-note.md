@@ -190,7 +190,7 @@ addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
  *          Autowired:AutowiredAnnotationBeanPostProcessor#postProcessProperties
  *          Inject:AutowiredAnnotationBeanPostProcessor#postProcessProperties
  *      #2、pvsToUse = bp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
- * 4、：applyPropertyValues
+ * 4、：applyPropertyValues：应用属性注入，解析BeanDefinition中的属性信息到PropertyValues，然后填充到BeanWrapper中
  * 
  */
 populateBean(beanName, mbd, instanceWrapper);
@@ -198,6 +198,15 @@ populateBean(beanName, mbd, instanceWrapper);
 
 - bean初始化
 ```java
-
+/**
+ * 初始化已完成实例化的bean，
+ * 1、设置回调其Aware的set方法
+ *      invokeAwareMethods
+ * 2、BeanPostProcessor#postProcessBeforeInitialization回调其Aware的set方法  
+ *      applyBeanPostProcessorsBeforeInitialization
+ * 3、InitializingBean#afterPropertiesSet、<init-method/>的调用 
+ * 4、初始化后后置处理调用，对bean对象进行扩展(如代理)：applyBeanPostProcessorsAfterInitialization
+ *      BeanPostProcessor#postProcessAfterInitialization
+ */
 initializeBean(beanName, exposedObject, mbd);
 ```

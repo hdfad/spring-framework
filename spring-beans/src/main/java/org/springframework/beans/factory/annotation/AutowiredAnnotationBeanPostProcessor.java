@@ -158,6 +158,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 
 	/**
+	 * 通过构造函数添加支持的注解
 	 * Create a new {@code AutowiredAnnotationBeanPostProcessor} for Spring's
 	 * standard {@link Autowired @Autowired} and {@link Value @Value} annotations.
 	 * <p>Also supports JSR-330's {@link javax.inject.Inject @Inject} annotation,
@@ -280,6 +281,12 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 		// Let's check for lookup methods here...
 		if (!this.lookupMethodsChecked.contains(beanName)) {
+			/**
+			 * Lookup:用于解决在单列bean中注入原型bean后，每次拿到的原型bean对象都是同一对象的问题
+			 * 使用@Lookup注入在单列对象中注入的原型bean，可以在每一次拿到的bean对象都是新的对象，@Bean注入不行
+			 * Lookup注解的生效机制是bean在构建对象时生效的，发现有方法加了@Lookup就创建一个cglib代理放入到spring容器中，
+			 * 但是通过@Bean方式注入原型bean的时候，是自己手动new的对象放入到容器中，所以spring容器中也就不是一个cglib代理，自然也就没有LookupOverrideMethodInterceptor可供intercept
+			 */
 			if (AnnotationUtils.isCandidateClass(beanClass, Lookup.class)) {
 				try {
 					Class<?> targetClass = beanClass;
