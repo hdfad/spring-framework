@@ -63,8 +63,13 @@ final class PostProcessorRegistrationDelegate {
 	 * 处理2部分：
 	 * 			BeanDefinitionRegistryPostProcessor
 	 * 			BeanFactoryPostProcessor
+	 * 			BeanDefinitionRegistryPostProcessor 是 BeanFactoryPostProcessor子集
+	 * PriorityOrdered, Ordered、其他
+	 *
+	 * PriorityOrdered是Ordered的子集
+	 *
 	 * @param beanFactory
-	 * @param beanFactoryPostProcessors
+	 * @param beanFactoryPostProcessors：外部传入集合
 	 */
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
@@ -88,6 +93,7 @@ final class PostProcessorRegistrationDelegate {
 		//已经被处理过的bean
 		Set<String> processedBeans = new HashSet<>();
 
+		//DefaultListableBeanFactory是BeanDefinitionRegistry子集
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
@@ -96,6 +102,7 @@ final class PostProcessorRegistrationDelegate {
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
 			/**
+			 * 先处理外部传入集合
 			 * 遍历所有BeanFactoryPostProcessor，处理bdrpp和非bdrpp类型的后置处理器
 			 */
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
@@ -106,11 +113,6 @@ final class PostProcessorRegistrationDelegate {
 					 * 对配置bean进行装载，解析配置bean中的@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean
 					 * 如何解决@Bean中的别名映射呢？
 					 * 		使用容器ConcurrentHashMap对别名存储，key为上一个别名，value为当前别名
-					 */
-
-
-					/**
-					 *
 					 */
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);
 					//  添加到registryProcessors(用于最后执行postProcessBeanFactory方法)
@@ -132,6 +134,7 @@ final class PostProcessorRegistrationDelegate {
 			// Separate between BeanDefinitionRegistryPostProcessors that implement
 			// PriorityOrdered, Ordered, and the rest.
 
+			//处理内部的
 			/*根据实现PriorityOrdered或者Ordered接口按照顺序进行处理，PriorityOrdered.getOrder() asc,Ordered.getOrder() asc*/
 			//currentRegistryProcessors：当前需要处理的后置处理器BeanDefinitionRegistryPostProcessor
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
