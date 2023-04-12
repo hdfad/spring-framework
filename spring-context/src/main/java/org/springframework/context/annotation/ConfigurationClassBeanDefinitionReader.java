@@ -282,12 +282,12 @@ class ConfigurationClassBeanDefinitionReader {
 		if (!autowireCandidate) {
 			beanDef.setAutowireCandidate(false);
 		}
-
+		//@Bean(initMethod = "?")
 		String initMethodName = bean.getString("initMethod");
 		if (StringUtils.hasText(initMethodName)) {
 			beanDef.setInitMethodName(initMethodName);
 		}
-
+		//@Bean(initMethod = "?")
 		String destroyMethodName = bean.getString("destroyMethod");
 		beanDef.setDestroyMethodName(destroyMethodName);
 

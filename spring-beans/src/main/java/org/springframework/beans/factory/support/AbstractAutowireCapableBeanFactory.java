@@ -434,7 +434,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {//循环遍历所有的BeanPostProcessor执行postProcessBeforeInitialization
-			//第八次后置处理器:调用此接口前bean已经被实例化完成，并且完成了属性的填充，因此这个过程属于后续的bean的初始化过程
+			//后置处理器:调用此接口前bean已经被实例化完成，并且完成了属性的填充，因此这个过程属于后续的bean的初始化过程
 			//如果处理这个对象的beanFactory中被注册了ApplicationContextAwareProcessor、LoadTimeWeaverAwareProcessor就会对部分注解进行扫描注册，设置生命函数（注册销毁），添加AspectJ支持等
 			//通过在prepareBeanFactory方法中的beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 			// 注入对ApplicationContextAwareProcessor支持，然后完成对部分Aware接口实现类的回调
