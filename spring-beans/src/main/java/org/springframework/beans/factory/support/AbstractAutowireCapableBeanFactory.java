@@ -2145,9 +2145,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
 
-			//在init-method方法之前，回调部分Aware接口
 			/**
-			 * BeanPostProcessor后置处理器的调用,调用postProcessBeforeInitialization,在bean属性填充之后通过BeanWrapper进行操作
+			 * BeanPostProcessor后置处理器的调用,调用postProcessBeforeInitialization,在bean属性填充之后通过BeanWrapper进行操作，回调部分Aware接口
 			 * 对于jdk的扩展注解:@PostConstruct的入口(InitDestroyAnnotationBeanPostProcessor#postProcessBeforeInitialization)
 			 */
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
@@ -2200,6 +2199,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * 在初始化bean后对bean属性赋值，比如说alibaba.druid在bean初始化完成后，通过afterPropertiesSet初始化数据库用户名密码等操作
+	 * 从BeanDefinition中获取自定义的初始化的方法Name，调用自定义方法<init-method>或者@Bean(initMethod = "?")
+	 *
 	 * Give a bean a chance to react now all its properties are set,
 	 * and a chance to know about its owning bean factory (this object).
 	 * This means checking whether the bean implements InitializingBean or defines
@@ -2210,9 +2212,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * (can also be {@code null}, if given an existing bean instance)
 	 * @throws Throwable if thrown by init methods or by the invocation process
 	 * @see #invokeCustomInitMethod
-	 * 作用有两个：
-	 * 1、判断bean是否继承了InitializingBean，如果继承接口，执行afterPropertiesSet()方法，
-	 * 2、获得是否设置了init-method属性，如果设置了，就执行设置的方法
 	 */
 	protected void invokeInitMethods(String beanName, Object bean, @Nullable RootBeanDefinition mbd)
 			throws Throwable {
@@ -2243,7 +2242,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		/**
-		 * xml中的init-method调用入口
+		 *	init-method或者@Bean(initMethod = "?")
+		 * 从BeanDefinition中获取自定义的初始化的方法Name ⇒ 反射获取方法对象Method,(clazz.getMethod) ⇒修改访问权限 ⇒invoke method
 		 */
 		if (mbd != null && bean.getClass() != NullBean.class) {
 			String initMethodName = mbd.getInitMethodName();
@@ -2256,6 +2256,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * 访问自定初始化方法
+	 * 从bd中获取初始化方法⇒反射获取方法对象Method,(clazz.getMethod) ⇒修改访问权限 ⇒invoke method
+	 *
 	 * Invoke the specified custom init method on the given bean.
 	 * Called by invokeInitMethods.
 	 * <p>Can be overridden in subclasses for custom resolution of init
@@ -2264,9 +2267,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected void invokeCustomInitMethod(String beanName, Object bean, RootBeanDefinition mbd)
 			throws Throwable {
-
+		//从bd中获取初自定义始化方法：<init-method> or @Bean(initMethod=?)
 		String initMethodName = mbd.getInitMethodName();
 		Assert.state(initMethodName != null, "No init method set");
+		//获取初始化方法
 		Method initMethod = (mbd.isNonPublicAccessAllowed() ?
 				BeanUtils.findMethod(bean.getClass(), initMethodName) :
 				ClassUtils.getMethodIfAvailable(bean.getClass(), initMethodName));
@@ -2289,6 +2293,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (logger.isTraceEnabled()) {
 			logger.trace("Invoking init method  '" + initMethodName + "' on bean with name '" + beanName + "'");
 		}
+		//获取方法接口
 		Method methodToInvoke = ClassUtils.getInterfaceMethodIfPossible(initMethod);
 
 		if (System.getSecurityManager() != null) {
@@ -2307,7 +2312,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 		else {
 			try {
+				//修改访问权限  -> 普通方法也可 ReflectionUtils.makeAccessible(initMethod);
 				ReflectionUtils.makeAccessible(methodToInvoke);
+				//invoke   -> 普通方法也可  initMethod.invoke(bean);
 				methodToInvoke.invoke(bean);
 			}
 			catch (InvocationTargetException ex) {

@@ -1,5 +1,6 @@
 package com.xwj.initialize_bean;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -13,29 +14,27 @@ import org.springframework.stereotype.Component;
  */
 @ComponentScan("com.xwj.initialize_bean")
 public class InitializeBeanTest {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		AnnotationConfigApplicationContext annotationConfigApplicationContext=new AnnotationConfigApplicationContext(InitializeBeanTest.class);
 		Ia bean = annotationConfigApplicationContext.getBean(Ia.class);
-
 	}
 }
 
 @Configuration
-class Ia{
+class Ia {
 
 	@Bean(initMethod = "init",destroyMethod = "destory")
 	public Ib ib(){
 		return new Ib();
 	}
 
-	
-
 }
 
 @Component
-class Ib{
+class Ib implements Ibi{
 	String c1;
 
+	@Override
 	public void init(){
 		System.out.println("init......");
 	}
@@ -54,3 +53,17 @@ class Ib{
 	}
 }
 
+interface Ibi{
+
+	public void init();
+
+}
+
+@Component
+class Ib2 implements Ibi{
+
+	@Override
+	public void init(){
+		System.out.println("init.ib2.....");
+	}
+}
