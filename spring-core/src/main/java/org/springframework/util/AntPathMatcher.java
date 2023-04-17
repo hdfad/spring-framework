@@ -201,6 +201,8 @@ public class AntPathMatcher implements PathMatcher {
 	}
 
 	/**
+	 * 匹配路劲
+	 *
 	 * Actually match the given {@code path} against the given {@code pattern}.
 	 * @param pattern the pattern to match against
 	 * @param path the path to test
@@ -214,7 +216,7 @@ public class AntPathMatcher implements PathMatcher {
 		if (path == null || path.startsWith(this.pathSeparator) != pattern.startsWith(this.pathSeparator)) {
 			return false;
 		}
-
+		//拆路径，根据“/”
 		String[] pattDirs = tokenizePattern(pattern);
 		if (fullMatch && this.caseSensitive && !isPotentialMatch(path, pattDirs)) {
 			return false;

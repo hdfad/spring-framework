@@ -56,6 +56,8 @@ import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
 
 /**
+ * 匹配路劲，可以处理完整包名或者“classpath*:”
+ *
  * A {@link ResourcePatternResolver} implementation that is able to resolve a
  * specified resource location path into one or more matching Resources.
  * The source path may be a simple path which has a one-to-one mapping to a
@@ -274,6 +276,13 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		return getResourceLoader().getResource(location);
 	}
 
+	/**
+	 * 查找路劲下的文件
+	 * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver#doRetrieveMatchingFiles(java.lang.String, java.io.File, java.util.Set)
+	 * @param locationPattern the location pattern to resolve
+	 * @return
+	 * @throws IOException
+	 */
 	@Override
 	public Resource[] getResources(String locationPattern) throws IOException {
 		Assert.notNull(locationPattern, "Location pattern must not be null");
@@ -494,6 +503,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
 		String rootDirPath = determineRootDir(locationPattern);
 		String subPattern = locationPattern.substring(rootDirPath.length());
+		//递归getResources，获取包根路径下的所有文件，内部调用doFindPathMatchingFileResources ->org.springframework.core.io.support.ResourcePatternResolver.getResources
 		Resource[] rootDirResources = getResources(rootDirPath);
 		Set<Resource> result = new LinkedHashSet<>(16);
 		for (Resource rootDirResource : rootDirResources) {
@@ -513,6 +523,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 				result.addAll(doFindPathMatchingJarResources(rootDirResource, rootDirUrl, subPattern));
 			}
 			else {
+				//doFindPathMatchingFileResources:查找与文件资源匹配的路径
 				result.addAll(doFindPathMatchingFileResources(rootDirResource, subPattern));
 			}
 		}
@@ -686,6 +697,9 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	}
 
 	/**
+	 *
+	 * 查找路劲下的所有文件
+	 *
 	 * Find all resources in the file system that match the given location pattern
 	 * via the Ant-style PathMatcher.
 	 * @param rootDirResource the root directory as Resource
@@ -782,6 +796,8 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	}
 
 	/**
+	 * 通过listDirectory(dir)方法获取路劲下所有的文件
+	 *
 	 * Recursively retrieve files that match the given pattern,
 	 * adding them to the given result list.
 	 * @param fullPattern the pattern to match against,
@@ -795,6 +811,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			logger.trace("Searching directory [" + dir.getAbsolutePath() +
 					"] for files matching pattern [" + fullPattern + "]");
 		}
+		//File#listFiles处理获取路劲下的所有文件
 		for (File content : listDirectory(dir)) {
 			String currPath = StringUtils.replace(content.getAbsolutePath(), File.separator, "/");
 			if (content.isDirectory() && getPathMatcher().matchStart(fullPattern, currPath + "/")) {
@@ -805,6 +822,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 					}
 				}
 				else {
+					//递归匹配文件夹里面的文件
 					doRetrieveMatchingFiles(fullPattern, content, result);
 				}
 			}
@@ -815,6 +833,8 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	}
 
 	/**
+	 * 获取文件夹下的文件
+	 * 	.class文件会编译内部类为单独的class
 	 * Determine a sorted list of files in the given directory.
 	 * @param dir the directory to introspect
 	 * @return the sorted list of files (by default in alphabetical order)

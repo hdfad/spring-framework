@@ -155,7 +155,8 @@ public abstract class BeanDefinitionReaderUtils {
 	 * @param registry the bean factory to register with
 	 * @throws BeanDefinitionStoreException if registration failed
 	 *
-	 * 根据BeanDefinitionHolder获取BeanDefinition并注册到BeanDefinitionRegistry中同时注册BeanDefinitionMap及别名
+	 * 注册BeanDefinition，缓存BeanDefinitionNames和BeanDefinitionMap，同时处理别名缓存到aliasMap
+	 *
 	 */
 	public static void registerBeanDefinition(
 			BeanDefinitionHolder definitionHolder, BeanDefinitionRegistry registry)
@@ -164,12 +165,11 @@ public abstract class BeanDefinitionReaderUtils {
 		// Register bean definition under primary name.
 		String beanName = definitionHolder.getBeanName();
 
-		// 通过 BeanDefinitionHolder的getBeanDefinition方法获取到BeanDefinition，
-		// 并通过BeanDefinitionRegistry的registerBeanDefinition添加到beanDefinitionNames和beanDefinitionMap中
+		// 缓存bean的beanDefinitionNames和beanDefinitionMap到容器中
 		registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());
 
 		// Register aliases for bean name, if any.
-		//别名注册，注册的别名存储于一个ConcurrentHashMap容器中k:别名，v:真实名称
+		//缓存别名:k:别名，v:真实名称
 		String[] aliases = definitionHolder.getAliases();
 		if (aliases != null) {
 			for (String alias : aliases) {

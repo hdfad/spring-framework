@@ -16,6 +16,7 @@
 
 package org.springframework.context.annotation;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -314,6 +315,12 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 
 
 	/**
+	 * 扫描@ComponentScan包下的@component,
+	 * 返回包下的所有文件的BeanDefinition
+	 * 流程上是通过file.listFiles处理
+	 * @see PathMatchingResourcePatternResolver#doRetrieveMatchingFiles(java.lang.String, java.io.File, java.util.Set)
+	 * @see ClassPathScanningCandidateComponentProvider#isCandidateComponent(org.springframework.core.type.classreading.MetadataReader)
+	 *
 	 * Scan the class path for candidate components.
 	 * @param basePackage the package to check for annotated classes
 	 * @return a corresponding Set of autodetected bean definitions
@@ -424,7 +431,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	}
 
 	/**
-	 * 扫描scan下的包
+	 * 扫描scan路径的包，通过file.listDirectory(dir)拿到包下所有文件,通过isCandidateComponent方法判断文件是否有@Component注解,将@Component结果设置到BeanDefinition中
 	 * @param basePackage
 	 * @return
 	 */
@@ -433,6 +440,8 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
+
+			//file.listDirectory(dir)拿到包下所有文件
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
@@ -443,6 +452,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				if (resource.isReadable()) {
 					try {
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						//需要被扫描的包，排除配置的declaringClass(启动类，excludeFilters指定)，通过ComponentScanAnnotationParser#scanner.addExcludeFilter
 						if (isCandidateComponent(metadataReader)) {
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setSource(resource);
@@ -496,12 +506,16 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	}
 
 	/**
+	 * match 匹配是否包含@Component标时
+	 * @see org.springframework.core.type.filter.AnnotationTypeFilter#matchSelf(org.springframework.core.type.classreading.MetadataReader)
+	 *
 	 * Determine whether the given class does not match any exclude filter
 	 * and does match at least one include filter.
 	 * @param metadataReader the ASM ClassReader for the class
 	 * @return whether the class qualifies as a candidate component
 	 */
 	protected boolean isCandidateComponent(MetadataReader metadataReader) throws IOException {
+		//需要排除的包名，除了自定义指定的excludeFilters外还有ComponentScan配置类
 		for (TypeFilter tf : this.excludeFilters) {
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
 				return false;
@@ -516,6 +530,8 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	}
 
 	/**
+	 * @Conditional注解匹配
+	 *
 	 * Determine whether the given class is a candidate component based on any
 	 * {@code @Conditional} annotations.
 	 * @param metadataReader the ASM ClassReader for the class

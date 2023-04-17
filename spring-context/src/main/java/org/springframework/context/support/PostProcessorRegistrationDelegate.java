@@ -58,12 +58,10 @@ final class PostProcessorRegistrationDelegate {
 
 	/**
 	 *
-	 * 调用beanFactory后置处理器，首先处理BeanDefinitionRegistryPostProcessors
-	 *
-	 * 处理2部分：
-	 * 			BeanDefinitionRegistryPostProcessor
-	 * 			BeanFactoryPostProcessor
-	 * 			BeanDefinitionRegistryPostProcessor 是 BeanFactoryPostProcessor子集
+	 * 调用所有实现类方法，按照 自定义传入bfpps⇒PriorityOrdered⇒Ordered⇒其他 顺序
+	 * 接口BeanDefinitionRegistryPostProcessor 继承 BeanFactoryPostProcessor，自定义传入的bfpps如果不是BeanFactoryPostProcessor，则添加到集合中后续BeanDefinitionRegistryPostProcessor统一处理
+	 * BeanDefinitionRegistryPostProcessor#postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry)操作BeanDefinition，原因：BeanDefinitionRegistry是用来操作BeanDefinition
+	 * BeanFactoryPostProcessor#postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)用来处理beanFactory
 	 * PriorityOrdered, Ordered、其他
 	 *
 	 * PriorityOrdered是Ordered的子集
@@ -108,12 +106,6 @@ final class PostProcessorRegistrationDelegate {
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =(BeanDefinitionRegistryPostProcessor) postProcessor;
-					/*
-					 * 第一阶段：执行BeanDefinitionRegistryPostProcessor接口的postProcessBeanDefinitionRegistry方法
-					 * 对配置bean进行装载，解析配置bean中的@Configuration、@Component、@PropertySource、@ComponentScan、@ImportResource、@Bean
-					 * 如何解决@Bean中的别名映射呢？
-					 * 		使用容器ConcurrentHashMap对别名存储，key为上一个别名，value为当前别名
-					 */
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);
 					//  添加到registryProcessors(用于最后执行postProcessBeanFactory方法)
 					registryProcessors.add(registryProcessor);

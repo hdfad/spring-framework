@@ -293,7 +293,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	/**
 	 * Build and validate a configuration model based on the registry of
 	 * {@link Configuration} classes.
-	 * // TODO: 2022/10/21
+	 *
 	 * 解析registry获取BeanDefinition信息,将bean中注入的注解对象添加到BeanDefinition中,然后将BeanDefinition封成BeanDefinitionHolder
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
