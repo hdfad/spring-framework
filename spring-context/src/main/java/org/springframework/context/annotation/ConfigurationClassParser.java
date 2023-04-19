@@ -185,7 +185,9 @@ class ConfigurationClassParser {
 						"Failed to parse configuration class [" + bd.getBeanClassName() + "]", ex);
 			}
 		}
-
+		/**
+		 * Import处理
+		 */
 		this.deferredImportSelectorHandler.process();
 	}
 
@@ -823,6 +825,9 @@ class ConfigurationClassParser {
 			}
 		}
 
+		/**
+		 * 处理import
+		 */
 		public void process() {
 			List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
 			this.deferredImportSelectors = null;
@@ -860,9 +865,16 @@ class ConfigurationClassParser {
 		public void processGroupImports() {
 			for (DeferredImportSelectorGrouping grouping : this.groupings.values()) {
 				Predicate<String> exclusionFilter = grouping.getCandidateFilter();
+				/**
+				 * 处理Import的bean
+				 * getImports:获取import的bean，spring boot的spi bean 也和这儿相关
+				 */
 				grouping.getImports().forEach(entry -> {
 					ConfigurationClass configurationClass = this.configurationClasses.get(entry.getMetadata());
 					try {
+						/**
+						 * 处理import
+						 */
 						processImports(configurationClass, asSourceClass(configurationClass, exclusionFilter),
 								Collections.singleton(asSourceClass(entry.getImportClassName(), exclusionFilter)),
 								exclusionFilter, false);
