@@ -773,7 +773,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Store pre-refresh ApplicationListeners...
 		/**
-		 * 同步earlyApplicationListeners和applicationListeners
+		 * 初始化earlyApplicationListeners和applicationListeners
 		 */
 		if (this.earlyApplicationListeners == null) {
 			this.earlyApplicationListeners = new LinkedHashSet<>(this.applicationListeners);

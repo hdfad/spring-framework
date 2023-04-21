@@ -70,6 +70,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * Create a new AnnotationConfigApplicationContext that needs to be populated
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 *
+	 * 通过父类创建bean工厂
+	 *
 	 *	父类构造方法：
 	 *	@see DefaultResourceLoader：啥都没干，提供了对资源加载器的支持
 	 *  @see AbstractApplicationContext：配置部分bean名称，与国际化、生命周期bean名称、多播器，以及spel配置表达式是否支持，这部分参数在refresh时会使用到
@@ -79,9 +81,6 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 *  父接口：
 	 *  @see ConfigurableApplicationContext：提供系统运行环境参数 {@link ConfigurableApplicationContext#getEnvironment()}
 	 *  @see BeanDefinitionRegistry：对BeanDefinition注册和移除提供支持
-	 *
-	 *
-	 *
 	 */
 	public AnnotationConfigApplicationContext() {
 		StartupStep createAnnotatedBeanDefReader = this.getApplicationStartup().start("spring.context.annotated-bean-reader.create");

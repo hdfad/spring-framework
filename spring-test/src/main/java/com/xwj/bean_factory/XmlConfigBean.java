@@ -1,17 +1,11 @@
-package com.xwj.ioc;
-
+package com.xwj.bean_factory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-/**
- * @author buming
- * Email buming@uoko.com
- * @Date: 2022/03/17 11:10
- */
-public class DemoController implements InitializingBean, DisposableBean {
+public class XmlConfigBean implements InitializingBean, DisposableBean {
 	@Override
 	public void destroy() throws Exception {
 		System.out.println();
