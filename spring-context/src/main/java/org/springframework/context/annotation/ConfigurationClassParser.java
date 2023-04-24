@@ -942,9 +942,15 @@ class ConfigurationClassParser {
 		 */
 		public Iterable<Group.Entry> getImports() {
 			for (DeferredImportSelectorHolder deferredImport : this.deferredImports) {
+				/**
+				 * 解析import的bean，spring boot的spi解析就是这儿，通过AutoConfigurationImportSelector去解析SpringFactoriesLoader.loadFactoryNames
+				 */
 				this.group.process(deferredImport.getConfigurationClass().getMetadata(),
 						deferredImport.getImportSelector());
 			}
+			/**
+			 * 获取被导入的import bean
+			 */
 			return this.group.selectImports();
 		}
 

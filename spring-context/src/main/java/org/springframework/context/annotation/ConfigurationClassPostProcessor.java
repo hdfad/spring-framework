@@ -388,6 +388,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			 *
 			 * 真正执行逻辑：
 			 * @see org.springframework.context.annotation.ConfigurationClassParser#doProcessConfigurationClass(org.springframework.context.annotation.ConfigurationClass, org.springframework.context.annotation.ConfigurationClassParser.SourceClass, java.util.function.Predicate)
+			 *
+			 * 此处的解析，与bd没有关系，只是将读取到的信息缓存到了 configurationClasses 容器中，然后后续读取出来通过 loadBeanDefinitions 加载到容器中
 			 */
 			parser.parse(candidates);
 			//验证
