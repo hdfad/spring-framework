@@ -857,7 +857,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Configure the bean factory with context callbacks.
 		/**
-		 * 添加后置处理器ApplicationContextAwareProcessor，postProcessBeforeInitialization时会处理
+		 * 添加后置处理器ApplicationContextAwareProcessor，postProcessBeforeInitialization时会处理=>在initializeBean阶段会对bean进行扩展
 		 */
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 		/**

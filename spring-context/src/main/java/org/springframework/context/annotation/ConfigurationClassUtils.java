@@ -51,8 +51,18 @@ import org.springframework.stereotype.Component;
  */
 abstract class ConfigurationClassUtils {
 
+	/**
+	 * Full 全模式，
+	 * 该模式下注入容器中的同一个组件无论被取出多少次都是同一个bean实例，即单实例对象，在该模式下SpringBoot每次启动都会判断检查容器中是否存在该组件
+	 * 也就是说该配置类会被代理，直接从IOC容器之中取得bean对象，不会创建新的对象。Spring总会检查这个组件是否在容器中是否存在，保持组件的单实例。
+	 * @Configuration标识的类，且proxyBeanMethods值为true
+	 */
 	public static final String CONFIGURATION_CLASS_FULL = "full";
 
+	/**
+	 * Lite 轻量级模式,该模式下注入容器中的同一个组件无论被取出多少次都是不同的bean实例，即多实例对象，在该模式下SpringBoot每次启动会跳过检查容器中是否存在该组件
+	 * 每次调用@Bean标注的方法获取到的对象是一个新的bean对象,和之前从IOC容器中获取的不一样，Spring会跳过检查这个组件是否在容器中是否存在，保持组件的多实例。
+	 */
 	public static final String CONFIGURATION_CLASS_LITE = "lite";
 
 	/**
@@ -144,13 +154,13 @@ abstract class ConfigurationClassUtils {
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
 
 		/**
-		 * 是@Configuration类,类方法非代理方法
+		 * 是@Configuration类,proxyBeanMethods属性值true,则设置为full模式
 		 */
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
 		/**
-		 * @Configuration类 或者 注解扫描注入容器
+		 * @Configuration类 或者 注解扫描注入容器 ,则设置为lite模式
 		 * 包含被@Component、@ComponentScan、@Import、@ImportResource、@Bean标识的注解
 		 */
 		else if (config != null || isConfigurationCandidate(metadata)) {

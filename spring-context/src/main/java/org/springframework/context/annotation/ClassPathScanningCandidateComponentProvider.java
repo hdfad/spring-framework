@@ -451,6 +451,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				}
 				if (resource.isReadable()) {
 					try {
+						//ASM 获取class TODO: 2023/4/25
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
 						//需要被扫描的包，排除配置的declaringClass(启动类，excludeFilters指定)，通过ComponentScanAnnotationParser#scanner.addExcludeFilter
 						if (isCandidateComponent(metadataReader)) {
