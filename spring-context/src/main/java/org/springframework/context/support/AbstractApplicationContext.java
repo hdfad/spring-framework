@@ -650,8 +650,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Invoke factory processors registered as beans in the context.
 
 				/**
-				 * 初始化前一个扩展点，通过BeanFactoryPostProcessors对BeanDefinition进行扩展，填充BeanFactory
-				 * 调用bean工厂后置处理器,加载并注册BeanDefinition信息
+				 * 初始化前一个扩展点，分组排序加载注册bean信息，
 				 * 1:加载注解类
 				 * @see org.springframework.context.annotation.ConfigurationClassParser#doProcessConfigurationClass(org.springframework.context.annotation.ConfigurationClass, org.springframework.context.annotation.ConfigurationClassParser.SourceClass, java.util.function.Predicate)
 				 * 	1.1:@PropertySource,加载*.properties文件
@@ -663,15 +662,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 	1.4:@ImportResource,引入spring-xml配置到容器中
 				 *
 				 * 	1.5:@Bean对象注入
+				 *
+				 * 2:对full bean进行代理
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
-				//注册bean后置处理器,将BeanPostProcessors根据实现的接口是PriorityOrdered、Ordered还是其他的按顺序加载到容器中，首先注册实现PriorityOrdered的类，再注册实现了Ordered的类，最后再注册其他的类
-
 				/**
-				 * 注册后置处理器
-				 * 对bean后置处理器组件进行注册，后续在后createBean时需要调用多个后置处理器完成对容器属性的注入和依赖，如@PostConstruct注册、@Resource注册等
+				 * 分组排序注册后置处理器，添加到bean工厂(AbstractBeanFactory)的beanPostProcessors集合中
+				 * 后续在后createBean时需要调用多个后置处理器完成对容器属性的注入和依赖，如@PostConstruct注册、@Resource注册等
 				 */
 				registerBeanPostProcessors(beanFactory);
 				beanPostProcess.end();
@@ -682,9 +681,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Initialize event multicaster for this context.
 				/**
-				 * 初始化事件多播器：applicationEventMulticaster
-				 * 构建事件监听多路广播器ApplicationEventMulticaster(SimpleApplicationEventMulticaster)
-				 * 事件的执行主要是在Bean初始化之后通过上下文调用publishEvent方法执行
+				 * 初始化事件多播器ApplicationEventMulticaster，并添加到一级缓存中
+				 * 如果有指定的applicationEventMulticaster则从bean工厂中实例化，否则使用SimpleApplicationEventMulticaster实例化
 				 */
 				initApplicationEventMulticaster();
 
@@ -696,6 +694,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				/**
 				 * 向多播器applicationEventMulticaster中注册监听器
 				 * 获取所有的监听类beanName添加到事件多播器ApplicationEventMulticaster中
+				 * 已暴露的earlyApplicationEvents进行广播，通过multicastEvent调用onApplicationEvent进行
 				 */
 				registerListeners();
 
@@ -939,7 +938,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * </p>
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
-		System.out.println("============调用bean工厂后置处理器============");
 		// 对bean工厂后置处理器扩展点调用
 		//getBeanFactoryPostProcessors():获取spring 容器中的Bean工厂后置处理器
 		/**
@@ -1017,9 +1015,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		//获取bean工厂
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 		/**
-		 * 如果bean工厂（beanFactory）中包含applicationEventMulticaster的bean，
-		 * 则设置为原有bean工厂中的applicationEventMulticaster，
-		 * 否则则构建一个默认的SimpleApplicationEventMulticaster
+		 * 构建事件多播器ApplicationEventMulticaster
 		 */
 		if (beanFactory.containsLocalBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME)) {
 			this.applicationEventMulticaster =
@@ -1086,10 +1082,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void registerListeners() {
 		// Register statically specified listeners first.
-		//先添加静态监听器
-		//根据getApplicationListeners()获取静态监听器集合，遍历添加到ApplicationEventMulticaster中
 		/**
-		 * 获取系统中的监听器，添加到事件多播器中
+		 * 获取系统中的监听器，添加到事件多播器ApplicationEventMulticaster中
 		 */
 		for (ApplicationListener<?> listener : getApplicationListeners()) {
 			getApplicationEventMulticaster().addApplicationListener(listener);

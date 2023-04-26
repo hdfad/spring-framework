@@ -90,6 +90,9 @@ class ConfigurationClassEnhancer {
 
 
 	/**
+	 * newEnhancer ：准备工作，包装当前对象
+	 * createClass ：cglib对对象增强
+	 *
 	 * Loads the specified class and generates a CGLIB subclass of it equipped with
 	 * container-aware callbacks capable of respecting scoping and other bean semantics.
 	 * @return the enhanced subclass
@@ -134,6 +137,9 @@ class ConfigurationClassEnhancer {
 	 * ensuring that callbacks are registered for the new subclass.
 	 */
 	private Class<?> createClass(Enhancer enhancer) {
+		/**
+		 * 使用cglib创建一个bean代理
+		 */
 		Class<?> subclass = enhancer.createClass();
 		// Registering callbacks statically (as opposed to thread-local)
 		// is critical for usage in an OSGi environment (SPR-5932)...

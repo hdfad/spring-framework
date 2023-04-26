@@ -488,7 +488,8 @@ public abstract class AbstractApplicationEventMulticaster
 
 	/**
 	 * Helper class that encapsulates a general set of target listeners.
-	 * 默认监听器检索器，用于存储监听器和监听器的beanName
+	 * 事件监听器 内部类
+	 * 默认的监听器检索器，用于存储监听器和监听器的beanName
 	 */
 	private class DefaultListenerRetriever {
 

@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
  * Email buming@uoko.com
  * @Date: 2023/04/24 17:08
  */
-@Component
+@Configuration
+@ComponentScan("com.xwj.post_process_bean_factory_process")
 public class PostProcessBeanFactoryTest {
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext annotationConfigApplicationContext=new AnnotationConfigApplicationContext(PostProcessBeanFactoryTest.class);
@@ -17,12 +18,10 @@ public class PostProcessBeanFactoryTest {
 	}
 }
 
-@Configuration
-@ComponentScan("com.xwj.post_process_bean_factory_process")
-@Import(BeanAnnotation.class)
-class Start{
-
-
-}
+//@ComponentScan("com.xwj.post_process_bean_factory_process")
+//@Import(BeanAnnotation.class)
+//class Start{
+//
+//}
 
 

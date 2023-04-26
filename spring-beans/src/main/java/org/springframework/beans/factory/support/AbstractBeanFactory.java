@@ -154,7 +154,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	//值解析器，在finishBeanFactoryInitialization中会判断是否存在值解析器，如果不存在则通过往BeanFactory中添加值解析器 {@link org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization}
 	private final List<StringValueResolver> embeddedValueResolvers = new CopyOnWriteArrayList<>();
 
-	/** BeanPostProcessors to apply. */
+	/**
+	 *	已注册的BeanPostProcessor
+	 *  BeanPostProcessors to apply.
+	 */
 	private final List<BeanPostProcessor> beanPostProcessors = new BeanPostProcessorCacheAwareList();
 
 	/** Cache of pre-filtered post-processors. */
