@@ -64,6 +64,11 @@ public class GenericApplicationListenerAdapter implements GenericApplicationList
 		this.delegate.onApplicationEvent(event);
 	}
 
+	/**
+	 * 事件监听器类型匹配
+	 * @param eventType the event type (never {@code null})
+	 * @return
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean supportsEventType(ResolvableType eventType) {

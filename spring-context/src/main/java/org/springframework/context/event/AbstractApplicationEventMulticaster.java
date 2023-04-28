@@ -223,7 +223,9 @@ public abstract class AbstractApplicationEventMulticaster
 			// If result is null, the existing retriever is not fully populated yet by another thread.
 			// Proceed like caching wasn't possible for this current local attempt.
 		}
-
+		/**
+		 * 通过supportsEvent过滤监听器
+		 */
 		return retrieveApplicationListeners(eventType, sourceType, newRetriever);
 	}
 
@@ -381,6 +383,9 @@ public abstract class AbstractApplicationEventMulticaster
 
 		GenericApplicationListener smartListener = (listener instanceof GenericApplicationListener ?
 				(GenericApplicationListener) listener : new GenericApplicationListenerAdapter(listener));
+		/**
+		 * 判断事件广播器是否支持指定的事件类型和源类型。
+		 */
 		return (smartListener.supportsEventType(eventType) && smartListener.supportsSourceType(sourceType));
 	}
 
